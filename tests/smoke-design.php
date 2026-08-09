@@ -126,19 +126,43 @@ check( false === strpos( Settings::sanitize_css( 'a{} <!-- x -->' ), '<!--' ), '
 // a CSS `content` string. A glyph the sanitizer trims or rejects would be a
 // picker that silently does something other than what was clicked.
 $mangled = array();
+$dupes   = array();
+$seen    = array();
 $total   = 0;
+$palette = RaplsSitemap\Admin\SettingsPage::emoji_palette();
 
-foreach ( RaplsSitemap\Admin\SettingsPage::emoji_palette() as $group => $glyphs ) {
+foreach ( $palette as $group => $glyphs ) {
 	foreach ( $glyphs as $glyph ) {
 		$total++;
+
 		if ( $glyph !== Design::sanitize( array( 'marker_text' => $glyph ) )['marker_text'] ) {
 			$mangled[] = $group . ': ' . $glyph;
 		}
+
+		// One tab per glyph: the same emoji in two tabs is a wasted slot and
+		// makes the picker feel arbitrary.
+		if ( isset( $seen[ $glyph ] ) ) {
+			$dupes[] = $glyph . ' (' . $seen[ $glyph ] . ' / ' . $group . ')';
+		}
+		$seen[ $glyph ] = $group;
 	}
 }
 
 check( $total > 0, 'the emoji palette is not empty' );
 check( array() === $mangled, sprintf( 'all %d palette emoji round-trip through the sanitizer', $total ), implode( ' | ', $mangled ) );
+check( array() === $dupes, 'no emoji appears in two tabs', implode( ' | ', $dupes ) );
+
+// Tabs only earn their complexity if there are several, and a tab with two
+// entries in it looks broken next to one with twenty.
+$thin = array();
+foreach ( $palette as $group => $glyphs ) {
+	if ( count( $glyphs ) < 8 ) {
+		$thin[] = $group . ' (' . count( $glyphs ) . ')';
+	}
+}
+
+check( count( $palette ) >= 2, 'there is more than one tab' );
+check( array() === $thin, 'every tab is worth switching to', implode( ' | ', $thin ) );
 
 /* --- every preset is registered in all four places ----------------------- */
 

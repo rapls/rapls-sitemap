@@ -54,6 +54,20 @@
 			return;
 		}
 
+		var fallback = swatch.getAttribute( 'data-default' ) || '#0073aa';
+
+		/**
+		 * Keep the swatch showing whatever the text box says.
+		 *
+		 * A colour input has no empty state, so an unrepresentable value —
+		 * blank, `currentColor`, `var(--x)` — puts it back to the neutral
+		 * rather than leaving the previous colour on screen. Leaving it was the
+		 * reason clearing a field looked like it had done nothing.
+		 */
+		function syncSwatch() {
+			swatch.value = toHex( text.value ) || fallback;
+		}
+
 		swatch.addEventListener( 'input', function () {
 			text.value = swatch.value;
 			// Anything watching the field — including the browser's own "unsaved
@@ -61,16 +75,13 @@
 			text.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 		} );
 
-		text.addEventListener( 'input', function () {
-			var hex = toHex( text.value );
-			if ( hex ) {
-				swatch.value = hex;
-			}
-		} );
+		text.addEventListener( 'input', syncSwatch );
+		text.addEventListener( 'change', syncSwatch );
 
 		if ( clear ) {
 			clear.addEventListener( 'click', function () {
 				text.value = '';
+				syncSwatch();
 				text.dispatchEvent( new Event( 'change', { bubbles: true } ) );
 				text.focus();
 			} );
@@ -89,20 +100,75 @@
 		}
 	}
 
+	/** Remembered across openings, so picking up where you left off is free. */
+	var lastGroup = null;
+
+	function choose( input, glyph ) {
+		input.value = glyph;
+		input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+		closePalette();
+		input.focus();
+	}
+
 	function buildPanel( input ) {
+		var groups = Object.keys( config.emoji || {} );
+
 		var panel = document.createElement( 'div' );
 		panel.className = 'rapls-emoji';
 		panel.setAttribute( 'role', 'dialog' );
 		panel.setAttribute( 'aria-label', label( 'pick', 'Pick an emoji' ) );
 
-		Object.keys( config.emoji || {} ).forEach( function ( group ) {
-			var heading = document.createElement( 'p' );
-			heading.className = 'rapls-emoji__group';
-			heading.textContent = group;
-			panel.appendChild( heading );
+		var tabs = document.createElement( 'div' );
+		tabs.className = 'rapls-emoji__tabs';
+		tabs.setAttribute( 'role', 'tablist' );
+
+		var body = document.createElement( 'div' );
+		body.className = 'rapls-emoji__body';
+
+		var panes = {};
+		var buttons = {};
+
+		function show( group ) {
+			groups.forEach( function ( other ) {
+				var selected = other === group;
+				panes[ other ].hidden = ! selected;
+				buttons[ other ].setAttribute( 'aria-selected', selected ? 'true' : 'false' );
+				buttons[ other ].tabIndex = selected ? 0 : -1;
+				buttons[ other ].classList.toggle( 'is-active', selected );
+			} );
+			lastGroup = group;
+		}
+
+		groups.forEach( function ( group ) {
+			var tab = document.createElement( 'button' );
+			tab.type = 'button';
+			tab.className = 'rapls-emoji__tab';
+			tab.textContent = group;
+			tab.setAttribute( 'role', 'tab' );
+			tab.addEventListener( 'click', function () {
+				show( group );
+			} );
+
+			// Left/right move between tabs, which is what a tablist is expected
+			// to do and costs almost nothing to honour.
+			tab.addEventListener( 'keydown', function ( event ) {
+				var step = 'ArrowRight' === event.key ? 1 : ( 'ArrowLeft' === event.key ? -1 : 0 );
+				if ( ! step ) {
+					return;
+				}
+				event.preventDefault();
+				var next = groups[ ( groups.indexOf( group ) + step + groups.length ) % groups.length ];
+				show( next );
+				buttons[ next ].focus();
+			} );
+
+			buttons[ group ] = tab;
+			tabs.appendChild( tab );
 
 			var grid = document.createElement( 'div' );
 			grid.className = 'rapls-emoji__grid';
+			grid.setAttribute( 'role', 'tabpanel' );
+			grid.setAttribute( 'aria-label', group );
 
 			config.emoji[ group ].forEach( function ( glyph ) {
 				var button = document.createElement( 'button' );
@@ -110,31 +176,31 @@
 				button.className = 'rapls-emoji__item';
 				button.textContent = glyph;
 				button.setAttribute( 'aria-label', glyph );
-
 				button.addEventListener( 'click', function () {
-					input.value = glyph;
-					input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
-					closePalette();
-					input.focus();
+					choose( input, glyph );
 				} );
-
 				grid.appendChild( button );
 			} );
 
-			panel.appendChild( grid );
+			panes[ group ] = grid;
+			body.appendChild( grid );
 		} );
+
+		panel.appendChild( tabs );
+		panel.appendChild( body );
 
 		var clear = document.createElement( 'button' );
 		clear.type = 'button';
 		clear.className = 'button-link rapls-emoji__clear';
 		clear.textContent = label( 'clear', 'No emoji' );
 		clear.addEventListener( 'click', function () {
-			input.value = '';
-			input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
-			closePalette();
-			input.focus();
+			choose( input, '' );
 		} );
 		panel.appendChild( clear );
+
+		if ( groups.length ) {
+			show( groups.indexOf( lastGroup ) >= 0 ? lastGroup : groups[ 0 ] );
+		}
 
 		return panel;
 	}

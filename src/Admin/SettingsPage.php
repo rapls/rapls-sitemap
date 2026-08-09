@@ -38,6 +38,15 @@ final class SettingsPage {
 	public const RESET_ACTION = 'rapls_sitemap_reset';
 
 	/**
+	 * What a colour swatch shows when the field holds no hex.
+	 *
+	 * A colour input has no "unset" state — it always displays something — so
+	 * clearing the field has to put the swatch back to a known neutral, or the
+	 * old colour stays on screen and the field looks unchanged.
+	 */
+	private const SWATCH_DEFAULT = '#0073aa';
+
+	/**
 	 * The screen id `add_options_page()` handed back, so the stylesheet loads
 	 * here and nowhere else.
 	 *
@@ -114,12 +123,54 @@ final class SettingsPage {
 	 */
 	public static function emoji_palette(): array {
 		return array(
-			__( 'Pointers', 'rapls-sitemap' )  => array( '▶️', '▸', '➤', '➡️', '»', '›', '·', '‣' ),
-			__( 'Shapes', 'rapls-sitemap' )    => array( '🔹', '🔸', '🔺', '🔻', '🔶', '🔷', '💠', '◆', '◇', '■', '□', '●', '○' ),
-			__( 'Dots', 'rapls-sitemap' )      => array( '🔴', '🟠', '🟡', '🟢', '🔵', '🟣', '🟤', '⚫', '⚪' ),
-			__( 'Marks', 'rapls-sitemap' )     => array( '✅', '☑️', '✔️', '✳️', '✴️', '❇️', '⭐', '✨', '❓', '❗' ),
-			__( 'Documents', 'rapls-sitemap' ) => array( '📄', '📃', '📑', '📁', '📂', '📌', '📍', '📖', '📚', '📝', '🔖', '🏷️' ),
-			__( 'Nature', 'rapls-sitemap' )    => array( '🌱', '🌿', '🍀', '🌸', '🌼', '🍁', '⚡', '🔥', '💧', '☕' ),
+			__( 'Pointers', 'rapls-sitemap' )    => array(
+				'▶️', '▸', '▹', '➤', '➣', '➔', '➡️', '⏩', '⤵️', '↪️', '»', '›',
+				'·', '‣', '⁃', '–', '—', '⇒', '⇨', '☞', '👉', '👇', '🔜', '🔛',
+			),
+			__( 'Shapes', 'rapls-sitemap' )      => array(
+				'🔹', '🔸', '🔺', '🔻', '🔶', '🔷', '💠', '🔲', '🔳', '◾', '◽', '▪️',
+				'▫️', '◆', '◇', '■', '□', '●', '○', '▲', '△', '▼', '▽', '⬢',
+			),
+			__( 'Dots', 'rapls-sitemap' )        => array(
+				'🔴', '🟠', '🟡', '🟢', '🔵', '🟣', '🟤', '⚫', '⚪', '🟥', '🟧', '🟨',
+				'🟩', '🟦', '🟪', '🟫', '⬛', '⬜', '❤️', '🧡', '💛', '💚', '💙', '💜',
+			),
+			__( 'Marks', 'rapls-sitemap' )       => array(
+				'✅', '☑️', '✔️', '✖️', '❌', '⭕', '✳️', '✴️', '❇️', '⭐', '🌟', '✨',
+				'❓', '❔', '❗', '❕', '‼️', '⁉️', '♦️', '♠️', '♣️', '♥️', '➕', '➖',
+			),
+			__( 'Documents', 'rapls-sitemap' )   => array(
+				'📄', '📃', '📑', '📋', '📁', '📂', '🗂️', '🗃️', '📌', '📍', '📎', '🖇️',
+				'📖', '📕', '📗', '📘', '📙', '📚', '📓', '📝', '🔖', '🏷️', '📊', '📈',
+			),
+			__( 'Interface', 'rapls-sitemap' )   => array(
+				'🏠', '🔍', '🔎', '⚙️', '🔧', '🔨', '🗝️', '🔐', '🔔', '📢', '💬', '💡',
+				'🖥️', '💻', '📱', '⌨️', '🖱️', '🔗', '📡', '🗺️', '🧭', '⏰', '📅', '🗓️',
+			),
+			__( 'Nature', 'rapls-sitemap' )      => array(
+				'🌱', '🌿', '🍀', '🌾', '🌵', '🌳', '🌲', '🌴', '🌸', '🌺', '🌻', '🌼',
+				'🌷', '🌹', '🍁', '🍂', '🍃', '🌊', '💧', '🔥', '⚡', '🌈', '❄️', '⛄',
+			),
+			__( 'Weather', 'rapls-sitemap' )     => array(
+				'☀️', '🌤️', '⛅', '🌥️', '☁️', '🌦️', '🌧️', '⛈️', '🌩️', '🌨️', '🌪️', '🌫️',
+				'🌙', '🌛', '🌜', '🌌', '🌠', '☄️', '🌍', '🌏', '🌡️', '🌞', '🌝', '🌚',
+			),
+			__( 'Food', 'rapls-sitemap' )        => array(
+				'☕', '🍵', '🧋', '🍶', '🍺', '🍷', '🥤', '🍎', '🍊', '🍋', '🍇', '🍓',
+				'🍑', '🍰', '🍩', '🍪', '🍫', '🍜', '🍣', '🍙', '🍱', '🍞', '🧀', '🍯',
+			),
+			__( 'Animals', 'rapls-sitemap' )     => array(
+				'🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮',
+				'🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🦉', '🦋', '🐝', '🐢', '🐬', '🐳',
+			),
+			__( 'Places', 'rapls-sitemap' )      => array(
+				'🏢', '🏬', '🏭', '🏫', '🏥', '🏦', '🏨', '⛩️', '🏯', '🏰', '🗼', '🗾',
+				'🚗', '🚕', '🚌', '🚲', '✈️', '🚀', '🚢', '🚉', '🛤️', '🌉', '🏔️', '🗻',
+			),
+			__( 'Celebration', 'rapls-sitemap' ) => array(
+				'🎉', '🎊', '🎈', '🎁', '🎀', '🏆', '🥇', '🎯', '🎨', '🎵', '🎶', '🎬',
+				'📷', '🎤', '🎧', '🕹️', '🧩', '♟️', '🎪', '🎭', '💎', '👑', '🔮', '🧸',
+			),
 		);
 	}
 
@@ -877,14 +928,15 @@ final class SettingsPage {
 			'<span class="rapls-field rapls-field--color">'
 				. '<label class="rapls-field__label" for="%1$s">%2$s</label>'
 				. '<input type="text" class="rapls-field__color" id="%1$s" name="%3$s" value="%4$s" placeholder="#0073aa" />'
-				. '<input type="color" class="rapls-field__swatch" value="%5$s" aria-label="%6$s" />'
-				. '<button type="button" class="button-link rapls-field__clear" aria-label="%7$s">&times;</button>'
+				. '<input type="color" class="rapls-field__swatch" value="%5$s" data-default="%6$s" aria-label="%7$s" />'
+				. '<button type="button" class="button-link rapls-field__clear" aria-label="%8$s" title="%8$s">&times;</button>'
 				. '</span>',
 			esc_attr( $id ),
 			esc_html( $label ),
 			esc_attr( $field . '[' . $key . ']' ),
 			esc_attr( $style[ $key ] ),
 			esc_attr( self::hex_or_default( $style[ $key ] ) ),
+			esc_attr( self::SWATCH_DEFAULT ),
 			esc_attr__( 'Pick a colour', 'rapls-sitemap' ),
 			esc_attr__( 'Clear the colour', 'rapls-sitemap' )
 		);
@@ -908,7 +960,7 @@ final class SettingsPage {
 			return '#' . $m[1][0] . $m[1][0] . $m[1][1] . $m[1][1] . $m[1][2] . $m[1][2];
 		}
 
-		return preg_match( '/^#[0-9A-Fa-f]{6}$/', $value ) ? $value : '#0073aa';
+		return preg_match( '/^#[0-9A-Fa-f]{6}$/', $value ) ? $value : self::SWATCH_DEFAULT;
 	}
 
 	/**

@@ -283,31 +283,60 @@
 	border-radius: 4px;
 	box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
 	left: 0;
-	max-height: 20em;
-	overflow-y: auto;
-	padding: 0.75em;
+	padding: 0.5em 0.75em 0.75em;
 	position: absolute;
 	top: calc(100% + 4px);
-	width: 21em;
+	width: 24em;
 	z-index: 100;
 }
 
-.rapls-emoji__group {
-	color: #646970;
-	font-size: 11px;
-	letter-spacing: 0.04em;
-	margin: 0.5em 0 0.35em;
-	text-transform: uppercase;
+.rapls-emoji__tabs {
+	border-bottom: 1px solid #dcdcde;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1px;
+	margin: 0 -0.75em 0.6em;
+	padding: 0 0.75em;
 }
 
-.rapls-emoji__group:first-child {
-	margin-top: 0;
+.rapls-emoji__tab {
+	background: none;
+	border: 0;
+	border-bottom: 2px solid transparent;
+	color: #50575e;
+	cursor: pointer;
+	font-size: 12px;
+	line-height: 1.6;
+	margin-bottom: -1px;
+	padding: 0.35em 0.6em;
+	white-space: nowrap;
+}
+
+.rapls-emoji__tab:hover,
+.rapls-emoji__tab:focus {
+	color: #2271b1;
+	outline: none;
+}
+
+.rapls-emoji__tab.is-active {
+	border-bottom-color: #2271b1;
+	color: #2271b1;
+	font-weight: 600;
+}
+
+.rapls-emoji__body {
+	max-height: 13em;
+	overflow-y: auto;
 }
 
 .rapls-emoji__grid {
 	display: grid;
 	gap: 2px;
-	grid-template-columns: repeat(9, 1fr);
+	grid-template-columns: repeat(8, 1fr);
+}
+
+.rapls-emoji__grid[hidden] {
+	display: none;
 }
 
 .rapls-emoji__item {
@@ -315,8 +344,8 @@
 	border: 1px solid transparent;
 	border-radius: 3px;
 	cursor: pointer;
-	font-size: 18px;
-	line-height: 1.6;
+	font-size: 19px;
+	line-height: 1.7;
 	padding: 0;
 }
 
