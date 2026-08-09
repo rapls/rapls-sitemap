@@ -84,6 +84,76 @@ $first = get_option( Cache::SALT_OPTION );
 $cache->flush();
 check( $first !== get_option( Cache::SALT_OPTION ), 'flushing rotates the cache salt' );
 
+/* --- no public method escapes the suite --------------------------------- */
+
+/*
+ * A ratchet, not a coverage report. Four audits in a row found a bug in code
+ * that nothing ran — the last one a fatal error in an upgrade routine no test
+ * called. There is no coverage extension here, so this settles for something
+ * cruder and sufficient: every public method must either be named in a test, or
+ * be listed below with the path that reaches it.
+ *
+ * Adding a method now forces the same decision at the time it is written:
+ * cover it, or say where it is covered. Being on the list is not an excuse to
+ * skip testing — it records a method reached through one that *is* tested.
+ */
+$covered_indirectly = array(
+	'SupportPanel::render_support' => 'SettingsPage::render(), asserted in smoke-admin.php',
+	'Styles::request'              => 'ContentMarker::replace(), in smoke-marker.php',
+	'Cache::html'                  => 'ContentMarker::replace(), in smoke-marker.php',
+	'Node::has_children'           => 'Renderer::item(), throughout smoke-renderer.php',
+	'Design::merge'                => 'Renderer::__construct(), throughout smoke-renderer.php',
+	'Settings::can_edit_css'       => 'Settings::sanitize(), in smoke-settings.php',
+);
+
+$suite = '';
+foreach ( glob( __DIR__ . '/smoke-*.php' ) as $file ) {
+	$suite .= (string) file_get_contents( $file );
+}
+
+$unreached = array();
+
+foreach ( array_merge( glob( dirname( __DIR__ ) . '/src/*.php' ), glob( dirname( __DIR__ ) . '/src/*/*.php' ) ) as $file ) {
+	$class = basename( $file, '.php' );
+
+	if ( ! preg_match_all( '/public (?:static )?function ([a-z_]+)\s*\(/', (string) file_get_contents( $file ), $found ) ) {
+		continue;
+	}
+
+	foreach ( $found[1] as $method ) {
+		if ( '__construct' === $method ) {
+			continue;
+		}
+		if ( isset( $covered_indirectly[ $class . '::' . $method ] ) ) {
+			continue;
+		}
+		if ( preg_match( '/\b' . preg_quote( $method, '/' ) . '\s*\(/', $suite ) ) {
+			continue;
+		}
+
+		$unreached[] = $class . '::' . $method . '()';
+	}
+}
+
+check(
+	array() === $unreached,
+	'every public method is exercised, or recorded as reached through one that is',
+	implode( ', ', $unreached )
+);
+
+// A stale entry is its own problem: it claims cover for something that is gone.
+$stale = array();
+foreach ( array_keys( $covered_indirectly ) as $entry ) {
+	list( $class, $method ) = explode( '::', $entry );
+	$found = glob( dirname( __DIR__ ) . '/src/*/' . $class . '.php' ) + glob( dirname( __DIR__ ) . '/src/' . $class . '.php' );
+
+	if ( array() === $found || false === strpos( (string) file_get_contents( reset( $found ) ), 'function ' . $method . '(' ) ) {
+		$stale[] = $entry;
+	}
+}
+
+check( array() === $stale, 'and the list claims nothing that no longer exists', implode( ', ', $stale ) );
+
 /* --- every class reference resolves ------------------------------------- */
 
 /*
