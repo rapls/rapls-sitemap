@@ -90,7 +90,17 @@ final class TreeBuilder {
 		 */
 		$filtered = apply_filters( Hooks::TREE, $roots, $this->settings );
 
-		return is_array( $filtered ) ? $filtered : $roots;
+		if ( ! is_array( $filtered ) ) {
+			return $roots;
+		}
+
+		// The renderer reads properties straight off these, so anything that is
+		// not a Node would be a fatal error rather than a wrong sitemap. A
+		// filter that returns arrays — an easy mistake, since that is what the
+		// tree looks like — loses its entries instead of taking the site down.
+		return array_values( array_filter( $filtered, static function ( $node ) {
+			return $node instanceof Node;
+		} ) );
 	}
 
 	/**
@@ -319,9 +329,14 @@ final class TreeBuilder {
 		 * @param array  $args      Query args.
 		 * @param string $post_type Post type slug.
 		 */
-		$args = apply_filters( Hooks::QUERY_ARGS, $args, $post_type );
+		$filtered = apply_filters( Hooks::QUERY_ARGS, $args, $post_type );
+		$args     = is_array( $filtered ) ? $filtered : $args;
 
 		$posts = get_posts( $args );
+
+		if ( ! is_array( $posts ) ) {
+			return array();
+		}
 
 		// Filtered in PHP rather than with a meta_query: the SEO plugins store
 		// noindex in different shapes, and a meta_query would also drop every

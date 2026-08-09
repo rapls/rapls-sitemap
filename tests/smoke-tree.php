@@ -216,10 +216,15 @@ function date_i18n( $format, $timestamp ) {
 // needs one that actually calls something.
 $GLOBALS['rapls_noindex_filter'] = null;
 
+$GLOBALS['rapls_tree_filter'] = null;
+
 function apply_filters( $hook, $value ) {
 	if ( 'rapls_sitemap/is_noindex' === $hook && $GLOBALS['rapls_noindex_filter'] ) {
 		$args = func_get_args();
 		return call_user_func( $GLOBALS['rapls_noindex_filter'], $value, $args[2] ?? 0 );
+	}
+	if ( 'rapls_sitemap/tree' === $hook && $GLOBALS['rapls_tree_filter'] ) {
+		return call_user_func( $GLOBALS['rapls_tree_filter'], $value );
 	}
 	return $value;
 }
@@ -406,6 +411,44 @@ $GLOBALS['fixture_last_taxonomy'] = null;
 $roots = ( new TreeBuilder( grouped( array( 'taxonomy' => 'nonexistent' ) ) ) )->build();
 check( null === $GLOBALS['fixture_last_taxonomy'], 'a taxonomy the post type lacks disables grouping instead of erroring' );
 check( array( 'Newest', 'Middle', 'Deep', 'Loose' ) === titles( $roots ), 'and the entries still render, ungrouped' );
+
+/* --- the tree filter cannot hand the renderer something it cannot read --- */
+
+// The renderer reads properties straight off whatever comes back, so anything
+// that is not a Node is a fatal error rather than a wrong sitemap — and
+// returning arrays is the obvious mistake, since that is what a tree looks like.
+$GLOBALS['rapls_tree_filter'] = static function ( $roots ) {
+	return array( array( 'title' => 'An array, not a Node' ), 'a string', null );
+};
+
+$roots = ( new TreeBuilder( tree_settings() ) )->build();
+check( array() === $roots, 'entries a filter returns that are not Nodes are dropped' );
+
+$GLOBALS['rapls_tree_filter'] = static function ( $roots ) {
+	return array_merge( $roots, array( 'rubbish' ) );
+};
+
+$roots = ( new TreeBuilder( tree_settings() ) )->build();
+check( 3 === count( $roots ), 'the real nodes beside them survive' );
+foreach ( $roots as $node ) {
+	if ( ! $node instanceof RaplsSitemap\Sitemap\Node ) {
+		check( false, 'and everything handed on is a Node' );
+	}
+}
+check( true, 'and everything handed on is a Node' );
+
+// It must still be able to do its job.
+$GLOBALS['rapls_tree_filter'] = static function ( $roots ) {
+	return array_slice( $roots, 0, 1 );
+};
+check( 1 === count( ( new TreeBuilder( tree_settings() ) )->build() ), 'while a filter that reshapes the tree still reshapes it' );
+
+$GLOBALS['rapls_tree_filter'] = static function () {
+	return 'not an array';
+};
+check( 3 === count( ( new TreeBuilder( tree_settings() ) )->build() ), 'and nonsense leaves the tree as it was' );
+
+$GLOBALS['rapls_tree_filter'] = null;
 
 /* --- multilingual plugins depend on one argument ------------------------- */
 

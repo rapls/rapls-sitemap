@@ -238,7 +238,25 @@ final class Settings {
 		 */
 		$filtered = apply_filters( Hooks::SETTINGS, $merged );
 
-		return is_array( $filtered ) ? $filtered : $merged;
+		if ( ! is_array( $filtered ) ) {
+			return $merged;
+		}
+
+		/*
+		 * Merged over the defaults a second time, on purpose.
+		 *
+		 * The promise above — that callers may index this array without
+		 * isset() — has to survive the filter, and a filter that returns a
+		 * partial array is an ordinary thing for a site to do. Without this,
+		 * one missing key turns into an undefined-index warning on every line
+		 * that reads it, inside `the_content`, where a warning becomes part of
+		 * the page. The filter can still change any value; it just cannot
+		 * remove one.
+		 */
+		$filtered          = array_merge( $merged, array_intersect_key( $filtered, $merged ) );
+		$filtered['style'] = Design::merge( $filtered['style'] );
+
+		return $filtered;
 	}
 
 	/**

@@ -17,6 +17,18 @@ function taxonomy_exists( $taxonomy ) {
 	return in_array( $taxonomy, array( 'category', 'post_tag' ), true );
 }
 
+// The bootstrap's apply_filters hands the value back untouched, which is right
+// everywhere else. Settings::get() documents an invariant that has to hold
+// against whatever a filter returns, so this one actually calls something.
+$GLOBALS['rapls_settings_filter'] = null;
+
+function apply_filters( $hook, $value ) {
+	if ( 'rapls_sitemap/settings' === $hook && $GLOBALS['rapls_settings_filter'] ) {
+		return call_user_func( $GLOBALS['rapls_settings_filter'], $value );
+	}
+	return $value;
+}
+
 require_once __DIR__ . '/lib/bootstrap.php';
 
 use RaplsSitemap\Support\Settings;
@@ -35,6 +47,56 @@ $settings = Settings::get();
 check( 3 === $settings['depth'], 'stored value wins over the default' );
 check( array( 'page', 'post' ) === $settings['post_types'], 'missing keys fall back to defaults' );
 check( ! array_key_exists( 'bogus', $settings ), 'unknown stored keys are dropped' );
+
+/* --- the schema survives whatever a filter returns ----------------------- */
+
+/*
+ * Every consumer indexes this array without isset(), on the strength of the
+ * promise in defaults(). A filter returning a partial array is an ordinary
+ * thing for a site to do, and without protection one missing key becomes an
+ * undefined-index warning on every line that reads it — printed inside
+ * the_content, where it lands in the page.
+ */
+// Captured with no filter installed, so the comparison below is against the
+// real unfiltered value rather than against itself.
+$before = Settings::get()['depth'];
+
+$GLOBALS['rapls_settings_filter'] = static function ( $settings ) {
+	unset( $settings['depth'], $settings['post_types'] );
+	return $settings;
+};
+
+$filtered = Settings::get();
+
+check( array_key_exists( 'depth', $filtered ), 'a filter cannot remove a key from the schema' );
+check( array_key_exists( 'post_types', $filtered ), 'nor any other one' );
+
+// It comes back as whatever it was before the filter ran — the stored value if
+// there is one, the default otherwise. Removing a key is simply not an edit.
+check( $before === $filtered['depth'], 'and a removed key keeps the value it had' );
+
+// It must still be able to do its actual job.
+$GLOBALS['rapls_settings_filter'] = static function ( $settings ) {
+	$settings['depth'] = 4;
+	return $settings;
+};
+check( 4 === Settings::get()['depth'], 'while a filter that changes a value still changes it' );
+
+// The nested token array has the same promise and needs the same treatment.
+$GLOBALS['rapls_settings_filter'] = static function ( $settings ) {
+	$settings['style'] = array( 'link_color' => '#0f0' );
+	return $settings;
+};
+$filtered = Settings::get();
+check( '#0f0' === $filtered['style']['link_color'], 'a filter can replace the token array' );
+check( array_key_exists( 'marker', $filtered['style'] ), 'and the tokens it left out are filled back in' );
+
+$GLOBALS['rapls_settings_filter'] = static function () {
+	return 'not an array at all';
+};
+check( is_array( Settings::get() ), 'and nonsense from a filter is ignored outright' );
+
+$GLOBALS['rapls_settings_filter'] = null;
 
 /* --- sanitize ----------------------------------------------------------- */
 
