@@ -120,6 +120,26 @@ check( false !== strpos( Settings::sanitize_css( '.a > .b { color: red }' ), '>'
 check( false !== strpos( Settings::sanitize_css( '@media (max-width: 40em) { .a { color: red } }' ), '@media' ), 'at-rules survive' );
 check( false === strpos( Settings::sanitize_css( 'a{} <!-- x -->' ), '<!--' ), 'comment delimiters are removed' );
 
+/* --- every emoji the picker offers must survive being saved -------------- */
+
+// The palette writes straight into the bullet field, and that field ends up in
+// a CSS `content` string. A glyph the sanitizer trims or rejects would be a
+// picker that silently does something other than what was clicked.
+$mangled = array();
+$total   = 0;
+
+foreach ( RaplsSitemap\Admin\SettingsPage::emoji_palette() as $group => $glyphs ) {
+	foreach ( $glyphs as $glyph ) {
+		$total++;
+		if ( $glyph !== Design::sanitize( array( 'marker_text' => $glyph ) )['marker_text'] ) {
+			$mangled[] = $group . ': ' . $glyph;
+		}
+	}
+}
+
+check( $total > 0, 'the emoji palette is not empty' );
+check( array() === $mangled, sprintf( 'all %d palette emoji round-trip through the sanitizer', $total ), implode( ' | ', $mangled ) );
+
 /* --- every preset is registered in all four places ----------------------- */
 
 $root      = dirname( __DIR__ );

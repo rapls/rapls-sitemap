@@ -71,6 +71,56 @@ final class SettingsPage {
 			array(),
 			RAPLS_SITEMAP_VERSION
 		);
+
+		wp_enqueue_script(
+			'rapls-sitemap-admin',
+			RAPLS_SITEMAP_URL . 'assets/js/admin.js',
+			array(),
+			RAPLS_SITEMAP_VERSION,
+			true
+		);
+
+		// The emoji palette and the button labels come from PHP so they are
+		// translatable; the script is otherwise self-contained.
+		wp_add_inline_script(
+			'rapls-sitemap-admin',
+			'window.raplsSitemapAdmin = ' . wp_json_encode(
+				array(
+					'emoji'  => self::emoji_palette(),
+					'labels' => array(
+						'pick'  => __( 'Pick an emoji', 'rapls-sitemap' ),
+						'close' => __( 'Close', 'rapls-sitemap' ),
+						'clear' => __( 'No emoji', 'rapls-sitemap' ),
+					),
+				)
+			) . ';',
+			'before'
+		);
+	}
+
+	/**
+	 * The emoji offered as bullets.
+	 *
+	 * Chosen for legibility at bullet size and for reading as a list marker
+	 * rather than as decoration — which rules out most faces and anything whose
+	 * meaning changes between platforms. The field stays free text, so this is
+	 * a shortcut, not a limit.
+	 *
+	 * Public so `smoke-design.php` can prove every glyph survives the token
+	 * sanitizer — a palette entry that gets mangled on save would be a picker
+	 * that lies.
+	 *
+	 * @return array<string,string[]> Group label => emoji.
+	 */
+	public static function emoji_palette(): array {
+		return array(
+			__( 'Pointers', 'rapls-sitemap' )  => array( '▶️', '▸', '➤', '➡️', '»', '›', '·', '‣' ),
+			__( 'Shapes', 'rapls-sitemap' )    => array( '🔹', '🔸', '🔺', '🔻', '🔶', '🔷', '💠', '◆', '◇', '■', '□', '●', '○' ),
+			__( 'Dots', 'rapls-sitemap' )      => array( '🔴', '🟠', '🟡', '🟢', '🔵', '🟣', '🟤', '⚫', '⚪' ),
+			__( 'Marks', 'rapls-sitemap' )     => array( '✅', '☑️', '✔️', '✳️', '✴️', '❇️', '⭐', '✨', '❓', '❗' ),
+			__( 'Documents', 'rapls-sitemap' ) => array( '📄', '📃', '📑', '📁', '📂', '📌', '📍', '📖', '📚', '📝', '🔖', '🏷️' ),
+			__( 'Nature', 'rapls-sitemap' )    => array( '🌱', '🌿', '🍀', '🌸', '🌼', '🍁', '⚡', '🔥', '💧', '☕' ),
+		);
 	}
 
 	/**
@@ -807,7 +857,13 @@ final class SettingsPage {
 	}
 
 	/**
-	 * A colour input paired with a text box, so a variable or keyword is still typable.
+	 * A text box paired with a native colour picker.
+	 *
+	 * The text box stays authoritative because this plugin accepts more than a
+	 * hex value — `currentColor`, a colour name, and `var(--wp--preset--…)` are
+	 * all legal here, and none of them can be expressed in a colour input. The
+	 * swatch is a convenience that writes into the text box; it carries no
+	 * `name`, so it never posts and can never be the thing that gets saved.
 	 *
 	 * @param string               $field Field name prefix.
 	 * @param string               $key   Token key.
@@ -815,12 +871,44 @@ final class SettingsPage {
 	 * @param array<string,string> $style Current tokens.
 	 */
 	private static function color_field( string $field, string $key, string $label, array $style ): void {
+		$id = 'rapls-sitemap-' . str_replace( '_', '-', $key );
+
 		printf(
-			'<label style="display:inline-block;margin:0 1.5em 0.5em 0">%1$s <input type="text" size="12" name="%2$s" value="%3$s" placeholder="#0073aa" /></label>',
+			'<span class="rapls-field rapls-field--color">'
+				. '<label class="rapls-field__label" for="%1$s">%2$s</label>'
+				. '<input type="text" class="rapls-field__color" id="%1$s" name="%3$s" value="%4$s" placeholder="#0073aa" />'
+				. '<input type="color" class="rapls-field__swatch" value="%5$s" aria-label="%6$s" />'
+				. '<button type="button" class="button-link rapls-field__clear" aria-label="%7$s">&times;</button>'
+				. '</span>',
+			esc_attr( $id ),
 			esc_html( $label ),
 			esc_attr( $field . '[' . $key . ']' ),
-			esc_attr( $style[ $key ] )
+			esc_attr( $style[ $key ] ),
+			esc_attr( self::hex_or_default( $style[ $key ] ) ),
+			esc_attr__( 'Pick a colour', 'rapls-sitemap' ),
+			esc_attr__( 'Clear the colour', 'rapls-sitemap' )
 		);
+	}
+
+	/**
+	 * A six-digit hex for the swatch to start on.
+	 *
+	 * A colour input accepts nothing else, so anything expressive — a keyword,
+	 * a CSS variable — falls back to a neutral rather than being mangled into
+	 * one. The text box still shows the real value.
+	 *
+	 * @param string $value Stored colour.
+	 * @return string
+	 */
+	private static function hex_or_default( string $value ): string {
+		$value = trim( $value );
+
+		if ( preg_match( '/^#([0-9A-Fa-f]{3})$/', $value, $m ) ) {
+			// Expand #abc, which a colour input will not take.
+			return '#' . $m[1][0] . $m[1][0] . $m[1][1] . $m[1][1] . $m[1][2] . $m[1][2];
+		}
+
+		return preg_match( '/^#[0-9A-Fa-f]{6}$/', $value ) ? $value : '#0073aa';
 	}
 
 	/**
@@ -883,8 +971,14 @@ final class SettingsPage {
 		// Widths live in admin.css rather than in a `size` attribute: the emoji
 		// placeholder is full-width Japanese, which `size` measures in the
 		// wrong units and clips.
+		//
+		// The picker button is added by admin.js and does nothing without it —
+		// the field stays typable either way, including by the operating
+		// system's own emoji palette.
 		printf(
-			'<input type="text" class="rapls-field__emoji" name="%1$s" value="%2$s" placeholder="%3$s" aria-label="%4$s" /> ',
+			'<span class="rapls-field rapls-field--emoji">'
+				. '<input type="text" class="rapls-field__emoji" name="%1$s" value="%2$s" placeholder="%3$s" aria-label="%4$s" />'
+				. '</span> ',
 			esc_attr( $field . '[' . $key . '_text]' ),
 			esc_attr( $style[ $key . '_text' ] ),
 			esc_attr__( 'emoji', 'rapls-sitemap' ),
