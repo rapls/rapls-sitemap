@@ -881,6 +881,11 @@ final class SettingsPage {
 					<label for="rapls-sitemap-css"><?php echo esc_html__( 'Additional CSS', 'rapls-sitemap' ); ?></label>
 				</th>
 				<td>
+					<?php if ( ! Settings::can_edit_css() ) : ?>
+						<p class="description">
+							<?php echo esc_html__( 'Editing CSS needs the unfiltered_html capability, which a network reserves for super administrators. Any CSS already saved keeps working; it is only shown here to those who may change it.', 'rapls-sitemap' ); ?>
+						</p>
+					<?php else : ?>
 					<textarea id="rapls-sitemap-css" class="large-text code" rows="10" spellcheck="false"
 						name="<?php echo esc_attr( $name . '[custom_css]' ); ?>"><?php echo esc_textarea( (string) $settings['custom_css'] ); ?></textarea>
 					<p class="description">
@@ -892,6 +897,7 @@ final class SettingsPage {
 					self::render_css_reference();
 					self::close_section();
 					?>
+					<?php endif; ?>
 				</td>
 			</tr>
 		</table>

@@ -216,6 +216,16 @@ if ( ! function_exists( 'is_wp_error' ) ) {
 	}
 }
 
+// Capabilities the fake current user holds. A test assigns to this rather than
+// redefining the function.
+$GLOBALS['rapls_caps'] = array( 'manage_options' => true, 'unfiltered_html' => true );
+
+if ( ! function_exists( 'current_user_can' ) ) {
+	function current_user_can( $capability ) {
+		return ! empty( $GLOBALS['rapls_caps'][ $capability ] );
+	}
+}
+
 if ( ! function_exists( 'number_format_i18n' ) ) {
 	function number_format_i18n( $number, $decimals = 0 ) {
 		return number_format( (float) $number, (int) $decimals );

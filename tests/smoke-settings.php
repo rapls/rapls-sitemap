@@ -135,6 +135,36 @@ $defaults = Settings::defaults();
 check( true === $defaults['duplicate_in_terms'], 'but listing under every category is the default' );
 check( false === $defaults['nofollow'], 'and links are followed by default' );
 
+/* --- who may write CSS ----------------------------------------------------*/
+
+// `manage_options` is not enough: on a network every site administrator holds
+// it, and CSS is printed verbatim. unfiltered_html is the capability WordPress
+// already reserves for that, and reserves for super admins on multisite.
+check( 'unfiltered_html' === Settings::CSS_CAPABILITY, 'CSS editing is gated on unfiltered_html, not manage_options' );
+
+update_option( Settings::OPTION, array( 'custom_css' => '.rapls-sitemap { color: red }' ) );
+
+$GLOBALS['rapls_caps']['unfiltered_html'] = true;
+check(
+	'.rapls-sitemap { color: blue }' === Settings::sanitize( array( 'custom_css' => '.rapls-sitemap { color: blue }' ) )['custom_css'],
+	'someone with the capability can change it'
+);
+
+// A form field is forgeable, so the check has to hold at the save, not only at
+// the render — and it must not wipe what is already stored either.
+$GLOBALS['rapls_caps']['unfiltered_html'] = false;
+$clean = Settings::sanitize( array( 'custom_css' => 'body { display: none }' ) );
+check( false === strpos( $clean['custom_css'], 'display: none' ), 'a forged submission from someone without it is discarded' );
+check( '.rapls-sitemap { color: red }' === $clean['custom_css'], 'and the stored CSS survives their save untouched' );
+
+// The field is not rendered for them at all, so it never posts — absence must
+// preserve rather than reset, unlike every other key.
+$clean = Settings::sanitize( array( 'depth' => 3 ) );
+check( '.rapls-sitemap { color: red }' === $clean['custom_css'], 'an unsubmitted field keeps the stored CSS' );
+
+$GLOBALS['rapls_caps']['unfiltered_html'] = true;
+update_option( Settings::OPTION, array() );
+
 /* --- the nested style key -------------------------------------------------*/
 
 // array_merge would replace the nested array whole, so a catalogue saved before

@@ -25,6 +25,18 @@ final class Settings {
 	public const OPTION = 'rapls_sitemap_settings';
 
 	/**
+	 * Capability required to edit the Additional CSS field.
+	 *
+	 * Not `manage_options`, which every site administrator holds — including,
+	 * on a network, administrators of individual sites. `unfiltered_html` is
+	 * the capability WordPress already reserves for "may write markup and
+	 * styles that get printed verbatim", and on multisite core grants it to
+	 * super admins only. Using it here means CSS editing follows the same rule
+	 * as everything else on the site that is printed unescaped.
+	 */
+	public const CSS_CAPABILITY = 'unfiltered_html';
+
+	/**
 	 * Available design presets.
 	 *
 	 * `none` emits the structural markup with no bundled styling at all, for
@@ -335,9 +347,7 @@ final class Settings {
 
 		$clean['style'] = Design::sanitize( isset( $input['style'] ) ? $input['style'] : array() );
 
-		if ( isset( $input['custom_css'] ) ) {
-			$clean['custom_css'] = self::sanitize_css( (string) $input['custom_css'] );
-		}
+		$clean['custom_css'] = self::resolve_css( $input );
 
 		if ( isset( $input['cache_ttl'] ) ) {
 			$clean['cache_ttl'] = max( 0, (int) $input['cache_ttl'] );
@@ -364,6 +374,41 @@ final class Settings {
 		}
 
 		return $clean;
+	}
+
+	/**
+	 * May the current user edit the Additional CSS field?
+	 *
+	 * @return bool
+	 */
+	public static function can_edit_css(): bool {
+		return current_user_can( self::CSS_CAPABILITY );
+	}
+
+	/**
+	 * Decide what `custom_css` should be after a save.
+	 *
+	 * Two cases have to be kept apart, and getting them backwards would either
+	 * discard somebody's stylesheet or let the wrong person write one:
+	 *
+	 * - The field was not submitted. That means it was not rendered, because a
+	 *   textarea posts even when empty — so the stored CSS is preserved rather
+	 *   than reset to the default, which is what every other absent key does.
+	 * - It *was* submitted by someone without the capability. A form field can
+	 *   be forged, so the check lives here at the save rather than only at the
+	 *   render, and the submitted value is discarded.
+	 *
+	 * @param array<string,mixed> $input Raw input.
+	 * @return string
+	 */
+	private static function resolve_css( array $input ): string {
+		if ( isset( $input['custom_css'] ) && self::can_edit_css() ) {
+			return self::sanitize_css( (string) $input['custom_css'] );
+		}
+
+		$stored = get_option( self::OPTION, array() );
+
+		return ( is_array( $stored ) && isset( $stored['custom_css'] ) ) ? (string) $stored['custom_css'] : '';
 	}
 
 	/**
