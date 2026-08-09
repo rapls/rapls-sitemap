@@ -84,6 +84,52 @@ check( rendered( $marker->replace( '<!-- sitemap content replace point -->' ) ),
 $twice = '<!-- SITEMAP CONTENT REPLACE POINT --><hr /><!-- SITEMAP CONTENT REPLACE POINT -->';
 check( 2 === substr_count( $marker->replace( $twice ), '<nav' ), 'every marker on the page is replaced' );
 
+/* --- the author CSS is attached once, not once per placement ------------ */
+
+update_option(
+	Settings::OPTION,
+	array(
+		'legacy_marker' => true,
+		'custom_css'    => '.rapls-sitemap { border: 1px solid red }',
+	)
+);
+
+$GLOBALS['rapls_inline_styles'] = array();
+
+$twice = '<!-- SITEMAP CONTENT REPLACE POINT --><hr /><!-- SITEMAP CONTENT REPLACE POINT -->';
+$out   = $marker->replace( $twice );
+
+check( 1 === count( $GLOBALS['rapls_inline_styles'] ), 'two placements attach the CSS once between them', (string) count( $GLOBALS['rapls_inline_styles'] ) );
+check( 'rapls-sitemap-inline' === $GLOBALS['rapls_inline_styles'][0][0], 'on a handle of its own, so it works with the bundled stylesheet switched off' );
+check( false !== strpos( $GLOBALS['rapls_inline_styles'][0][1], 'border: 1px solid red' ), 'and carries the author\'s CSS' );
+check( false === strpos( $out, 'border: 1px solid red' ), 'while the markup itself carries none of it' );
+
+// Reaching the option by another route must not get past the sanitizer.
+$GLOBALS['rapls_inline_styles'] = array();
+$GLOBALS['rapls_styles_reset']  = ( function () {
+	$reflection = new ReflectionClass( RaplsSitemap\Frontend\Styles::class );
+	$property   = $reflection->getProperty( 'css_attached' );
+	$property->setAccessible( true );
+	$property->setValue( null, false );
+	return true;
+} )();
+
+update_option(
+	Settings::OPTION,
+	array(
+		'legacy_marker' => true,
+		'custom_css'    => 'a{} </style><script>alert(1)</script>',
+	)
+);
+
+$marker->replace( '<!-- SITEMAP CONTENT REPLACE POINT -->' );
+check(
+	false === strpos( $GLOBALS['rapls_inline_styles'][0][1], '</style' ),
+	'CSS is re-sanitized on the way out, not trusted from the option'
+);
+
+update_option( Settings::OPTION, array( 'legacy_marker' => true ) );
+
 /* --- PCRE giving up must not blank the post ----------------------------- */
 
 // A backtrack limit is the realistic way preg_replace_callback returns null on

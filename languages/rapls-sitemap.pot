@@ -11,7 +11,7 @@ msgstr ""
 "X-Domain: rapls-sitemap\n"
 
 #. translators: %s: number of entries in a category.
-#: src/Sitemap/Renderer.php:243
+#: src/Sitemap/Renderer.php:239
 msgid "(%s)"
 msgstr ""
 
@@ -584,7 +584,7 @@ msgstr ""
 msgid "No emoji"
 msgstr ""
 
-#: src/Sitemap/Renderer.php:105
+#: src/Sitemap/Renderer.php:101
 msgid "No entries yet."
 msgstr ""
 
@@ -797,7 +797,7 @@ msgstr ""
 msgid "Simple"
 msgstr ""
 
-#: src/Sitemap/Renderer.php:108
+#: src/Sitemap/Renderer.php:104
 msgid "Site map"
 msgstr ""
 

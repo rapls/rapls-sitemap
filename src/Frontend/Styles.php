@@ -13,6 +13,8 @@
 
 namespace RaplsSitemap\Frontend;
 
+use RaplsSitemap\Support\Settings;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -24,6 +26,24 @@ final class Styles {
 
 	/** Registered handle. */
 	public const HANDLE = 'rapls-sitemap';
+
+	/**
+	 * Handle the author's Additional CSS is attached to.
+	 *
+	 * Registered with no source, which is the documented way to hold inline
+	 * styles without also asking the browser for a file. It exists separately
+	 * from HANDLE because the two are switched on and off independently: a
+	 * theme can supply all the structural styling (`load_styles` off, or the
+	 * `none` design) and still want its own CSS printed.
+	 */
+	public const INLINE_HANDLE = 'rapls-sitemap-inline';
+
+	/**
+	 * Whether the Additional CSS has already been attached this request.
+	 *
+	 * @var bool
+	 */
+	private static $css_attached = false;
 
 	/**
 	 * Hook registration.
@@ -43,6 +63,8 @@ final class Styles {
 			array(),
 			RAPLS_SITEMAP_VERSION
 		);
+
+		wp_register_style( self::INLINE_HANDLE, false, array(), RAPLS_SITEMAP_VERSION );
 	}
 
 	/**
@@ -53,6 +75,8 @@ final class Styles {
 	 * @param array<string,mixed> $settings Effective settings.
 	 */
 	public static function request( array $settings ): void {
+		self::request_custom_css( $settings );
+
 		if ( empty( $settings['load_styles'] ) ) {
 			return;
 		}
@@ -68,5 +92,39 @@ final class Styles {
 		}
 
 		wp_enqueue_style( self::HANDLE );
+	}
+
+	/**
+	 * Attach the author's Additional CSS, at most once per request.
+	 *
+	 * It deliberately does not travel inside the rendered markup. That markup
+	 * is cached per placement and per page — `exclude_current` alone gives a
+	 * distinct entry for every page a sitemap appears on — so a stylesheet
+	 * embedded in it would be stored once per entry and printed once per
+	 * placement. Handing it to WordPress instead stores it nowhere and prints
+	 * it once, wherever late styles go.
+	 *
+	 * @param array<string,mixed> $settings Effective settings.
+	 */
+	private static function request_custom_css( array $settings ): void {
+		if ( self::$css_attached ) {
+			return;
+		}
+
+		$css = isset( $settings['custom_css'] ) ? (string) $settings['custom_css'] : '';
+		if ( '' === trim( $css ) ) {
+			return;
+		}
+
+		if ( ! wp_style_is( self::INLINE_HANDLE, 'registered' ) ) {
+			return;
+		}
+
+		// Sanitized on save; re-run here because CSS can reach the option by
+		// other routes — a filter, an import, a direct update_option().
+		wp_enqueue_style( self::INLINE_HANDLE );
+		wp_add_inline_style( self::INLINE_HANDLE, Settings::sanitize_css( $css ) );
+
+		self::$css_attached = true;
 	}
 }

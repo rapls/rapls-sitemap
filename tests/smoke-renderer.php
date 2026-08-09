@@ -192,16 +192,21 @@ check( false === strpos( $plain, '<style>' ), 'unconfigured tokens emit no style
 check( false === strpos( $plain, 'rapls-sitemap--t' ), 'and no scope class' );
 check( false === strpos( $plain, '<i ' ), 'and no icon element' );
 
-/* --- additional CSS ------------------------------------------------------ */
+/* --- additional CSS stays out of the markup ------------------------------ */
 
+// It is identical on every placement and can be kilobytes, while this markup
+// is cached per placement *and* per page. Embedding it would store a copy in
+// every cache entry and print a copy for every placement, so Frontend\Styles
+// hands it to WordPress instead. See smoke-marker.php for the other half.
 $settings               = Settings::defaults();
 $settings['custom_css'] = '.rapls-sitemap { border: 1px solid red }';
 $html                   = ( new Renderer( $settings ) )->render( array( $flat ) );
 
-check( false !== strpos( $html, 'border: 1px solid red' ), 'the author CSS is printed' );
+check( false === strpos( $html, 'border: 1px solid red' ), 'the author CSS is not embedded in the cached markup' );
 
-$settings['custom_css'] = 'a{} </style><script>alert(1)</script>';
-$html                   = ( new Renderer( $settings ) )->render( array( $flat ) );
-check( false === strpos( $html, '</style><script' ), 'author CSS is re-sanitized at render time, not trusted from the option' );
+// The token stylesheet is per placement and small, so that one stays inline.
+$settings['style'] = RaplsSitemap\Support\Design::sanitize( array( 'link_color' => '#c00' ) );
+$html              = ( new Renderer( $settings ) )->render( array( $flat ) );
+check( false !== strpos( $html, 'color:#c00' ), 'but the per-placement design tokens still are' );
 
 summary();

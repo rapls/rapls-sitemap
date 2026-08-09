@@ -78,15 +78,11 @@ final class Renderer {
 	 * @return string
 	 */
 	private function styles(): string {
+		// The design tokens only, which are per placement and a few hundred
+		// bytes. The author's Additional CSS is the same on every placement and
+		// can be kilobytes, so `Frontend\Styles` hands that to WordPress
+		// instead — keeping it out of every cache entry and printing it once.
 		$css = Design::style_block( $this->style );
-
-		$custom = isset( $this->settings['custom_css'] ) ? (string) $this->settings['custom_css'] : '';
-		if ( '' !== trim( $custom ) ) {
-			// Sanitized on save; re-run here so CSS that reached the option by
-			// another route (a filter, an import, a direct update_option)
-			// cannot break out of the element either.
-			$css .= Settings::sanitize_css( $custom );
-		}
 
 		return '' === $css ? '' : '<style>' . $css . '</style>';
 	}

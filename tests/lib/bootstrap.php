@@ -299,6 +299,15 @@ if ( ! function_exists( 'wp_enqueue_style' ) ) {
 	}
 }
 
+$GLOBALS['rapls_inline_styles'] = array();
+
+if ( ! function_exists( 'wp_add_inline_style' ) ) {
+	function wp_add_inline_style( $handle, $css ) {
+		$GLOBALS['rapls_inline_styles'][] = array( $handle, $css );
+		return true;
+	}
+}
+
 /* --- request context ---------------------------------------------------- */
 
 // The ID Settings::for_request() should treat as "the page we are rendering

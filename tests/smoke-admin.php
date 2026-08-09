@@ -305,6 +305,51 @@ check( 'rapls-sitemap' === $GLOBALS['rapls_script_translations'][1], 'and is poi
 
 ( new Styles() )->register_assets();
 check( in_array( Styles::HANDLE, $GLOBALS['rapls_registered_styles'], true ), 'the front-end stylesheet is registered' );
+check( in_array( Styles::INLINE_HANDLE, $GLOBALS['rapls_registered_styles'], true ), 'and so is the sourceless handle the author CSS attaches to' );
+
+/* --- uninstall removes everything, on one site and on a network --------- */
+
+// Never executed before this: uninstall.php is a file WordPress includes on
+// its own, so nothing here would ever have caught a typo in it.
+$deleted = array();
+$network = array();
+
+$run_uninstall = static function ( $multisite ) use ( &$deleted, &$network ) {
+	$command = sprintf(
+		'php -r %s',
+		escapeshellarg(
+			'define("WP_UNINSTALL_PLUGIN", true);' .
+			'$GLOBALS["log"] = [];' .
+			'$GLOBALS["site"] = 0;' .
+			'function is_multisite(){ return ' . ( $multisite ? 'true' : 'false' ) . '; }' .
+			'function get_sites($a){ $all = [1,2,3]; return array_slice($all, $a["offset"], $a["number"]); }' .
+			'function switch_to_blog($id){ $GLOBALS["site"] = $id; }' .
+			'function restore_current_blog(){ $GLOBALS["site"] = 0; }' .
+			'function delete_option($n){ $GLOBALS["log"][] = $GLOBALS["site"] . ":" . $n; return true; }' .
+			'require "' . dirname( __DIR__ ) . '/uninstall.php";' .
+			'echo implode(",", $GLOBALS["log"]);'
+		)
+	);
+
+	return (string) shell_exec( $command );
+};
+
+$single = $run_uninstall( false );
+foreach ( array( 'rapls_sitemap_settings', 'rapls_sitemap_cache_salt', 'rapls_sitemap_activated_at', 'rapls_sitemap_version' ) as $option ) {
+	if ( false === strpos( $single, '0:' . $option ) ) {
+		$deleted[] = $option;
+	}
+}
+check( array() === $deleted, 'uninstall clears every option on a single site', implode( ', ', $deleted ) );
+
+$multi = $run_uninstall( true );
+foreach ( array( 1, 2, 3 ) as $site ) {
+	if ( false === strpos( $multi, $site . ':rapls_sitemap_settings' ) ) {
+		$network[] = 'site ' . $site;
+	}
+}
+check( array() === $network, 'and on every site of a network, not just the one it ran on', implode( ', ', $network ) );
+check( false === strpos( $multi, '0:rapls_sitemap_settings' ), 'without also acting outside a switched-to site' );
 
 Plugin::instance()->load_textdomain();
 check( 'rapls-sitemap' === $GLOBALS['rapls_textdomain'][0], 'the text domain is loaded from the bundled catalogue' );
