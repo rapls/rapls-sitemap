@@ -14,8 +14,15 @@
 
 // phpcs:disable
 
-$root   = dirname( __DIR__ );
-$domain = 'rapls-sitemap';
+/*
+ * The tree to scan, so the extractor can be pointed at a fixture and checked.
+ * Everything it does is silent when it goes wrong — a string that never reaches
+ * the catalogue just shows up in English — so it needs to be testable.
+ *
+ *   php bin/make-pot.php [root] [domain]
+ */
+$root   = isset( $argv[1] ) && '' !== $argv[1] ? rtrim( $argv[1], '/' ) : dirname( __DIR__ );
+$domain = isset( $argv[2] ) && '' !== $argv[2] ? $argv[2] : 'rapls-sitemap';
 
 /**
  * Translator functions => how many leading arguments are msgids.
@@ -343,7 +350,10 @@ foreach ( files( $root . '/src', array( 'php' ) ) as $path ) {
 	scan_php( $path, ltrim( str_replace( $root, '', $path ), '/' ), $targets, $domain );
 }
 
-scan_php( $root . '/rapls-sitemap.php', 'rapls-sitemap.php', $targets, $domain );
+$bootstrap = $root . '/' . $domain . '.php';
+if ( file_exists( $bootstrap ) ) {
+	scan_php( $bootstrap, basename( $bootstrap ), $targets, $domain );
+}
 
 foreach ( files( $root . '/assets/js', array( 'js' ) ) as $path ) {
 	scan_js( $path, ltrim( str_replace( $root, '', $path ), '/' ), $domain );

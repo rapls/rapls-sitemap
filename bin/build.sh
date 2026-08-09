@@ -6,16 +6,25 @@
 # folder, then writes <slug>.zip into the parent wp-content/plugins directory.
 # The ZIP unpacks to a single `rapls-sitemap/` folder.
 #
-#   bin/build.sh
+#   bin/build.sh [output directory]
+#
+# The output directory defaults to the parent wp-content/plugins folder. It is
+# an argument so the build can be checked without writing a ZIP next to a live
+# WordPress install — see tests/smoke-tooling.php.
 #
 set -euo pipefail
 
 SLUG="rapls-sitemap"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-OUT="$(cd "$ROOT/.." && pwd)"     # the wp-content/plugins directory
+OUT="${1:-$(cd "$ROOT/.." && pwd)}"
 ZIP="$OUT/$SLUG.zip"
 
-TMP="$(mktemp -d)"
+mkdir -p "$OUT"
+
+# Staged inside the output directory rather than in the system temp folder,
+# which is not always writable — a sandboxed or hardened environment will refuse
+# mktemp while happily writing where it was told to put the ZIP.
+TMP="$OUT/.build-$$"
 trap 'rm -rf "$TMP"' EXIT
 STAGE="$TMP/$SLUG"
 mkdir -p "$STAGE"
