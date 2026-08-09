@@ -55,6 +55,40 @@
 		{ value: 'terms_only', label: __( 'Categories only', 'rapls-sitemap' ) },
 	];
 
+	// Every list below leads with an empty value meaning "inherit the site
+	// setting", so a block dropped on a page changes nothing until it is asked
+	// to. These mirror Settings::SOURCES, ::ORDERBY and ::LIST_TYPES.
+	var SOURCES = [
+		{ value: '', label: __( 'Use the site default', 'rapls-sitemap' ) },
+		{ value: 'content', label: __( 'Posts and pages', 'rapls-sitemap' ) },
+		{ value: 'authors', label: __( 'Authors', 'rapls-sitemap' ) },
+		{ value: 'archives', label: __( 'Monthly archives', 'rapls-sitemap' ) },
+	];
+
+	var ORDERBY = [
+		{ value: '', label: __( 'Use the site default', 'rapls-sitemap' ) },
+		{ value: 'default', label: __( 'Whatever suits each list', 'rapls-sitemap' ) },
+		{ value: 'date', label: __( 'Published date', 'rapls-sitemap' ) },
+		{ value: 'modified', label: __( 'Last modified', 'rapls-sitemap' ) },
+		{ value: 'title', label: __( 'Title', 'rapls-sitemap' ) },
+		{ value: 'menu_order', label: __( 'Page order', 'rapls-sitemap' ) },
+		{ value: 'ID', label: __( 'ID', 'rapls-sitemap' ) },
+		{ value: 'comment_count', label: __( 'Comment count', 'rapls-sitemap' ) },
+		{ value: 'rand', label: __( 'Random', 'rapls-sitemap' ) },
+	];
+
+	var ORDER = [
+		{ value: '', label: __( 'Use the site default', 'rapls-sitemap' ) },
+		{ value: 'DESC', label: __( 'Descending (newest, Z to A)', 'rapls-sitemap' ) },
+		{ value: 'ASC', label: __( 'Ascending (oldest, A to Z)', 'rapls-sitemap' ) },
+	];
+
+	var LIST_TYPES = [
+		{ value: '', label: __( 'Use the site default', 'rapls-sitemap' ) },
+		{ value: 'ul', label: __( 'Unordered (ul)', 'rapls-sitemap' ) },
+		{ value: 'ol', label: __( 'Ordered (ol)', 'rapls-sitemap' ) },
+	];
+
 	wp.blocks.registerBlockType( 'rapls/sitemap', {
 		title: __( 'Sitemap', 'rapls-sitemap' ),
 		description: __( 'A table of contents for the whole site.', 'rapls-sitemap' ),
@@ -66,6 +100,51 @@
 			var atts = props.attributes;
 			var set = props.setAttributes;
 
+			/** A select whose empty value means "inherit the site setting". */
+			function select( label, key, options ) {
+				return el( components.SelectControl, {
+					label: label,
+					value: atts[ key ],
+					options: options,
+					onChange: function ( value ) {
+						set( pair( key, value ) );
+					},
+				} );
+			}
+
+			function toggle( label, key, help ) {
+				return el( components.ToggleControl, {
+					label: label,
+					help: help,
+					checked: atts[ key ],
+					onChange: function ( value ) {
+						set( pair( key, value ) );
+					},
+				} );
+			}
+
+			/** A range where a negative value means "inherit". */
+			function range( label, key, min, max, help ) {
+				return el( components.RangeControl, {
+					label: label,
+					help: help,
+					min: min,
+					max: max,
+					value: atts[ key ],
+					onChange: function ( value ) {
+						set( pair( key, value ) );
+					},
+				} );
+			}
+
+			// Object literals cannot take a computed key in the ES5 this file
+			// is deliberately written in.
+			function pair( key, value ) {
+				var out = {};
+				out[ key ] = value;
+				return out;
+			}
+
 			return el(
 				'div',
 				useBlockProps(),
@@ -74,7 +153,8 @@
 					null,
 					el(
 						components.PanelBody,
-						{ title: __( 'Sitemap', 'rapls-sitemap' ) },
+						{ title: __( 'Content', 'rapls-sitemap' ) },
+						select( __( 'What to list', 'rapls-sitemap' ), 'source', SOURCES ),
 						el( components.TextControl, {
 							label: __( 'Post types', 'rapls-sitemap' ),
 							help: __( 'Comma separated slugs. Empty uses the site default.', 'rapls-sitemap' ),
@@ -83,53 +163,37 @@
 								set( { postTypes: value } );
 							},
 						} ),
-						el( components.RangeControl, {
-							label: __( 'Maximum depth', 'rapls-sitemap' ),
-							help: __( '-1 uses the site default, 0 shows every level.', 'rapls-sitemap' ),
-							min: -1,
-							max: 10,
-							value: atts.depth,
+						el( components.TextControl, {
+							label: __( 'Group by taxonomy', 'rapls-sitemap' ),
+							help: __( 'A taxonomy slug such as post_tag. Empty picks one automatically.', 'rapls-sitemap' ),
+							value: atts.taxonomy,
 							onChange: function ( value ) {
-								set( { depth: value } );
+								set( { taxonomy: value } );
 							},
 						} ),
-						el( components.SelectControl, {
-							label: __( 'Design', 'rapls-sitemap' ),
-							value: atts.design,
-							options: DESIGNS,
-							onChange: function ( value ) {
-								set( { design: value } );
-							},
-						} ),
-						el( components.ToggleControl, {
-							label: __( 'Show the home link', 'rapls-sitemap' ),
-							checked: atts.showHome,
-							onChange: function ( value ) {
-								set( { showHome: value } );
-							},
-						} ),
-						el( components.ToggleControl, {
-							label: __( 'Group posts by category', 'rapls-sitemap' ),
-							checked: atts.groupByTerm,
-							onChange: function ( value ) {
-								set( { groupByTerm: value } );
-							},
-						} ),
-						el( components.ToggleControl, {
-							label: __( 'Nest child categories', 'rapls-sitemap' ),
-							checked: atts.nestTerms,
-							onChange: function ( value ) {
-								set( { nestTerms: value } );
-							},
-						} ),
-						el( components.SelectControl, {
-							label: __( 'Category display', 'rapls-sitemap' ),
-							value: atts.termMode,
-							options: TERM_MODES,
-							onChange: function ( value ) {
-								set( { termMode: value } );
-							},
-						} )
+						select( __( 'Category display', 'rapls-sitemap' ), 'termMode', TERM_MODES ),
+						toggle( __( 'Show the home link', 'rapls-sitemap' ), 'showHome' ),
+						toggle( __( 'Group posts by category', 'rapls-sitemap' ), 'groupByTerm' ),
+						toggle( __( 'Nest child categories', 'rapls-sitemap' ), 'nestTerms' )
+					),
+					el(
+						components.PanelBody,
+						{ title: __( 'Order', 'rapls-sitemap' ), initialOpen: false },
+						select( __( 'Sort entries by', 'rapls-sitemap' ), 'orderby', ORDERBY ),
+						select( __( 'Direction', 'rapls-sitemap' ), 'order', ORDER ),
+						range( __( 'Maximum depth', 'rapls-sitemap' ), 'depth', -1, 10, __( '-1 uses the site default, 0 shows every level.', 'rapls-sitemap' ) ),
+						range( __( 'Entries per list', 'rapls-sitemap' ), 'number', -1, 500, __( '-1 uses the site default, 0 lifts the cap.', 'rapls-sitemap' ) )
+					),
+					el(
+						components.PanelBody,
+						{ title: __( 'Appearance', 'rapls-sitemap' ), initialOpen: false },
+						select( __( 'Design', 'rapls-sitemap' ), 'design', DESIGNS ),
+						select( __( 'List element', 'rapls-sitemap' ), 'listType', LIST_TYPES ),
+						toggle( __( 'Put a heading above each post type', 'rapls-sitemap' ), 'sectionHeadings' ),
+						toggle( __( 'Published date', 'rapls-sitemap' ), 'showDate' ),
+						toggle( __( 'Excerpt', 'rapls-sitemap' ), 'showExcerpt' ),
+						toggle( __( 'Entry count beside each category', 'rapls-sitemap' ), 'showCount' ),
+						toggle( __( 'Add rel="nofollow" to every link', 'rapls-sitemap' ), 'nofollow' )
 					)
 				),
 				el( ServerSideRender, {

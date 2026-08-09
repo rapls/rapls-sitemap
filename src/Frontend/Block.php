@@ -114,14 +114,27 @@ final class Block {
 	 * @return array<string,mixed>
 	 */
 	private function to_atts( array $attributes ): array {
-		$map  = array(
-			'postTypes'   => 'post_types',
-			'design'      => 'design',
-			'termMode'    => 'term_mode',
-			'showHome'    => 'show_home',
-			'groupByTerm' => 'group_by_term',
-			'nestTerms'   => 'nest_terms',
+		$map = array(
+			// Empty means inherit.
+			'source'          => 'source',
+			'postTypes'       => 'post_types',
+			'taxonomy'        => 'taxonomy',
+			'termMode'        => 'term_mode',
+			'orderby'         => 'orderby',
+			'order'           => 'order',
+			'design'          => 'design',
+			'listType'        => 'list_type',
+			// Toggles always override.
+			'showHome'        => 'show_home',
+			'groupByTerm'     => 'group_by_term',
+			'nestTerms'       => 'nest_terms',
+			'sectionHeadings' => 'section_headings',
+			'showDate'        => 'show_date',
+			'showExcerpt'     => 'show_excerpt',
+			'showCount'       => 'show_count',
+			'nofollow'        => 'nofollow',
 		);
+
 		$atts = array();
 
 		foreach ( $map as $from => $to ) {
@@ -131,8 +144,13 @@ final class Block {
 			$atts[ $to ] = $attributes[ $from ];
 		}
 
-		if ( isset( $attributes['depth'] ) && (int) $attributes['depth'] >= 0 ) {
-			$atts['depth'] = (int) $attributes['depth'];
+		// Negative means inherit for both of these: 0 is already meaningful
+		// (unlimited depth, and an uncapped list), so it cannot double as the
+		// "not set" value the way an empty string can.
+		foreach ( array( 'depth' => 'depth', 'number' => 'number' ) as $from => $to ) {
+			if ( isset( $attributes[ $from ] ) && (int) $attributes[ $from ] >= 0 ) {
+				$atts[ $to ] = (int) $attributes[ $from ];
+			}
 		}
 
 		return $atts;

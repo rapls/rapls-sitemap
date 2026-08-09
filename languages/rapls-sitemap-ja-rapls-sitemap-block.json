@@ -1,20 +1,38 @@
 {
-    "translation-revision-date": "2026-08-09 13:04:09+0000",
+    "translation-revision-date": "2026-08-09 13:13:38+0000",
     "generator": "rapls-sitemap\/bin\/make-json.php",
     "domain": "messages",
     "locale_data": {
         "messages": {
+            "-1 uses the site default, 0 lifts the cap.": [
+                "-1でサイト全体の設定を使い、0で上限なしになります。"
+            ],
             "-1 uses the site default, 0 shows every level.": [
                 "-1でサイト全体の設定を使い、0ですべての階層を表示します。"
             ],
             "A table of contents for the whole site.": [
                 "サイト全体の目次です。"
             ],
+            "A taxonomy slug such as post_tag. Empty picks one automatically.": [
+                "post_tag のようなタクソノミーのスラッグを指定します。空欄の場合は自動で選ばれます。"
+            ],
             "Accordion": [
                 "アコーディオン"
             ],
+            "Add rel=\"nofollow\" to every link": [
+                "すべてのリンクに rel=\"nofollow\" を付ける"
+            ],
+            "Appearance": [
+                "外観"
+            ],
             "Arrows": [
                 "矢印"
+            ],
+            "Ascending (oldest, A to Z)": [
+                "昇順 (古い順、A→Z)"
+            ],
+            "Authors": [
+                "投稿者"
             ],
             "Book contents": [
                 "書籍の目次"
@@ -40,11 +58,23 @@
             "Comma separated slugs. Empty uses the site default.": [
                 "スラッグをカンマ区切りで指定します。空欄にするとサイト全体の設定を使います。"
             ],
+            "Comment count": [
+                "コメント数"
+            ],
             "Compact": [
                 "コンパクト"
             ],
+            "Content": [
+                "内容"
+            ],
+            "Descending (newest, Z to A)": [
+                "降順 (新しい順、Z→A)"
+            ],
             "Design": [
                 "デザイン"
+            ],
+            "Direction": [
+                "並び順の方向"
             ],
             "Document tree": [
                 "ドキュメントツリー"
@@ -52,8 +82,20 @@
             "Dots": [
                 "ドット"
             ],
+            "Entries per list": [
+                "1リストあたりの件数"
+            ],
+            "Entry count beside each category": [
+                "カテゴリーごとの記事数"
+            ],
+            "Excerpt": [
+                "抜粋"
+            ],
             "Grid": [
                 "グリッド"
+            ],
+            "Group by taxonomy": [
+                "グループ化するタクソノミー"
             ],
             "Group posts by category": [
                 "カテゴリーごとにまとめる"
@@ -61,14 +103,26 @@
             "Highlighter": [
                 "蛍光ペン"
             ],
+            "ID": [
+                "ID"
+            ],
             "Index": [
                 "索引"
+            ],
+            "Last modified": [
+                "更新日"
+            ],
+            "List element": [
+                "リスト要素"
             ],
             "Magazine": [
                 "マガジン"
             ],
             "Maximum depth": [
                 "最大階層"
+            ],
+            "Monthly archives": [
+                "年月アーカイブ"
             ],
             "Neon": [
                 "ネオン"
@@ -85,8 +139,17 @@
             "Numbered": [
                 "連番"
             ],
+            "Order": [
+                "並び順"
+            ],
+            "Ordered (ol)": [
+                "順序付き (ol)"
+            ],
             "Outlined boxes": [
                 "囲み枠"
+            ],
+            "Page order": [
+                "ページの並び順"
             ],
             "Panels": [
                 "パネル"
@@ -97,8 +160,20 @@
             "Post types": [
                 "投稿タイプ"
             ],
+            "Posts and pages": [
+                "投稿と固定ページ"
+            ],
             "Posts under each category": [
                 "カテゴリーごとに投稿を表示"
+            ],
+            "Published date": [
+                "公開日"
+            ],
+            "Put a heading above each post type": [
+                "投稿タイプごとに見出しを付ける"
+            ],
+            "Random": [
+                "ランダム"
             ],
             "Ribbons": [
                 "リボン"
@@ -115,6 +190,9 @@
             "Sitemap": [
                 "サイトマップ"
             ],
+            "Sort entries by": [
+                "並べ替えの基準"
+            ],
             "Sticky notes": [
                 "付箋"
             ],
@@ -124,11 +202,23 @@
             "Timeline": [
                 "タイムライン"
             ],
+            "Title": [
+                "タイトル"
+            ],
             "Underlined headings": [
                 "見出し下線"
             ],
+            "Unordered (ul)": [
+                "順序なし (ul)"
+            ],
             "Use the site default": [
                 "サイト全体の設定を使う"
+            ],
+            "What to list": [
+                "表示する対象"
+            ],
+            "Whatever suits each list": [
+                "リストごとに最適な順序"
             ],
             "": {
                 "domain": "messages",

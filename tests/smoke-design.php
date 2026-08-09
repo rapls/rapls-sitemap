@@ -170,12 +170,38 @@ check( array() === $thin, 'every tab is worth switching to', implode( ' | ', $th
 $orphans = array_diff( array_keys( RaplsSitemap\Admin\SettingsPage::emoji_notes() ), array_keys( $palette ) );
 check( array() === $orphans, 'every palette note belongs to a tab that exists', implode( ' | ', $orphans ) );
 
+/* --- the block's three files agree on its attributes --------------------- */
+
+// block.json declares them, block.js draws a control for each, and
+// Block::to_atts translates them into settings. An attribute missing from any
+// one of the three is a control that saves nothing, or a saved value that never
+// reaches the renderer — both silent.
+$root     = dirname( __DIR__ );
+$json     = json_decode( (string) file_get_contents( $root . '/blocks/sitemap/block.json' ), true );
+$block_js = (string) file_get_contents( $root . '/assets/js/block.js' );
+$block_php = (string) file_get_contents( $root . '/src/Frontend/Block.php' );
+
+check( is_array( $json ) && isset( $json['attributes'] ), 'block.json parses and declares attributes' );
+
+$no_control = array();
+$no_mapping = array();
+
+foreach ( array_keys( $json['attributes'] ) as $attribute ) {
+	if ( false === strpos( $block_js, "'" . $attribute . "'" ) && false === strpos( $block_js, 'atts.' . $attribute ) ) {
+		$no_control[] = $attribute;
+	}
+	if ( false === strpos( $block_php, "'" . $attribute . "'" ) ) {
+		$no_mapping[] = $attribute;
+	}
+}
+
+check( array() === $no_control, sprintf( 'all %d block attributes have an editor control', count( $json['attributes'] ) ), implode( ', ', $no_control ) );
+check( array() === $no_mapping, 'and all of them are mapped onto settings in PHP', implode( ', ', $no_mapping ) );
+
 /* --- every preset is registered in all four places ----------------------- */
 
-$root      = dirname( __DIR__ );
-$css_file  = (string) file_get_contents( $root . '/assets/css/rapls-sitemap.css' );
-$admin     = (string) file_get_contents( $root . '/src/Admin/SettingsPage.php' );
-$block_js  = (string) file_get_contents( $root . '/assets/js/block.js' );
+$css_file = (string) file_get_contents( $root . '/assets/css/rapls-sitemap.css' );
+$admin    = (string) file_get_contents( $root . '/src/Admin/SettingsPage.php' );
 
 $missing = array( 'css' => array(), 'admin' => array(), 'js' => array() );
 

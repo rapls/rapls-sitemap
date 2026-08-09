@@ -329,6 +329,24 @@ final class SettingsPage {
 
 				<table class="form-table" role="presentation">
 					<tr>
+						<th scope="row">
+							<label for="rapls-sitemap-source"><?php echo esc_html__( 'What to list', 'rapls-sitemap' ); ?></label>
+						</th>
+						<td>
+							<select id="rapls-sitemap-source" name="<?php echo esc_attr( $name . '[source]' ); ?>">
+								<?php foreach ( self::sources() as $slug => $text ) : ?>
+									<option value="<?php echo esc_attr( $slug ); ?>" <?php selected( $settings['source'], $slug ); ?>>
+										<?php echo esc_html( $text ); ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+							<p class="description">
+								<?php echo esc_html__( 'The author and archive listings ignore everything below except the entry cap and the design — they are built from who published and when, not from the content settings.', 'rapls-sitemap' ); ?>
+							</p>
+						</td>
+					</tr>
+
+					<tr>
 						<th scope="row"><?php echo esc_html__( 'Content to include', 'rapls-sitemap' ); ?></th>
 						<td>
 							<?php $this->post_type_checkboxes( $name, $settings ); ?>
@@ -420,6 +438,24 @@ final class SettingsPage {
 								</label>
 								<span class="description">
 									<?php echo esc_html__( 'Off lists it once, under the first category that claims it.', 'rapls-sitemap' ); ?>
+								</span>
+							</p>
+							<p>
+								<label>
+									<?php echo esc_html__( 'Group by', 'rapls-sitemap' ); ?>
+									<select name="<?php echo esc_attr( $name . '[taxonomy]' ); ?>">
+										<option value="" <?php selected( $settings['taxonomy'], '' ); ?>>
+											<?php echo esc_html__( 'Pick automatically', 'rapls-sitemap' ); ?>
+										</option>
+										<?php foreach ( self::available_taxonomies() as $taxonomy ) : ?>
+											<option value="<?php echo esc_attr( $taxonomy->name ); ?>" <?php selected( $settings['taxonomy'], $taxonomy->name ); ?>>
+												<?php echo esc_html( $taxonomy->labels->name ); ?>
+											</option>
+										<?php endforeach; ?>
+									</select>
+								</label>
+								<span class="description">
+									<?php echo esc_html__( 'Automatic picks the first hierarchical taxonomy, which is Categories. A flat one such as Tags has to be chosen here.', 'rapls-sitemap' ); ?>
 								</span>
 							</p>
 							<fieldset style="margin-top:0.5em">
@@ -1258,6 +1294,19 @@ final class SettingsPage {
 			'comment_count' => __( 'Comment count', 'rapls-sitemap' ),
 			'rand'          => __( 'Random', 'rapls-sitemap' ),
 			'meta'          => __( 'Custom field', 'rapls-sitemap' ),
+		);
+	}
+
+	/**
+	 * Tree sources as slug => translated label.
+	 *
+	 * @return array<string,string>
+	 */
+	private static function sources(): array {
+		return array(
+			'content'  => __( 'Posts and pages', 'rapls-sitemap' ),
+			'authors'  => __( 'Authors', 'rapls-sitemap' ),
+			'archives' => __( 'Monthly archives', 'rapls-sitemap' ),
 		);
 	}
 
