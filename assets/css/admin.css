@@ -361,8 +361,18 @@
 	grid-template-columns: repeat(8, 1fr);
 }
 
-.rapls-emoji__grid[hidden] {
+.rapls-emoji__grid[hidden],
+.rapls-emoji__body > div[hidden] {
 	display: none;
+}
+
+.rapls-emoji__note {
+	border-top: 1px solid #f0f0f1;
+	color: #646970;
+	font-size: 11px;
+	line-height: 1.6;
+	margin: 0.6em 0 0;
+	padding-top: 0.5em;
 }
 
 .rapls-emoji__item {

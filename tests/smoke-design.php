@@ -164,6 +164,12 @@ foreach ( $palette as $group => $glyphs ) {
 check( count( $palette ) >= 2, 'there is more than one tab' );
 check( array() === $thin, 'every tab is worth switching to', implode( ' | ', $thin ) );
 
+// A note keyed to a tab that no longer exists would never be shown, and the
+// caveat it carries — flags do not render on Windows — is one a user needs
+// before choosing, not after.
+$orphans = array_diff( array_keys( RaplsSitemap\Admin\SettingsPage::emoji_notes() ), array_keys( $palette ) );
+check( array() === $orphans, 'every palette note belongs to a tab that exists', implode( ' | ', $orphans ) );
+
 /* --- every preset is registered in all four places ----------------------- */
 
 $root      = dirname( __DIR__ );

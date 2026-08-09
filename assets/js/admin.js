@@ -182,6 +182,28 @@
 				grid.appendChild( button );
 			} );
 
+			// A tab may carry a caveat — flags do not render on every platform.
+			// It belongs next to the choice, not in a readme nobody opens.
+			var note = config.notes && config.notes[ group ];
+			if ( note ) {
+				var pane = document.createElement( 'div' );
+				pane.setAttribute( 'role', 'tabpanel' );
+				pane.setAttribute( 'aria-label', group );
+				grid.removeAttribute( 'role' );
+				grid.removeAttribute( 'aria-label' );
+
+				var text = document.createElement( 'p' );
+				text.className = 'rapls-emoji__note';
+				text.textContent = note;
+
+				pane.appendChild( grid );
+				pane.appendChild( text );
+
+				panes[ group ] = pane;
+				body.appendChild( pane );
+				return;
+			}
+
 			panes[ group ] = grid;
 			body.appendChild( grid );
 		} );

@@ -96,6 +96,7 @@ final class SettingsPage {
 			'window.raplsSitemapAdmin = ' . wp_json_encode(
 				array(
 					'emoji'  => self::emoji_palette(),
+					'notes'  => self::emoji_notes(),
 					'labels' => array(
 						'pick'  => __( 'Pick an emoji', 'rapls-sitemap' ),
 						'close' => __( 'Close', 'rapls-sitemap' ),
@@ -215,6 +216,30 @@ final class SettingsPage {
 				'🧩', '♟️', '🎪', '🎭', '💎', '👑', '🔮', '🧸', '🎃', '🎄',
 				'🎆', '🎇',
 			),
+			__( 'Flags', 'rapls-sitemap' )       => array(
+				'🏁', '🚩', '🏳️', '🏴', '🎌', '🏳️‍🌈',
+				'🇯🇵', '🇰🇷', '🇨🇳', '🇹🇼', '🇭🇰', '🇸🇬', '🇹🇭', '🇻🇳', '🇵🇭', '🇮🇩',
+				'🇲🇾', '🇮🇳', '🇳🇵', '🇱🇰', '🇲🇳', '🇹🇷', '🇦🇪', '🇸🇦', '🇮🇱',
+				'🇬🇧', '🇫🇷', '🇩🇪', '🇮🇹', '🇪🇸', '🇵🇹', '🇳🇱', '🇧🇪', '🇨🇭', '🇦🇹',
+				'🇸🇪', '🇳🇴', '🇩🇰', '🇫🇮', '🇵🇱', '🇨🇿', '🇭🇺', '🇷🇴', '🇬🇷', '🇮🇪',
+				'🇺🇦', '🇷🇺', '🇪🇺',
+				'🇺🇸', '🇨🇦', '🇲🇽', '🇧🇷', '🇦🇷', '🇨🇱', '🇨🇴', '🇵🇪',
+				'🇦🇺', '🇳🇿', '🇿🇦', '🇪🇬', '🇰🇪', '🇳🇬', '🇲🇦',
+			),
+		);
+	}
+
+	/**
+	 * Caveats shown under a tab, keyed by the same group label.
+	 *
+	 * Only one tab needs one today, and it needs it badly: a flag chosen here
+	 * silently becomes two letters for every Windows visitor.
+	 *
+	 * @return array<string,string>
+	 */
+	public static function emoji_notes(): array {
+		return array(
+			__( 'Flags', 'rapls-sitemap' ) => __( 'Windows ships no country flag glyphs, so these appear as two letters — 🇯🇵 becomes JP — for visitors on Windows. The first five are ordinary symbols and are safe everywhere.', 'rapls-sitemap' ),
 		);
 	}
 
