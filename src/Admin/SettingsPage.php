@@ -574,6 +574,24 @@ final class SettingsPage {
 									</select>
 								</label>
 							</p>
+							<p>
+								<label>
+									<?php echo esc_html__( 'Headings', 'rapls-sitemap' ); ?>
+									<select name="<?php echo esc_attr( $name . '[heading_level]' ); ?>">
+										<option value="" <?php selected( $settings['heading_level'], '' ); ?>>
+											<?php echo esc_html__( 'Plain text', 'rapls-sitemap' ); ?>
+										</option>
+										<?php foreach ( array( 'h2', 'h3', 'h4', 'h5', 'h6' ) as $level ) : ?>
+											<option value="<?php echo esc_attr( $level ); ?>" <?php selected( $settings['heading_level'], $level ); ?>>
+												<?php echo esc_html( strtoupper( $level ) ); ?>
+											</option>
+										<?php endforeach; ?>
+									</select>
+								</label>
+							</p>
+							<p class="description">
+								<?php echo esc_html__( 'Section and category labels can be real headings, which is how a screen reader user moves through the page. Pick the level that fits under whatever heading the page already has above the sitemap — a wrong level is a broken outline, so this stays plain text until you choose.', 'rapls-sitemap' ); ?>
+							</p>
 						</td>
 					</tr>
 

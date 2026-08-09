@@ -239,6 +239,75 @@ foreach ( array( 'title', 'description', 'category', 'icon', 'supports' ) as $ke
 
 check( array() === $duplicated, 'the editor script does not restate block.json metadata', implode( ', ', $duplicated ) );
 
+/* --- the stylesheet parses ------------------------------------------------ */
+
+// A stray character in a selector is invisible: the browser drops the rule and
+// the page still renders, just without whatever that rule did. One went
+// unnoticed for several commits after a search-and-replace ate a selector.
+$css   = (string) file_get_contents( $root . '/assets/css/rapls-sitemap.css' );
+$code  = (string) preg_replace_callback( '#/\*.*?\*/#s', function ( $m ) {
+	return preg_replace( '/[^\n]/', ' ', $m[0] );
+}, $css );
+
+$depth     = 0;
+$unmatched = 0;
+foreach ( str_split( $code ) as $char ) {
+	if ( '{' === $char ) {
+		$depth++;
+	} elseif ( '}' === $char ) {
+		$depth--;
+		if ( $depth < 0 ) {
+			$unmatched++;
+			$depth = 0;
+		}
+	}
+}
+
+check( 0 === $unmatched, 'the stylesheet has no unmatched closing brace' );
+check( 0 === $depth, 'and no unclosed rule' );
+
+// Every selector must start with a class, an element, or a pseudo — anything
+// else is debris from an edit.
+$debris = array();
+foreach ( preg_split( '/\R/', $code ) as $number => $line ) {
+	$line = trim( $line );
+	if ( '' === $line || 0 === strpos( $line, '@' ) || preg_match( '/^[a-z-]+\s*:/i', $line ) ) {
+		continue;
+	}
+	if ( preg_match( '/[,{]\s*$/', $line ) && ! preg_match( '/^[.#a-zA-Z:\[*]/', $line ) ) {
+		$debris[] = ( $number + 1 ) . ': ' . $line;
+	}
+}
+
+check( array() === $debris, 'every selector line starts like a selector', implode( ' | ', $debris ) );
+
+/* --- headings reach through to the preset styling ------------------------ */
+
+// A heading element sits between the item and its link, so a preset selector
+// written as `item > link` stops matching. Each one needs a twin that goes
+// through the heading, or turning headings on silently unstyles the sitemap.
+$orphans = array();
+foreach ( preg_split( '/\R/', $code ) as $line ) {
+	$line = trim( rtrim( trim( $line ), ',{' ) );
+
+	// A twin ends the same way, so it would otherwise be asked for a twin of
+	// its own.
+	if ( ! preg_match( '/> \.rapls-sitemap__(link|label)$/', $line ) || false !== strpos( $line, '__heading >' ) ) {
+		continue;
+	}
+
+	$twin = preg_replace( '/> \.rapls-sitemap__(link|label)$/', '> .rapls-sitemap__heading > .rapls-sitemap__$1', $line );
+	if ( false === strpos( $code, $twin ) ) {
+		$orphans[] = $line;
+	}
+}
+
+check(
+	array() === $orphans,
+	'every selector reaching a label has a twin that goes through a heading',
+	implode( ' | ', array_slice( $orphans, 0, 3 ) )
+);
+
 /* --- every preset is registered in all four places ----------------------- */
 
 $css_file = (string) file_get_contents( $root . '/assets/css/rapls-sitemap.css' );

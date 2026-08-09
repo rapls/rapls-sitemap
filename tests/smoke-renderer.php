@@ -114,6 +114,32 @@ $html             = ( new Renderer( Settings::defaults() ) )->render( array( $ho
 check( false === strpos( $html, '<script>' ), 'an excerpt cannot inject markup' );
 check( false === strpos( $html, '<b>2026' ), 'nor can a date' );
 
+/* --- heading elements ---------------------------------------------------- */
+
+$section         = new Node( 0, 'Pages', 'https://example.test/blog/', 'section' );
+$term            = new Node( 40, 'News', 'https://example.test/news', 'term' );
+$post            = new Node( 41, 'A page', 'https://example.test/a' );
+$more            = new Node( 0, 'Only the first 10 are listed.', '', 'more' );
+
+$plain = ( new Renderer( Settings::defaults() ) )->render( array( $section, $term, $post, $more ) );
+check( false === strpos( $plain, '<h2' ), 'labels stay plain text until a level is chosen' );
+
+$settings                  = Settings::defaults();
+$settings['heading_level'] = 'h3';
+$html                      = ( new Renderer( $settings ) )->render( array( $section, $term, $post, $more ) );
+
+check( 2 === substr_count( $html, '<h3 ' ), 'a section and a category each become a heading' );
+check( 2 === substr_count( $html, '</h3>' ), 'and each one is closed' );
+check( false !== strpos( $html, '<h3 class="rapls-sitemap__heading"><a' ), 'the link stays inside the heading, so it is still a link' );
+
+// An entry is not a heading, and neither is the truncation note — putting them
+// in the outline would defeat the point of having one.
+check( false === strpos( $html, 'A page</a></h3>' ), 'an ordinary entry is not made a heading' );
+check( false === strpos( $html, 'listed.</span></h3>' ), 'nor is the truncation note' );
+
+$settings['heading_level'] = 'h9';
+check( false === strpos( ( new Renderer( $settings ) )->render( array( $term ) ), '<h9' ), 'an invalid level is ignored rather than emitted' );
+
 /* --- nofollow ------------------------------------------------------------ */
 
 $plain = ( new Renderer( Settings::defaults() ) )->render( array( $flat ) );

@@ -51,8 +51,11 @@
 /* --- simple: headings plus indentation, no ornament ---------------------- */
 
 .rapls-sitemap--simple .rapls-sitemap__item--term > .rapls-sitemap__link,
+.rapls-sitemap--simple .rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__link,
 .rapls-sitemap--simple .rapls-sitemap__item--archive > .rapls-sitemap__link,
-.rapls-sitemap--simple .rapls-sitemap__item--home > .rapls-sitemap__link {
+.rapls-sitemap--simple .rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--simple .rapls-sitemap__item--home > .rapls-sitemap__link,
+.rapls-sitemap--simple .rapls-sitemap__item--home > .rapls-sitemap__heading > .rapls-sitemap__link {
 	font-weight: 700;
 }
 
@@ -105,7 +108,9 @@
 }
 
 .rapls-sitemap--card .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
-.rapls-sitemap--card .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+.rapls-sitemap--card .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--card .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label,
+.rapls-sitemap--card .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__label {
 	display: block;
 	font-weight: 700;
 	margin-bottom: 0.5rem;
@@ -114,10 +119,15 @@
 /* --- marker: headings swept with a highlighter --------------------------- */
 
 .rapls-sitemap--marker .rapls-sitemap__item--term > .rapls-sitemap__link,
+.rapls-sitemap--marker .rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__link,
 .rapls-sitemap--marker .rapls-sitemap__item--archive > .rapls-sitemap__link,
+.rapls-sitemap--marker .rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__link,
 .rapls-sitemap--marker .rapls-sitemap__item--term > .rapls-sitemap__label,
+.rapls-sitemap--marker .rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__label,
 .rapls-sitemap--marker .rapls-sitemap__item--archive > .rapls-sitemap__label,
-.rapls-sitemap--marker .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link {
+.rapls-sitemap--marker .rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__label,
+.rapls-sitemap--marker .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
+.rapls-sitemap--marker .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__link {
 	/* The stripe sits behind the lower two-thirds of the text, the way a real
 	   marker lands. currentColor at low alpha keeps it theme-agnostic. */
 	background-image: linear-gradient( to top, rgba(255, 214, 0, 0.55) 0.7em, transparent 0.7em );
@@ -180,7 +190,9 @@
 }
 
 .rapls-sitemap--label .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
-.rapls-sitemap--label .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+.rapls-sitemap--label .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--label .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label,
+.rapls-sitemap--label .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__label {
 	display: block;
 	font-weight: 700;
 	margin-bottom: 0.35em;
@@ -196,7 +208,9 @@
 }
 
 .rapls-sitemap--index .rapls-sitemap__item > .rapls-sitemap__link,
-.rapls-sitemap--index .rapls-sitemap__item > .rapls-sitemap__label {
+.rapls-sitemap--index .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--index .rapls-sitemap__item > .rapls-sitemap__label,
+.rapls-sitemap--index .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__label {
 	grid-column: 1;
 }
 
@@ -221,7 +235,9 @@
 }
 
 .rapls-sitemap--business .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
-.rapls-sitemap--business .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+.rapls-sitemap--business .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--business .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label,
+.rapls-sitemap--business .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__label {
 	border-left: 0.35em solid currentColor;
 	display: block;
 	font-weight: 700;
@@ -324,10 +340,15 @@
 }
 
 .rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--term > .rapls-sitemap__link,
+.rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__link,
 .rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--archive > .rapls-sitemap__link,
+.rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__link,
 .rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--term > .rapls-sitemap__label,
+.rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__label,
 .rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--archive > .rapls-sitemap__label,
-.rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--home > .rapls-sitemap__link {
+.rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__label,
+.rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--home > .rapls-sitemap__link,
+.rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--home > .rapls-sitemap__heading > .rapls-sitemap__link {
 	color: #ff6ec7;
 	font-weight: 700;
 	letter-spacing: 0.05em;
@@ -365,8 +386,11 @@
 }
 
 .rapls-sitemap--compact .rapls-sitemap__item--term > .rapls-sitemap__link,
+.rapls-sitemap--compact .rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__link,
 .rapls-sitemap--compact .rapls-sitemap__item--archive > .rapls-sitemap__link,
-.rapls-sitemap--compact .rapls-sitemap__item--term > .rapls-sitemap__label {
+.rapls-sitemap--compact .rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--compact .rapls-sitemap__item--term > .rapls-sitemap__label,
+.rapls-sitemap--compact .rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__label {
 	font-size: 0.95em;
 	font-weight: 700;
 	letter-spacing: 0.02em;
@@ -410,7 +434,9 @@
 }
 
 .rapls-sitemap--columns .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
-.rapls-sitemap--columns .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+.rapls-sitemap--columns .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--columns .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label,
+.rapls-sitemap--columns .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__label {
 	display: block;
 	font-weight: 700;
 	margin-bottom: 0.3em;
@@ -427,7 +453,9 @@
 }
 
 .rapls-sitemap--panel .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
-.rapls-sitemap--panel .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+.rapls-sitemap--panel .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--panel .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label,
+.rapls-sitemap--panel .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__label {
 	display: block;
 	font-weight: 700;
 	margin-bottom: 0.4em;
@@ -457,7 +485,9 @@
 }
 
 .rapls-sitemap--timeline .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
-.rapls-sitemap--timeline .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+.rapls-sitemap--timeline .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--timeline .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label,
+.rapls-sitemap--timeline .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__label {
 	font-weight: 700;
 }
 
@@ -472,7 +502,9 @@
 }
 
 .rapls-sitemap--accordion .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
-.rapls-sitemap--accordion .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+.rapls-sitemap--accordion .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--accordion .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label,
+.rapls-sitemap--accordion .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__label {
 	background: rgba(127, 127, 127, 0.12);
 	display: block;
 	font-weight: 700;
@@ -512,7 +544,9 @@
 }
 
 .rapls-sitemap--pill .rapls-sitemap__item--term > .rapls-sitemap__link,
-.rapls-sitemap--pill .rapls-sitemap__item--term > .rapls-sitemap__label {
+.rapls-sitemap--pill .rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--pill .rapls-sitemap__item--term > .rapls-sitemap__label,
+.rapls-sitemap--pill .rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__label {
 	font-weight: 700;
 }
 
@@ -531,7 +565,9 @@
  * trick assumed. A tint keeps the theme's own text colour legible on it.
  */
 .rapls-sitemap--ribbon .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
-.rapls-sitemap--ribbon .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+.rapls-sitemap--ribbon .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--ribbon .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label,
+.rapls-sitemap--ribbon .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__label {
 	background: rgba(127, 127, 127, 0.22);
 	border-left: 0.3em solid currentColor;
 	display: inline-block;
@@ -560,7 +596,9 @@
 }
 
 .rapls-sitemap--magazine .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
-.rapls-sitemap--magazine .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+.rapls-sitemap--magazine .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--magazine .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label,
+.rapls-sitemap--magazine .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__label {
 	border-bottom: 2px solid currentColor;
 	display: block;
 	font-family: Georgia, "Times New Roman", "Yu Mincho", "Hiragino Mincho ProN", serif;
@@ -616,8 +654,11 @@
 }
 
 .rapls-sitemap--outline .rapls-sitemap__item--term > .rapls-sitemap__link,
+.rapls-sitemap--outline .rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__link,
 .rapls-sitemap--outline .rapls-sitemap__item--term > .rapls-sitemap__label,
-.rapls-sitemap--outline .rapls-sitemap__item--archive > .rapls-sitemap__link {
+.rapls-sitemap--outline .rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__label,
+.rapls-sitemap--outline .rapls-sitemap__item--archive > .rapls-sitemap__link,
+.rapls-sitemap--outline .rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__link {
 	font-weight: 700;
 }
 
@@ -642,7 +683,9 @@
 }
 
 .rapls-sitemap--grid .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
-.rapls-sitemap--grid .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+.rapls-sitemap--grid .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--grid .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label,
+.rapls-sitemap--grid .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__label {
 	font-weight: 700;
 }
 
@@ -657,7 +700,9 @@
 }
 
 .rapls-sitemap--book .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
-.rapls-sitemap--book .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+.rapls-sitemap--book .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--book .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label,
+.rapls-sitemap--book .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__label {
 	display: block;
 	font-size: 1.15em;
 	letter-spacing: 0.06em;
@@ -688,7 +733,9 @@
 }
 
 .rapls-sitemap--underline .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
-.rapls-sitemap--underline .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+.rapls-sitemap--underline .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--underline .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label,
+.rapls-sitemap--underline .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__label {
 	border-bottom: 0.2em solid currentColor;
 	display: block;
 	font-weight: 700;
@@ -728,9 +775,13 @@
 }
 
 .rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--term > .rapls-sitemap__link,
+.rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__link,
 .rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--term > .rapls-sitemap__label,
+.rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__label,
 .rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--archive > .rapls-sitemap__link,
-.rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--home > .rapls-sitemap__link {
+.rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--home > .rapls-sitemap__link,
+.rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--home > .rapls-sitemap__heading > .rapls-sitemap__link {
 	color: #ffe066;
 	font-weight: 700;
 }
@@ -759,6 +810,32 @@
 	text-decoration: underline;
 }
 
+/* --- heading elements ----------------------------------------------------- */
+
+/*
+ * When a section or category label is rendered as a real heading, that element
+ * sits between the item and its link. Every preset selector that reaches a
+ * label directly has a twin that goes through this one, so both shapes style
+ * the same — and this strips the browser's own heading sizing so the preset
+ * stays in charge of the look.
+ */
+.rapls-sitemap__heading {
+	font-size: inherit;
+	font-weight: inherit;
+	line-height: inherit;
+	margin: 0;
+	padding: 0;
+}
+
+/*
+ * `index` is the one preset that positions the item's direct child rather than
+ * styling it. With a heading in the way, the heading is that child — so it has
+ * to take the placement the link would otherwise have had.
+ */
+.rapls-sitemap--index .rapls-sitemap__item > .rapls-sitemap__heading {
+	grid-column: 1;
+}
+
 /* --- optional per-entry metadata ----------------------------------------- */
 
 /*
@@ -783,15 +860,23 @@
 }
 
 /* The "and N more" line is a note, not an entry, so it must not read as one. */
-X	font-size: 0.9em;
+.rapls-sitemap__item--more,
+.rapls-sitemap__item--more > .rapls-sitemap__label,
+.rapls-sitemap__item--more > .rapls-sitemap__heading > .rapls-sitemap__label {
+	/* The shared __label rule bolds text, which would make this note louder
+	   than the entries it is apologising for. */
+	font-size: 0.9em;
 	font-style: italic;
+	font-weight: 400;
 	opacity: 0.7;
 }
 
 /* --- section headings ----------------------------------------------------- */
 
 .rapls-sitemap__item--section > .rapls-sitemap__link,
-.rapls-sitemap__item--section > .rapls-sitemap__label {
+.rapls-sitemap__item--section > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap__item--section > .rapls-sitemap__label,
+.rapls-sitemap__item--section > .rapls-sitemap__heading > .rapls-sitemap__label {
 	display: block;
 	font-size: 1.15em;
 	font-weight: 700;

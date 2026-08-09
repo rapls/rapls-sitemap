@@ -161,7 +161,9 @@ final class Renderer {
 
 		$html = '<li class="' . esc_attr( $classes ) . '">'
 			. ( $decorated ? $this->icon( $depth ) : '' )
+			. $this->heading_open( $node )
 			. $this->link( $node )
+			. $this->heading_close( $node )
 			. $this->count( $node )
 			. $this->date( $node )
 			. $this->excerpt( $node );
@@ -171,6 +173,58 @@ final class Renderer {
 		}
 
 		return $html . '</li>';
+	}
+
+	/**
+	 * The heading element for a node, when one is configured.
+	 *
+	 * A sitemap is a page people read to find the shape of a site, and a screen
+	 * reader user finds that shape by jumping between headings. Section and
+	 * category labels are headings in every sense except the markup, so this
+	 * makes them headings in the markup too.
+	 *
+	 * It is off by default and the level is chosen, not fixed: the right level
+	 * depends on what surrounds the sitemap on its page, and guessing wrong
+	 * produces a broken outline, which is worse than none.
+	 *
+	 * @param Node $node Node to render.
+	 * @return string
+	 */
+	private function heading_open( Node $node ): string {
+		$tag = $this->heading_tag( $node );
+
+		return '' === $tag ? '' : '<' . $tag . ' class="' . esc_attr( self::BASE . '__heading' ) . '">';
+	}
+
+	/**
+	 * The closing half of the above.
+	 *
+	 * @param Node $node Node to render.
+	 * @return string
+	 */
+	private function heading_close( Node $node ): string {
+		$tag = $this->heading_tag( $node );
+
+		return '' === $tag ? '' : '</' . $tag . '>';
+	}
+
+	/**
+	 * Which element this node's label should be, or '' for none.
+	 *
+	 * @param Node $node Node to render.
+	 * @return string
+	 */
+	private function heading_tag( Node $node ): string {
+		$level = isset( $this->settings['heading_level'] ) ? (string) $this->settings['heading_level'] : '';
+
+		if ( ! in_array( $level, Settings::HEADING_LEVELS, true ) || '' === $level ) {
+			return '';
+		}
+
+		// Only labels for a list below them. A post is an entry, and the "and
+		// more" line is a note; making either a heading would clutter the
+		// outline a heading list is supposed to simplify.
+		return in_array( $node->kind, array( 'section', 'term', 'archive' ), true ) ? $level : '';
 	}
 
 	/**

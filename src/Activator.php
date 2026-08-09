@@ -24,8 +24,12 @@ final class Activator {
 	 * Seed options.
 	 */
 	public static function activate(): void {
+		// Not autoloaded. The settings are read only where a sitemap actually
+		// renders — one page on most sites — while autoload would load them on
+		// every request, admin screens and REST calls included. They also hold
+		// the Additional CSS, which is the one field here with no natural size.
 		if ( false === get_option( Settings::OPTION ) ) {
-			add_option( Settings::OPTION, Settings::defaults(), '', true );
+			add_option( Settings::OPTION, Settings::defaults(), '', false );
 		}
 
 		// A salt must exist before the first render, or every cache key would

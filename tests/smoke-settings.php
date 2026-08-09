@@ -135,6 +135,26 @@ $defaults = Settings::defaults();
 check( true === $defaults['duplicate_in_terms'], 'but listing under every category is the default' );
 check( false === $defaults['nofollow'], 'and links are followed by default' );
 
+/* --- the CSS field has a ceiling ----------------------------------------- */
+
+// It is the one field with no natural size, and it lives in an option read on
+// every sitemap render. WordPress 6.6 stops autoloading an option above 150 KB
+// on its own; this stays well under that on purpose.
+$huge = str_repeat( '.rapls-sitemap { color: red } ', 5000 );
+check( strlen( $huge ) > Settings::MAX_CSS_BYTES, 'the fixture is genuinely oversized' );
+check( Settings::MAX_CSS_BYTES === strlen( Settings::sanitize_css( $huge ) ), 'oversized CSS is cut to the ceiling' );
+check( Settings::MAX_CSS_BYTES < 150 * 1024, 'and the ceiling sits below the size at which WordPress stops autoloading' );
+
+$small = '.rapls-sitemap { color: red }';
+check( $small === Settings::sanitize_css( $small ), 'ordinary CSS is untouched by the ceiling' );
+
+/* --- headings ------------------------------------------------------------- */
+
+check( '' === Settings::defaults()['heading_level'], 'labels are plain text until a level is chosen' );
+check( 'h3' === Settings::sanitize( array( 'heading_level' => 'h3' ) )['heading_level'], 'a real level is kept' );
+check( '' === Settings::sanitize( array( 'heading_level' => 'h1' ) )['heading_level'], 'h1 is not offered — a page has one already' );
+check( '' === Settings::sanitize( array( 'heading_level' => 'div' ) )['heading_level'], 'and anything that is not a heading is rejected' );
+
 /* --- who may write CSS ----------------------------------------------------*/
 
 // `manage_options` is not enough: on a network every site administrator holds

@@ -1,7 +1,6 @@
 <?php
 /**
  * Plugin Name:       Rapls Sitemap
- * Plugin URI:        https://raplsworks.com/plugins/rapls-sitemap/
  * Description:       サイト全体の目次（HTMLサイトマップ）を、ショートコードかブロックで一行設置。PS Auto Sitemap の後継として設計されたメンテナンス継続版。
  * Version:           0.1.0
  * Requires at least: 6.0

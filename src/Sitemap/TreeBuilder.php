@@ -275,6 +275,14 @@ final class TreeBuilder {
 				// Meta is only primed when something is actually going to read
 				// it; otherwise this is a wasted query on every render.
 				'update_post_meta_cache' => $noindex,
+				/*
+				 * Load-bearing, and not obviously so. get_posts() defaults this
+				 * to true, which switches off the query filters — and query
+				 * filters are exactly how WPML and Polylang limit results to
+				 * the current language. Setting it false is the whole of this
+				 * plugin's multilingual support; removing it as redundant
+				 * would make every sitemap list every language at once.
+				 */
 				'suppress_filters'    => false,
 			),
 			$this->order_args( $post_type )

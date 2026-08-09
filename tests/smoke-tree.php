@@ -407,6 +407,15 @@ $roots = ( new TreeBuilder( grouped( array( 'taxonomy' => 'nonexistent' ) ) ) )-
 check( null === $GLOBALS['fixture_last_taxonomy'], 'a taxonomy the post type lacks disables grouping instead of erroring' );
 check( array( 'Newest', 'Middle', 'Deep', 'Loose' ) === titles( $roots ), 'and the entries still render, ungrouped' );
 
+/* --- multilingual plugins depend on one argument ------------------------- */
+
+// WPML and Polylang narrow results to the current language through the query
+// filters. get_posts() defaults suppress_filters to true, which turns those
+// off — so this one argument is the entirety of the multilingual support, and
+// it looks removable to anyone who does not know that.
+$args = order_for( 'post', array() );
+check( false === $args['suppress_filters'], 'the post query leaves the query filters on for WPML and Polylang' );
+
 /* --- ordering ------------------------------------------------------------ */
 
 /**

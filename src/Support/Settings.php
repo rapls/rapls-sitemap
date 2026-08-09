@@ -36,6 +36,12 @@ final class Settings {
 	 */
 	public const CSS_CAPABILITY = 'unfiltered_html';
 
+	/** Ceiling on the Additional CSS field, in bytes. */
+	public const MAX_CSS_BYTES = 65536;
+
+	/** Heading elements a section or category heading may be rendered as. */
+	public const HEADING_LEVELS = array( '', 'h2', 'h3', 'h4', 'h5', 'h6' );
+
 	/**
 	 * Available design presets.
 	 *
@@ -181,6 +187,10 @@ final class Settings {
 			'section_headings' => true,
 			// `ul` or `ol`.
 			'list_type'        => 'ul',
+			// Render section and category headings as a real heading element.
+			// Empty keeps the plain span this plugin has always emitted, since
+			// the right level depends on the page the sitemap sits in.
+			'heading_level'    => '',
 			// Show the published date beside each entry.
 			'show_date'        => false,
 			// PHP date format; empty uses the site's own setting.
@@ -367,6 +377,10 @@ final class Settings {
 			$clean['list_type'] = $input['list_type'];
 		}
 
+		if ( isset( $input['heading_level'] ) && in_array( $input['heading_level'], self::HEADING_LEVELS, true ) ) {
+			$clean['heading_level'] = $input['heading_level'];
+		}
+
 		if ( isset( $input['date_format'] ) ) {
 			// A date format is passed to date_i18n, not printed raw, so the
 			// only thing to strip is markup somebody pasted by mistake.
@@ -432,7 +446,18 @@ final class Settings {
 		// leaving `a > b` and `@media (max-width: 40em)` untouched.
 		$css = preg_replace( '#<\s*/?\s*[a-zA-Z!]#', '', $css );
 
-		return trim( (string) $css );
+		$css = trim( (string) $css );
+
+		// The only field here with no natural size, and it lives in an option
+		// that is read on every sitemap render and shipped in every cache
+		// entry. 64 KB is far more than a sitemap's styling needs and well
+		// under the 150 KB at which WordPress 6.6 stops autoloading an option
+		// on its own.
+		if ( strlen( $css ) > self::MAX_CSS_BYTES ) {
+			$css = substr( $css, 0, self::MAX_CSS_BYTES );
+		}
+
+		return $css;
 	}
 
 	/**
