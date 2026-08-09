@@ -138,7 +138,14 @@ foreach ( $rules as $label => $pattern ) {
 			continue;
 		}
 
-		if ( preg_match( $pattern, $entry['msgstr'] ) ) {
+		// Placeholders are removed before the spacing rule runs. `%s` is a
+		// Latin letter on the page but not in the rendered string, and what it
+		// expands to — a number in 先頭の%s件, a link elsewhere — decides
+		// whether a space belongs there. Nothing static can tell those apart,
+		// so the rule declines to guess rather than reporting either way.
+		$subject = preg_replace( '/%[0-9]*\$?[sd]/', '', $entry['msgstr'] );
+
+		if ( preg_match( $pattern, $subject ) ) {
 			$offenders[] = $entry['msgstr'];
 		}
 	}

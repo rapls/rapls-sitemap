@@ -15,6 +15,55 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
 
-delete_option( 'rapls_sitemap_settings' );
-delete_option( 'rapls_sitemap_cache_salt' );
-delete_option( 'rapls_sitemap_activated_at' );
+/**
+ * The options this plugin owns. Everything else it writes is a transient.
+ *
+ * @var string[]
+ */
+$rapls_sitemap_options = array(
+	'rapls_sitemap_settings',
+	'rapls_sitemap_cache_salt',
+	'rapls_sitemap_activated_at',
+);
+
+/**
+ * Delete them from the current site.
+ */
+function rapls_sitemap_delete_options( array $options ) {
+	foreach ( $options as $option ) {
+		delete_option( $option );
+	}
+}
+
+/*
+ * Options are per-site, but uninstall.php runs once for the whole network — so
+ * on multisite, deleting only the current site's options leaves a row behind on
+ * every other site. Sites are walked in batches because a large network has
+ * more of them than it is safe to load at once.
+ */
+if ( is_multisite() ) {
+	$rapls_sitemap_offset = 0;
+
+	do {
+		$rapls_sitemap_sites = get_sites(
+			array(
+				'fields'                 => 'ids',
+				'number'                 => 200,
+				'offset'                 => $rapls_sitemap_offset,
+				'update_site_meta_cache' => false,
+			)
+		);
+
+		foreach ( $rapls_sitemap_sites as $rapls_sitemap_site_id ) {
+			switch_to_blog( $rapls_sitemap_site_id );
+			rapls_sitemap_delete_options( $rapls_sitemap_options );
+			restore_current_blog();
+		}
+
+		$rapls_sitemap_offset += 200;
+	} while ( count( $rapls_sitemap_sites ) === 200 );
+
+	return;
+}
+
+rapls_sitemap_delete_options( $rapls_sitemap_options );

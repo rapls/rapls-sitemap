@@ -758,3 +758,47 @@
 	opacity: 1;
 	text-decoration: underline;
 }
+
+/* --- optional per-entry metadata ----------------------------------------- */
+
+/*
+ * These only exist when the matching setting is on, so a theme that never sees
+ * them costs nothing. They sit outside the preset blocks on purpose: a date is
+ * a date in every design.
+ */
+
+.rapls-sitemap__count,
+.rapls-sitemap__date {
+	font-size: 0.85em;
+	opacity: 0.7;
+	white-space: nowrap;
+}
+
+.rapls-sitemap__excerpt {
+	display: block;
+	font-size: 0.9em;
+	line-height: 1.6;
+	margin: 0.15em 0 0.4em;
+	opacity: 0.8;
+}
+
+/* The "and N more" line is a note, not an entry, so it must not read as one. */
+.rapls-sitemap__item--more {
+	font-size: 0.9em;
+	font-style: italic;
+	opacity: 0.7;
+}
+
+/* --- section headings ----------------------------------------------------- */
+
+.rapls-sitemap__item--section > .rapls-sitemap__link,
+.rapls-sitemap__item--section > .rapls-sitemap__label {
+	display: block;
+	font-size: 1.15em;
+	font-weight: 700;
+	margin-bottom: 0.35em;
+}
+
+.rapls-sitemap__list--depth-0 > .rapls-sitemap__item--section + .rapls-sitemap__item--section {
+	margin-top: 1.75em;
+}

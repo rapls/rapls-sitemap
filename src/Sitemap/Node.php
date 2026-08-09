@@ -56,6 +56,32 @@ final class Node {
 	public $children = array();
 
 	/**
+	 * Formatted publication date, or '' when dates are switched off.
+	 *
+	 * Formatted here rather than in the renderer so the renderer stays free of
+	 * anything that needs the site's locale or timezone.
+	 *
+	 * @var string
+	 */
+	public $date = '';
+
+	/**
+	 * Trimmed excerpt, or '' when excerpts are switched off.
+	 *
+	 * @var string
+	 */
+	public $excerpt = '';
+
+	/**
+	 * Entry count for a term heading; -1 when there is nothing to show.
+	 *
+	 * Zero is a real count worth printing, so absence needs its own value.
+	 *
+	 * @var int
+	 */
+	public $count = -1;
+
+	/**
 	 * @param int    $id    Source ID, or 0.
 	 * @param string $title Display text.
 	 * @param string $url   Destination URL, or ''.

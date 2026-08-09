@@ -116,11 +116,39 @@ final class Shortcode {
 				'exclude_noindex',
 				'duplicate_in_terms',
 				'nofollow',
+				'section_headings',
+				'show_date',
+				'show_excerpt',
+				'show_count',
 			) as $flag
 		) {
 			if ( isset( $atts[ $flag ] ) ) {
 				$settings[ $flag ] = self::to_bool( $atts[ $flag ] );
 			}
+		}
+
+		// `number` reads better in a shortcode than `max_entries`, and it is
+		// what the plugins people are migrating from call it.
+		foreach ( array( 'number' => 'max_entries', 'offset' => 'offset', 'excerpt_length' => 'excerpt_length' ) as $att => $key ) {
+			if ( isset( $atts[ $att ] ) ) {
+				$settings[ $key ] = max( 0, (int) $atts[ $att ] );
+			}
+		}
+
+		if ( isset( $atts['list_type'] ) && in_array( $atts['list_type'], Settings::LIST_TYPES, true ) ) {
+			$settings['list_type'] = (string) $atts['list_type'];
+		}
+
+		if ( isset( $atts['orderby'] ) && in_array( $atts['orderby'], Settings::ORDERBY, true ) ) {
+			$settings['orderby'] = (string) $atts['orderby'];
+		}
+
+		if ( isset( $atts['order'] ) ) {
+			$settings['order'] = 'ASC' === strtoupper( (string) $atts['order'] ) ? 'ASC' : 'DESC';
+		}
+
+		if ( isset( $atts['date_format'] ) ) {
+			$settings['date_format'] = sanitize_text_field( (string) $atts['date_format'] );
 		}
 
 		foreach ( array( 'exclude_ids', 'exclude_terms' ) as $list ) {

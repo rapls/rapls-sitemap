@@ -3,7 +3,7 @@ Contributors: rapls
 Donate link: https://buymeacoffee.com/rapls
 Tags: sitemap, html sitemap, table of contents, サイトマップ, 目次
 Requires at least: 6.0
-Tested up to: 6.8
+Tested up to: 7.0
 Requires PHP: 7.4
 Stable tag: 0.1.0
 License: GPL-2.0-or-later
@@ -28,7 +28,11 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 * 複数のカテゴリーに属する投稿を、それぞれのカテゴリーに表示するかの切替
 * すべてのリンクに `rel="nofollow"` を付与するオプション
 * タグ一覧、投稿者一覧、年月アーカイブ一覧の出力
-* 並び順の指定。新しい順、古い順、タイトル順、ID 順、ページの並び順、更新日順、カスタムフィールド順
+* 投稿タイプごとの見出し（2種類以上を表示するときのみ）
+* 各項目への投稿日・抜粋の表示、カテゴリーごとの記事数の表示
+* 1リストあたりの件数上限と開始位置の指定。大規模サイトでのメモリ不足を防ぎます
+* `ul` / `ol` の切替
+* 並び順の指定。新しい順、古い順、タイトル順、ID 順、ページの並び順、更新日順、コメント数順、ランダム、カスタムフィールド順
 * デザインプリセット 21 種＋スタイルなし。画像を一切使わない CSS のみの実装で、ダークテーマでもそのまま使えます
 * 文字の大きさ、行間、リンクの色、下線の有無、字下げ幅を個別に指定
 * 箇条書きの記号を、黒丸・白丸・四角・絵文字・アイコンクラス (Font Awesome 等) から選択。最上位と下の階層で別々に指定できます
@@ -61,7 +65,21 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 `[rapls_sitemap post_types="page" depth="2" show_home="0"]`
 
-指定できる属性は `post_types` / `depth` / `design` / `term_mode` / `show_home` / `group_by_term` / `nest_terms` / `exclude_current` / `exclude_ids` / `exclude_terms` です。キャッシュとスタイル読み込みはサイト全体の設定のみで、配置ごとの指定はできません。
+指定できる属性は次のとおりです。
+
+* 対象 — `post_types` / `source` / `taxonomy` / `term_mode`
+* 絞り込み — `exclude_ids` / `exclude_terms` / `exclude_current` / `exclude_protected` / `exclude_noindex`
+* 件数 — `number` / `offset` / `depth`
+* 並び順 — `orderby` / `order`
+* 表示 — `design` / `list_type` / `show_home` / `group_by_term` / `nest_terms` / `duplicate_in_terms` / `section_headings` / `show_date` / `date_format` / `show_excerpt` / `excerpt_length` / `show_count` / `nofollow`
+
+キャッシュとスタイル読み込みはサイト全体の設定のみで、配置ごとの指定はできません。
+
+= 大量の記事があっても大丈夫ですか =
+
+「1リストあたりの件数」で上限を設定できます。初期値は投稿タイプごとに 2000 件です。
+
+サイトマップは全投稿タイプの全件を一度に取得する構造上、大規模サイトではこのクエリがメモリ不足を起こします。上限に達した場合は「先頭の N 件のみ表示しています。」と出力に明記されるので、黙って一部が欠けることはありません。0 を指定すると上限なしになります。
 
 = XML サイトマップも出力されますか =
 

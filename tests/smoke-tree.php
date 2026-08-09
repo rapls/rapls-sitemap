@@ -126,6 +126,39 @@ function get_permalink( $post ) {
 	return 'https://example.test/?p=' . $post->ID;
 }
 
+function get_post_type_object( $type ) {
+	$object                       = new stdClass();
+	$object->labels               = new stdClass();
+	$object->labels->name         = 'page' === $type ? 'Pages' : 'Posts';
+	$object->labels->singular_name = 'page' === $type ? 'Page' : 'Post';
+	return $object;
+}
+
+function get_post_type_archive_link( $type ) {
+	return 'post' === $type ? 'https://example.test/blog/' : false;
+}
+
+function get_the_date( $format, $post ) {
+	return date( $format, strtotime( $post->post_date ) );
+}
+
+function wp_trim_words( $text, $words, $more = '' ) {
+	$parts = preg_split( '/\s+/', trim( $text ) );
+	return count( $parts ) > $words ? implode( ' ', array_slice( $parts, 0, $words ) ) . $more : implode( ' ', $parts );
+}
+
+function wp_strip_all_tags( $text ) {
+	return trim( strip_tags( (string) $text ) );
+}
+
+function strip_shortcodes( $text ) {
+	return preg_replace( '/\[[^\]]*\]/', '', (string) $text );
+}
+
+function number_format_i18n( $number ) {
+	return number_format( (float) $number );
+}
+
 function get_object_taxonomies( $type, $output = 'names' ) {
 	if ( 'post' !== $type ) {
 		return array();
@@ -250,9 +283,13 @@ function tree_settings( array $overrides = array() ) {
 	return array_merge(
 		Settings::defaults(),
 		array(
-			'post_types'    => array( 'page' ),
-			'show_home'     => false,
-			'group_by_term' => false,
+			'post_types'       => array( 'page' ),
+			'show_home'        => false,
+			'group_by_term'    => false,
+			// Off unless a test is about them, so every other assertion keeps
+			// reading against the tree it means to test.
+			'section_headings' => false,
+			'max_entries'      => 0,
 		),
 		$overrides
 	);
@@ -480,6 +517,105 @@ order_for( 'post', array() );
 check( false === $GLOBALS['fixture_last_args']['update_post_meta_cache'], 'meta is not primed when nothing reads it' );
 order_for( 'post', array( 'exclude_noindex' => true ) );
 check( true === $GLOBALS['fixture_last_args']['update_post_meta_cache'], 'and is primed when the noindex check needs it' );
+
+/* --- section headings ---------------------------------------------------- */
+
+$both = array( 'post_types' => array( 'page', 'post' ), 'section_headings' => true );
+
+$roots = ( new TreeBuilder( tree_settings( $both ) ) )->build();
+check( array( 'Pages', 'Posts' ) === titles( $roots ), 'each post type gets a heading, in the configured order' );
+check( 'section' === $roots[0]->kind, 'headings are marked as sections' );
+check( 'https://example.test/blog/' === $roots[1]->url, 'a heading links to the post type archive when there is one' );
+check( '' === $roots[0]->url, 'and stays plain text when there is not' );
+check( in_array( 'Parent', titles( $roots[0]->children ), true ), 'the type\'s own tree hangs underneath' );
+
+// One list has nothing to be told apart from, so a label would be noise.
+$roots = ( new TreeBuilder( tree_settings( array( 'section_headings' => true ) ) ) )->build();
+check( 'section' !== $roots[0]->kind, 'a single post type gets no heading' );
+
+$roots = ( new TreeBuilder( tree_settings( array_merge( $both, array( 'section_headings' => false ) ) ) ) )->build();
+check( 'section' !== $roots[0]->kind, 'and headings can be switched off entirely' );
+
+// A heading must not eat a level of the depth budget.
+$plain    = ( new TreeBuilder( tree_settings( array( 'depth' => 2 ) ) ) )->build();
+$sections = ( new TreeBuilder( tree_settings( array_merge( $both, array( 'depth' => 2 ) ) ) ) )->build();
+check(
+	titles( $plain[0]->children ) === titles( $sections[0]->children[0]->children ),
+	'depth is counted below the heading, not through it'
+);
+
+/* --- the entry cap ------------------------------------------------------- */
+
+/**
+ * Entries anywhere in the tree, ignoring the "and more" note.
+ *
+ * The cap limits posts fetched, not root nodes — three of the five fixture
+ * pages nest under another, so counting roots would count the wrong thing.
+ */
+function entries( array $nodes ) {
+	$total = 0;
+	foreach ( $nodes as $node ) {
+		if ( 'more' !== $node->kind ) {
+			$total += 1 + entries( $node->children );
+		}
+	}
+	return $total;
+}
+
+$roots = ( new TreeBuilder( tree_settings( array( 'max_entries' => 0 ) ) ) )->build();
+check( 5 === entries( $roots ), 'no cap lists every one of the five pages' );
+
+$roots = ( new TreeBuilder( tree_settings( array( 'max_entries' => 2 ) ) ) )->build();
+$kinds = array_map( function ( $n ) { return $n->kind; }, $roots );
+check( in_array( 'more', $kinds, true ), 'a truncated list says so rather than just ending' );
+check( 2 === entries( $roots ), 'and stops at the cap' );
+
+// The cap is enforced by asking for one extra row, so the query must request
+// max + 1 — otherwise there is no evidence to detect truncation from.
+order_for( 'page', array( 'max_entries' => 10 ) );
+check( 11 === $GLOBALS['fixture_last_args']['posts_per_page'], 'the query asks for one more than the cap' );
+
+order_for( 'page', array( 'max_entries' => 0 ) );
+check( -1 === $GLOBALS['fixture_last_args']['posts_per_page'], 'and for everything when the cap is lifted' );
+
+$roots = ( new TreeBuilder( tree_settings( array( 'max_entries' => 99 ) ) ) )->build();
+check(
+	! in_array( 'more', array_map( function ( $n ) { return $n->kind; }, $roots ), true ),
+	'a cap nobody reaches adds no note'
+);
+
+order_for( 'page', array( 'offset' => 2 ) );
+check( 2 === $GLOBALS['fixture_last_args']['offset'], 'the offset reaches the query' );
+
+/* --- dates, excerpts, and counts ----------------------------------------- */
+
+$roots = ( new TreeBuilder( tree_settings() ) )->build();
+check( '' === $roots[0]->date && '' === $roots[0]->excerpt, 'nothing extra is attached by default' );
+check( -1 === $roots[0]->count, 'and a missing count is distinguishable from zero' );
+
+$roots = ( new TreeBuilder( tree_settings( array( 'show_date' => true, 'date_format' => 'Y-m-d' ) ) ) )->build();
+check( '2026-01-15' === $roots[0]->date, 'the date is formatted with the configured format' );
+
+$GLOBALS['fixture_pages'][0]->post_content = 'One two three four five six seven.';
+$GLOBALS['fixture_pages'][0]->post_excerpt = '';
+
+$roots = ( new TreeBuilder( tree_settings( array( 'show_excerpt' => true, 'excerpt_length' => 3 ) ) ) )->build();
+check( 'One two three…' === $roots[0]->excerpt, 'the excerpt falls back to the content and is trimmed to length' );
+
+$GLOBALS['fixture_pages'][0]->post_excerpt = 'A written excerpt.';
+$roots = ( new TreeBuilder( tree_settings( array( 'show_excerpt' => true, 'excerpt_length' => 20 ) ) ) )->build();
+check( 'A written excerpt.' === $roots[0]->excerpt, 'a hand-written excerpt wins over the content' );
+
+$roots = ( new TreeBuilder( grouped( array( 'show_count' => true ) ) ) )->build();
+check( 2 === $roots[0]->count, 'a term heading carries its entry count when asked' );
+
+/* --- the new orderings --------------------------------------------------- */
+
+$args = order_for( 'post', array( 'orderby' => 'comment_count', 'order' => 'DESC' ) );
+check( 'comment_count' === $args['orderby'], 'comment count ordering is passed through' );
+
+$args = order_for( 'post', array( 'orderby' => 'rand' ) );
+check( 'rand' === $args['orderby'] && ! isset( $args['order'] ), 'a random order carries no direction' );
 
 /* --- authors ------------------------------------------------------------ */
 

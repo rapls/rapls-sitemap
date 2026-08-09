@@ -69,6 +69,51 @@ $html               = ( new Renderer( $settings ) )->render( array( $flat ) );
 check( false !== strpos( $html, 'rapls-sitemap--tree' ), 'the design preset reaches the wrapper class' );
 check( false !== strpos( $html, '<nav ' ), 'a populated sitemap is a landmark' );
 
+/* --- ordered lists ------------------------------------------------------- */
+
+$settings              = Settings::defaults();
+$settings['list_type'] = 'ol';
+$html                  = ( new Renderer( $settings ) )->render( array( $parent ) );
+
+check( 2 === substr_count( $html, '<ol ' ), 'every level becomes an ordered list' );
+check( false === strpos( $html, '<ul' ), 'and no unordered list is left behind' );
+check( substr_count( $html, '<ol ' ) === substr_count( $html, '</ol>' ), 'the tags balance' );
+
+/* --- date, excerpt, and count ------------------------------------------- */
+
+$dated          = new Node( 20, 'Dated', 'https://example.test/dated' );
+$dated->date    = '2026-03-01';
+$dated->excerpt = 'A short summary.';
+
+$counted        = new Node( 21, 'News', '', 'term' );
+$counted->count = 12;
+
+$html = ( new Renderer( Settings::defaults() ) )->render( array( $dated, $counted ) );
+
+check( false !== strpos( $html, 'rapls-sitemap__date">2026-03-01' ), 'the date is rendered in its own element' );
+check( false !== strpos( $html, 'rapls-sitemap__excerpt">A short summary.' ), 'so is the excerpt' );
+check( false !== strpos( $html, 'rapls-sitemap__count' ), 'and the count' );
+check( false !== strpos( $html, '12' ), 'with the number in it' );
+
+// Zero is a real count and must still print; -1 is what "no count" looks like.
+$zero        = new Node( 22, 'Empty', '', 'term' );
+$zero->count = 0;
+$html        = ( new Renderer( Settings::defaults() ) )->render( array( $zero ) );
+check( false !== strpos( $html, 'rapls-sitemap__count' ), 'a count of zero is printed, not mistaken for absent' );
+
+$plain = ( new Renderer( Settings::defaults() ) )->render( array( $flat ) );
+check( false === strpos( $plain, '__date' ) && false === strpos( $plain, '__excerpt' ) && false === strpos( $plain, '__count' ), 'and none of the three appear when unset' );
+
+/* --- escaping applies to the new fields too ------------------------------ */
+
+$hostile          = new Node( 23, 'Fine', 'https://example.test/x' );
+$hostile->excerpt = '<script>alert(1)</script>';
+$hostile->date    = '<b>2026</b>';
+$html             = ( new Renderer( Settings::defaults() ) )->render( array( $hostile ) );
+
+check( false === strpos( $html, '<script>' ), 'an excerpt cannot inject markup' );
+check( false === strpos( $html, '<b>2026' ), 'nor can a date' );
+
 /* --- nofollow ------------------------------------------------------------ */
 
 $plain = ( new Renderer( Settings::defaults() ) )->render( array( $flat ) );

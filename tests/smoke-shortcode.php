@@ -80,6 +80,24 @@ check( false === Shortcode::apply_atts( $base, array( 'exclude_current' => 'no' 
 $out = Shortcode::apply_atts( $base, array( 'exclude_ids' => '4 8, 15' ) );
 check( array( 4, 8, 15 ) === $out['exclude_ids'], 'exclusions use the same loose parser as the settings screen' );
 
+/* --- the new per-placement attributes ------------------------------------ */
+
+check( 50 === Shortcode::apply_atts( $base, array( 'number' => '50' ) )['max_entries'], 'number caps the list for one placement' );
+check( 0 === Shortcode::apply_atts( $base, array( 'number' => '-5' ) )['max_entries'], 'a negative cap means no cap' );
+check( 10 === Shortcode::apply_atts( $base, array( 'offset' => '10' ) )['offset'], 'offset skips entries' );
+check( 'ol' === Shortcode::apply_atts( $base, array( 'list_type' => 'ol' ) )['list_type'], 'the list element is settable' );
+check( 'ul' === Shortcode::apply_atts( $base, array( 'list_type' => 'dl' ) )['list_type'], 'and an unknown one is ignored' );
+
+check( 'title' === Shortcode::apply_atts( $base, array( 'orderby' => 'title' ) )['orderby'], 'ordering is settable per placement' );
+check( 'rand' === Shortcode::apply_atts( $base, array( 'orderby' => 'rand' ) )['orderby'], 'including the new random order' );
+check( $base['orderby'] === Shortcode::apply_atts( $base, array( 'orderby' => 'whatever' ) )['orderby'], 'an unknown ordering is ignored' );
+check( 'ASC' === Shortcode::apply_atts( $base, array( 'order' => 'asc' ) )['order'], 'the direction is case insensitive' );
+
+check( true === Shortcode::apply_atts( $base, array( 'show_date' => '1' ) )['show_date'], 'dates can be switched on per placement' );
+check( 'Y-m-d' === Shortcode::apply_atts( $base, array( 'date_format' => 'Y-m-d' ) )['date_format'], 'with their own format' );
+check( 5 === Shortcode::apply_atts( $base, array( 'excerpt_length' => '5' ) )['excerpt_length'], 'and excerpt length is settable too' );
+check( false === Shortcode::apply_atts( $base, array( 'section_headings' => 'no' ) )['section_headings'], 'headings can be switched off per placement' );
+
 /* --- caching is global, never per placement ----------------------------- */
 
 $out = Shortcode::apply_atts( $base, array( 'cache_ttl' => '0', 'load_styles' => '0' ) );

@@ -36,6 +36,13 @@ final class TreeBuilder {
 	private $settings;
 
 	/**
+	 * Post types whose list hit the entry cap, keyed by slug.
+	 *
+	 * @var array<string,bool>
+	 */
+	private $truncated = array();
+
+	/**
 	 * @param array<string,mixed> $settings Settings from Settings::get().
 	 */
 	public function __construct( array $settings ) {
@@ -60,26 +67,19 @@ final class TreeBuilder {
 			);
 		}
 
+		$depth = (int) $this->settings['depth'];
+
 		switch ( (string) $this->settings['source'] ) {
 			case 'authors':
-				$roots = array_merge( $roots, $this->authors() );
+				$roots = array_merge( $roots, $this->depth_limited( $this->authors(), $depth ) );
 				break;
 
 			case 'archives':
-				$roots = array_merge( $roots, $this->archives() );
+				$roots = array_merge( $roots, $this->depth_limited( $this->archives(), $depth ) );
 				break;
 
 			default:
-				foreach ( (array) $this->settings['post_types'] as $post_type ) {
-					foreach ( $this->build_post_type( (string) $post_type ) as $node ) {
-						$roots[] = $node;
-					}
-				}
-		}
-
-		$depth = (int) $this->settings['depth'];
-		if ( $depth > 0 ) {
-			$roots = $this->prune( $roots, $depth );
+				$roots = array_merge( $roots, $this->content( $depth ) );
 		}
 
 		/**
@@ -91,6 +91,99 @@ final class TreeBuilder {
 		$filtered = apply_filters( Hooks::TREE, $roots, $this->settings );
 
 		return is_array( $filtered ) ? $filtered : $roots;
+	}
+
+	/**
+	 * The `content` source: every configured post type, optionally sectioned.
+	 *
+	 * Depth is applied to each post type's own tree *before* a section heading
+	 * is put above it, so turning headings on does not silently cost a level of
+	 * nesting to everything underneath.
+	 *
+	 * @param int $depth Maximum depth, 0 for unlimited.
+	 * @return Node[]
+	 */
+	private function content( int $depth ): array {
+		$sections = array();
+
+		foreach ( (array) $this->settings['post_types'] as $post_type ) {
+			$post_type = (string) $post_type;
+			$nodes     = $this->depth_limited( $this->build_post_type( $post_type ), $depth );
+
+			if ( array() === $nodes ) {
+				continue;
+			}
+
+			// A list that stops short says so. Silent truncation would read as
+			// a sitemap that is simply missing pages.
+			if ( ! empty( $this->truncated[ $post_type ] ) ) {
+				$nodes[] = new Node(
+					0,
+					sprintf(
+						/* translators: %s: number of entries shown. */
+						__( 'Only the first %s entries are listed.', 'rapls-sitemap' ),
+						number_format_i18n( (int) $this->settings['max_entries'] )
+					),
+					'',
+					'more'
+				);
+			}
+
+			$sections[ $post_type ] = $nodes;
+		}
+
+		// One list needs no label to tell it apart from the others.
+		if ( empty( $this->settings['section_headings'] ) || count( $sections ) < 2 ) {
+			return array_merge( array(), ...array_values( $sections ) );
+		}
+
+		$roots = array();
+		foreach ( $sections as $post_type => $nodes ) {
+			$heading = new Node( 0, $this->post_type_label( $post_type ), $this->post_type_url( $post_type ), 'section' );
+
+			foreach ( $nodes as $node ) {
+				$heading->add( $node );
+			}
+
+			$roots[] = $heading;
+		}
+
+		return $roots;
+	}
+
+	/**
+	 * A post type's plural label, for a section heading.
+	 *
+	 * @param string $post_type Post type slug.
+	 * @return string
+	 */
+	private function post_type_label( string $post_type ): string {
+		$object = get_post_type_object( $post_type );
+
+		return ( $object && ! empty( $object->labels->name ) ) ? (string) $object->labels->name : $post_type;
+	}
+
+	/**
+	 * Where a section heading points, when the post type has an archive.
+	 *
+	 * @param string $post_type Post type slug.
+	 * @return string Empty when there is no archive to link to.
+	 */
+	private function post_type_url( string $post_type ): string {
+		$link = get_post_type_archive_link( $post_type );
+
+		return is_string( $link ) ? $link : '';
+	}
+
+	/**
+	 * Apply the depth limit, if there is one.
+	 *
+	 * @param Node[] $nodes Nodes.
+	 * @param int    $depth Maximum depth, 0 for unlimited.
+	 * @return Node[]
+	 */
+	private function depth_limited( array $nodes, int $depth ): array {
+		return $depth > 0 ? $this->prune( $nodes, $depth ) : $nodes;
 	}
 
 	/**
@@ -141,12 +234,18 @@ final class TreeBuilder {
 	 */
 	private function fetch( string $post_type ): array {
 		$noindex = ! empty( $this->settings['exclude_noindex'] );
+		$max     = max( 0, (int) $this->settings['max_entries'] );
+		$offset  = max( 0, (int) $this->settings['offset'] );
 
 		$args = array_merge(
 			array(
 				'post_type'           => $post_type,
 				'post_status'         => 'publish',
-				'posts_per_page'      => -1,
+				// One more than the cap, so the extra row is the evidence that
+				// there was more to show. Counting separately would mean a
+				// second query on every render just to say "and 40 more".
+				'posts_per_page'      => $max > 0 ? $max + 1 : -1,
+				'offset'              => $offset,
 				'ignore_sticky_posts' => true,
 				'no_found_rows'       => true,
 				// Meta is only primed when something is actually going to read
@@ -206,6 +305,13 @@ final class TreeBuilder {
 			);
 		}
 
+		if ( $max > 0 && count( $posts ) > $max ) {
+			$posts = array_slice( $posts, 0, $max );
+			// Recorded rather than rendered here: the note belongs at the end
+			// of the list this post type produces, which the caller assembles.
+			$this->truncated[ $post_type ] = true;
+		}
+
 		return $posts;
 	}
 
@@ -233,6 +339,12 @@ final class TreeBuilder {
 			return is_post_type_hierarchical( $post_type )
 				? array( 'orderby' => 'menu_order title', 'order' => 'ASC' )
 				: array( 'orderby' => 'date', 'order' => 'DESC' );
+		}
+
+		// A random order and a render cache are a contradiction; the cache wins
+		// until it expires, so this shuffles per cache entry, not per view.
+		if ( 'rand' === $orderby ) {
+			return array( 'orderby' => 'rand' );
 		}
 
 		if ( 'meta' === $orderby ) {
@@ -305,14 +417,22 @@ final class TreeBuilder {
 			return array_map( array( $this, 'to_node' ), $posts );
 		}
 
+		$show_count = ! empty( $this->settings['show_count'] );
+
 		$nodes = array();
 		foreach ( $terms as $term ) {
-			$nodes[ (int) $term->term_id ] = new Node(
+			$node = new Node(
 				(int) $term->term_id,
 				$term->name,
 				(string) get_term_link( $term ),
 				'term'
 			);
+
+			if ( $show_count ) {
+				$node->count = (int) $term->count;
+			}
+
+			$nodes[ (int) $term->term_id ] = $node;
 		}
 
 		// Nest BEFORE attaching posts, so sub-categories precede the parent's
@@ -380,12 +500,18 @@ final class TreeBuilder {
 			return array();
 		}
 
+		$show_count = ! empty( $this->settings['show_count'] );
+
 		$nodes  = array();
 		$counts = array();
 		foreach ( $terms as $term ) {
 			$id            = (int) $term->term_id;
 			$nodes[ $id ]  = new Node( $id, $term->name, (string) get_term_link( $term ), 'term' );
 			$counts[ $id ] = (int) $term->count;
+
+			if ( $show_count ) {
+				$nodes[ $id ]->count = (int) $term->count;
+			}
 		}
 
 		$roots = $this->nest_terms( $terms, $nodes );
@@ -743,6 +869,43 @@ final class TreeBuilder {
 			$title = sprintf( __( '(no title) #%d', 'rapls-sitemap' ), (int) $post->ID );
 		}
 
-		return new Node( (int) $post->ID, (string) $title, (string) get_permalink( $post ), 'post' );
+		$node = new Node( (int) $post->ID, (string) $title, (string) get_permalink( $post ), 'post' );
+
+		if ( ! empty( $this->settings['show_date'] ) ) {
+			$format = (string) $this->settings['date_format'];
+			// An empty format means the site's own, which is what most people
+			// want and nobody should have to retype here.
+			$node->date = (string) get_the_date( '' !== $format ? $format : get_option( 'date_format' ), $post );
+		}
+
+		if ( ! empty( $this->settings['show_excerpt'] ) ) {
+			$node->excerpt = $this->excerpt( $post );
+		}
+
+		return $node;
+	}
+
+	/**
+	 * A trimmed excerpt for one post.
+	 *
+	 * Uses the hand-written excerpt when there is one and falls back to the
+	 * content, exactly as the loop does — but without `the_content`, because
+	 * running every shortcode on the site inside a sitemap render is how a
+	 * table of contents turns into a page build.
+	 *
+	 * @param \WP_Post $post Post object.
+	 * @return string
+	 */
+	private function excerpt( $post ): string {
+		$words = max( 1, (int) $this->settings['excerpt_length'] );
+
+		$raw = trim( (string) $post->post_excerpt );
+		if ( '' === $raw ) {
+			$raw = strip_shortcodes( (string) $post->post_content );
+		}
+
+		$raw = wp_strip_all_tags( str_replace( ']]>', ']]&gt;', $raw ) );
+
+		return trim( wp_trim_words( $raw, $words, '…' ) );
 	}
 }

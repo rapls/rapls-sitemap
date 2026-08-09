@@ -1,0 +1,45 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "rapls/sitemap",
+	"title": "Sitemap",
+	"category": "widgets",
+	"icon": "networking",
+	"description": "A table of contents for the whole site.",
+	"textdomain": "rapls-sitemap",
+	"supports": {
+		"html": false,
+		"align": [ "wide", "full" ]
+	},
+	"attributes": {
+		"postTypes": {
+			"type": "string",
+			"default": ""
+		},
+		"depth": {
+			"type": "number",
+			"default": -1
+		},
+		"design": {
+			"type": "string",
+			"default": ""
+		},
+		"termMode": {
+			"type": "string",
+			"default": ""
+		},
+		"showHome": {
+			"type": "boolean",
+			"default": true
+		},
+		"groupByTerm": {
+			"type": "boolean",
+			"default": true
+		},
+		"nestTerms": {
+			"type": "boolean",
+			"default": true
+		}
+	},
+	"editorScript": "rapls-sitemap-block"
+}

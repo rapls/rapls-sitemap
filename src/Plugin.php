@@ -88,7 +88,10 @@ final class Plugin {
 			( new SupportPanel() )->register();
 		}
 
-		add_action( 'init', array( $this, 'load_textdomain' ) );
+		// Priority 0: block.json's title and description are translated at
+		// registration time, and the block registers on `init` too. Loading the
+		// catalogue any later would leave those two strings in English.
+		add_action( 'init', array( $this, 'load_textdomain' ), 0 );
 	}
 
 	/**

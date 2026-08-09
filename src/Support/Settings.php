@@ -67,7 +67,21 @@ final class Settings {
 	);
 
 	/** Orderings offered for the entries within a list. */
-	public const ORDERBY = array( 'default', 'date', 'title', 'ID', 'menu_order', 'modified', 'meta' );
+	public const ORDERBY = array( 'default', 'date', 'title', 'ID', 'menu_order', 'modified', 'comment_count', 'rand', 'meta' );
+
+	/** List elements the markup can be built from. */
+	public const LIST_TYPES = array( 'ul', 'ol' );
+
+	/**
+	 * Entries fetched per post type before the list is truncated.
+	 *
+	 * A sitemap asks for every post of every type at once, so on a large site
+	 * this is the query that runs out of memory. The cap is deliberately high
+	 * enough that an ordinary site never meets it, and truncation is always
+	 * visible in the output — a silently short sitemap would be worse than a
+	 * slow one.
+	 */
+	public const DEFAULT_MAX_ENTRIES = 2000;
 
 	/** Term display modes. */
 	public const TERM_MODES = array( 'posts', 'terms_only' );
@@ -147,6 +161,24 @@ final class Settings {
 			// Meta key holding a sort value — the only way to get a true
 			// 五十音順, since WordPress stores no reading for a kanji title.
 			'sort_meta_key'    => '',
+			// Entries per post type; 0 lifts the cap entirely.
+			'max_entries'      => self::DEFAULT_MAX_ENTRIES,
+			// Entries to skip at the start of each list.
+			'offset'           => 0,
+			// A heading above each post type's list when more than one is shown.
+			'section_headings' => true,
+			// `ul` or `ol`.
+			'list_type'        => 'ul',
+			// Show the published date beside each entry.
+			'show_date'        => false,
+			// PHP date format; empty uses the site's own setting.
+			'date_format'      => '',
+			// Show an excerpt beneath each entry.
+			'show_excerpt'     => false,
+			// Words of excerpt to show.
+			'excerpt_length'   => 20,
+			// Show the entry count beside each category heading.
+			'show_count'       => false,
 			// Design preset slug; see DESIGNS.
 			'design'           => 'simple',
 			// Typography, colour, and bullet overrides; see Support\Design.
@@ -242,6 +274,10 @@ final class Settings {
 				'exclude_noindex',
 				'duplicate_in_terms',
 				'nofollow',
+				'section_headings',
+				'show_date',
+				'show_excerpt',
+				'show_count',
 				'legacy_marker',
 				'legacy_shortcode',
 				'load_styles',
@@ -305,6 +341,26 @@ final class Settings {
 
 		if ( isset( $input['cache_ttl'] ) ) {
 			$clean['cache_ttl'] = max( 0, (int) $input['cache_ttl'] );
+		}
+
+		foreach ( array( 'max_entries', 'offset' ) as $key ) {
+			if ( isset( $input[ $key ] ) ) {
+				$clean[ $key ] = max( 0, (int) $input[ $key ] );
+			}
+		}
+
+		if ( isset( $input['excerpt_length'] ) ) {
+			$clean['excerpt_length'] = max( 1, min( 200, (int) $input['excerpt_length'] ) );
+		}
+
+		if ( isset( $input['list_type'] ) && in_array( $input['list_type'], self::LIST_TYPES, true ) ) {
+			$clean['list_type'] = $input['list_type'];
+		}
+
+		if ( isset( $input['date_format'] ) ) {
+			// A date format is passed to date_i18n, not printed raw, so the
+			// only thing to strip is markup somebody pasted by mistake.
+			$clean['date_format'] = sanitize_text_field( (string) $input['date_format'] );
 		}
 
 		return $clean;

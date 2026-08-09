@@ -69,44 +69,19 @@ final class Block {
 			wp_set_script_translations( self::SCRIPT, 'rapls-sitemap', RAPLS_SITEMAP_DIR . 'languages' );
 		}
 
-		register_block_type(
-			self::NAME,
-			array(
-				'api_version'     => 2,
-				'editor_script'   => self::SCRIPT,
-				'render_callback' => array( $this, 'render' ),
-				'attributes'      => array(
-					'postTypes'   => array(
-						'type'    => 'string',
-						'default' => '',
-					),
-					// -1 means "inherit the stored depth"; 0 means unlimited.
-					'depth'       => array(
-						'type'    => 'number',
-						'default' => -1,
-					),
-					'design'      => array(
-						'type'    => 'string',
-						'default' => '',
-					),
-					'showHome'    => array(
-						'type'    => 'boolean',
-						'default' => true,
-					),
-					'groupByTerm' => array(
-						'type'    => 'boolean',
-						'default' => true,
-					),
-					'nestTerms'   => array(
-						'type'    => 'boolean',
-						'default' => true,
-					),
-					'termMode'    => array(
-						'type'    => 'string',
-						'default' => '',
-					),
-				),
-			)
+		/*
+		 * Registered from block.json, which is what WordPress prefers and what
+		 * lets the editor learn the block's shape without running our PHP.
+		 *
+		 * The metadata names the script by its registered handle rather than by
+		 * `file:`, because a `file:` reference makes WordPress register the
+		 * script itself — with no dependencies, since there is no build step
+		 * here to emit the `.asset.php` that would declare them. Registering it
+		 * above keeps the dependency list and the translations explicit.
+		 */
+		register_block_type_from_metadata(
+			RAPLS_SITEMAP_DIR . 'blocks/sitemap',
+			array( 'render_callback' => array( $this, 'render' ) )
 		);
 	}
 

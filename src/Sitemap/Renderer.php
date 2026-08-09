@@ -130,13 +130,15 @@ final class Renderer {
 	 * @return string
 	 */
 	private function list( array $nodes, int $depth ): string {
-		$html = '<ul class="' . esc_attr( self::BASE . '__list ' . self::BASE . '__list--depth-' . $depth ) . '">';
+		$tag = 'ol' === ( $this->settings['list_type'] ?? 'ul' ) ? 'ol' : 'ul';
+
+		$html = '<' . $tag . ' class="' . esc_attr( self::BASE . '__list ' . self::BASE . '__list--depth-' . $depth ) . '">';
 
 		foreach ( $nodes as $node ) {
 			$html .= $this->item( $node, $depth );
 		}
 
-		return $html . '</ul>';
+		return $html . '</' . $tag . '>';
 	}
 
 	/**
@@ -152,13 +154,63 @@ final class Renderer {
 			$classes .= ' ' . self::BASE . '__item--has-children';
 		}
 
-		$html = '<li class="' . esc_attr( $classes ) . '">' . $this->icon( $depth ) . $this->link( $node );
+		$html = '<li class="' . esc_attr( $classes ) . '">'
+			. $this->icon( $depth )
+			. $this->link( $node )
+			. $this->count( $node )
+			. $this->date( $node )
+			. $this->excerpt( $node );
 
 		if ( $node->has_children() ) {
 			$html .= $this->list( $node->children, $depth + 1 );
 		}
 
 		return $html . '</li>';
+	}
+
+	/**
+	 * The entry count beside a term heading.
+	 *
+	 * @param Node $node Node to render.
+	 * @return string
+	 */
+	private function count( Node $node ): string {
+		if ( $node->count < 0 ) {
+			return '';
+		}
+
+		return ' <span class="' . esc_attr( self::BASE . '__count' ) . '">'
+			/* translators: %s: number of entries in a category. */
+			. esc_html( sprintf( __( '(%s)', 'rapls-sitemap' ), number_format_i18n( $node->count ) ) )
+			. '</span>';
+	}
+
+	/**
+	 * The publication date beside an entry.
+	 *
+	 * @param Node $node Node to render.
+	 * @return string
+	 */
+	private function date( Node $node ): string {
+		if ( '' === $node->date ) {
+			return '';
+		}
+
+		return ' <span class="' . esc_attr( self::BASE . '__date' ) . '">' . esc_html( $node->date ) . '</span>';
+	}
+
+	/**
+	 * The excerpt beneath an entry.
+	 *
+	 * @param Node $node Node to render.
+	 * @return string
+	 */
+	private function excerpt( Node $node ): string {
+		if ( '' === $node->excerpt ) {
+			return '';
+		}
+
+		return '<span class="' . esc_attr( self::BASE . '__excerpt' ) . '">' . esc_html( $node->excerpt ) . '</span>';
 	}
 
 	/**

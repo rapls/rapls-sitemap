@@ -481,6 +481,67 @@ final class SettingsPage {
 					</tr>
 
 					<tr>
+						<th scope="row"><?php echo esc_html__( 'Show with each entry', 'rapls-sitemap' ); ?></th>
+						<td>
+							<label style="display:block">
+								<input type="checkbox" value="1"
+									name="<?php echo esc_attr( $name . '[show_date]' ); ?>"
+									<?php checked( ! empty( $settings['show_date'] ) ); ?> />
+								<?php echo esc_html__( 'Published date', 'rapls-sitemap' ); ?>
+								<input type="text" style="width:9em;margin-left:0.5em"
+									name="<?php echo esc_attr( $name . '[date_format]' ); ?>"
+									value="<?php echo esc_attr( (string) $settings['date_format'] ); ?>"
+									placeholder="<?php echo esc_attr( (string) get_option( 'date_format' ) ); ?>"
+									aria-label="<?php echo esc_attr__( 'Date format', 'rapls-sitemap' ); ?>" />
+								<span class="description"><?php echo esc_html__( 'Empty uses the site’s own date format.', 'rapls-sitemap' ); ?></span>
+							</label>
+
+							<label style="display:block">
+								<input type="checkbox" value="1"
+									name="<?php echo esc_attr( $name . '[show_excerpt]' ); ?>"
+									<?php checked( ! empty( $settings['show_excerpt'] ) ); ?> />
+								<?php echo esc_html__( 'Excerpt', 'rapls-sitemap' ); ?>
+								<input type="number" min="1" max="200" style="width:6em;margin-left:0.5em"
+									name="<?php echo esc_attr( $name . '[excerpt_length]' ); ?>"
+									value="<?php echo esc_attr( (string) $settings['excerpt_length'] ); ?>"
+									aria-label="<?php echo esc_attr__( 'Excerpt length in words', 'rapls-sitemap' ); ?>" />
+								<span class="description"><?php echo esc_html__( 'words', 'rapls-sitemap' ); ?></span>
+							</label>
+
+							<label style="display:block">
+								<input type="checkbox" value="1"
+									name="<?php echo esc_attr( $name . '[show_count]' ); ?>"
+									<?php checked( ! empty( $settings['show_count'] ) ); ?> />
+								<?php echo esc_html__( 'Entry count beside each category', 'rapls-sitemap' ); ?>
+							</label>
+						</td>
+					</tr>
+
+					<tr>
+						<th scope="row"><?php echo esc_html__( 'Structure', 'rapls-sitemap' ); ?></th>
+						<td>
+							<label style="display:block">
+								<input type="checkbox" value="1"
+									name="<?php echo esc_attr( $name . '[section_headings]' ); ?>"
+									<?php checked( ! empty( $settings['section_headings'] ) ); ?> />
+								<?php echo esc_html__( 'Put a heading above each post type', 'rapls-sitemap' ); ?>
+							</label>
+							<p class="description">
+								<?php echo esc_html__( 'Only when more than one post type is listed — a single list needs no label to tell it apart.', 'rapls-sitemap' ); ?>
+							</p>
+							<p>
+								<label>
+									<?php echo esc_html__( 'List element', 'rapls-sitemap' ); ?>
+									<select name="<?php echo esc_attr( $name . '[list_type]' ); ?>">
+										<option value="ul" <?php selected( $settings['list_type'], 'ul' ); ?>><?php echo esc_html__( 'Unordered (ul)', 'rapls-sitemap' ); ?></option>
+										<option value="ol" <?php selected( $settings['list_type'], 'ol' ); ?>><?php echo esc_html__( 'Ordered (ol)', 'rapls-sitemap' ); ?></option>
+									</select>
+								</label>
+							</p>
+						</td>
+					</tr>
+
+					<tr>
 						<th scope="row">
 							<label for="rapls-sitemap-design"><?php echo esc_html__( 'Design', 'rapls-sitemap' ); ?></label>
 						</th>
@@ -606,6 +667,26 @@ final class SettingsPage {
 
 					<p class="description">
 						<?php echo esc_html__( 'Titles sort by the database collation, which is correct for kana and Latin but not for kanji — nothing records that 大阪 reads おおさか. For a true kana order, store the reading in a custom field and sort by that instead.', 'rapls-sitemap' ); ?>
+					</p>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row">
+					<label for="rapls-sitemap-max"><?php echo esc_html__( 'Entries per list', 'rapls-sitemap' ); ?></label>
+				</th>
+				<td>
+					<input type="number" min="0" step="100" id="rapls-sitemap-max"
+						name="<?php echo esc_attr( $name . '[max_entries]' ); ?>"
+						value="<?php echo esc_attr( (string) $settings['max_entries'] ); ?>" />
+					<label style="margin-left:1.5em">
+						<?php echo esc_html__( 'Skip the first', 'rapls-sitemap' ); ?>
+						<input type="number" min="0" step="1" style="width:6em"
+							name="<?php echo esc_attr( $name . '[offset]' ); ?>"
+							value="<?php echo esc_attr( (string) $settings['offset'] ); ?>" />
+					</label>
+					<p class="description">
+						<?php echo esc_html__( 'A sitemap asks for every entry of every post type at once, which is the query that runs out of memory on a large site. 0 lifts the cap; a list that stops short always says so in the output.', 'rapls-sitemap' ); ?>
 					</p>
 				</td>
 			</tr>
@@ -1166,9 +1247,11 @@ final class SettingsPage {
 			'date'       => __( 'Published date', 'rapls-sitemap' ),
 			'modified'   => __( 'Last modified', 'rapls-sitemap' ),
 			'title'      => __( 'Title', 'rapls-sitemap' ),
-			'menu_order' => __( 'Page order', 'rapls-sitemap' ),
-			'ID'         => __( 'ID', 'rapls-sitemap' ),
-			'meta'       => __( 'Custom field', 'rapls-sitemap' ),
+			'menu_order'    => __( 'Page order', 'rapls-sitemap' ),
+			'ID'            => __( 'ID', 'rapls-sitemap' ),
+			'comment_count' => __( 'Comment count', 'rapls-sitemap' ),
+			'rand'          => __( 'Random', 'rapls-sitemap' ),
+			'meta'          => __( 'Custom field', 'rapls-sitemap' ),
 		);
 	}
 
