@@ -24,6 +24,7 @@ $rapls_sitemap_options = array(
 	'rapls_sitemap_settings',
 	'rapls_sitemap_cache_salt',
 	'rapls_sitemap_activated_at',
+	'rapls_sitemap_version',
 );
 
 /**

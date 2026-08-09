@@ -15,6 +15,7 @@ use RaplsSitemap\Frontend\LegacyShortcode;
 use RaplsSitemap\Frontend\Shortcode;
 use RaplsSitemap\Frontend\Styles;
 use RaplsSitemap\Sitemap\Cache;
+use RaplsSitemap\Support\Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -120,12 +121,28 @@ final class Plugin {
 			return;
 		}
 
-		// The settings used to autoload. They are read only where a sitemap
-		// renders, so autoloading them spent bytes on every other request too —
-		// including the Additional CSS, which has no natural size.
+		/*
+		 * The settings used to autoload. They are read only where a sitemap
+		 * renders, so autoloading them spent bytes on every other request too —
+		 * including the Additional CSS, which has no natural size.
+		 *
+		 * `update_option( $option, $same_value, false )` will not do this.
+		 * update_option() returns early when the serialized value is unchanged,
+		 * and that return happens *before* it looks at the autoload argument —
+		 * so writing the array back to itself changes nothing at all.
+		 */
 		$settings = get_option( Settings::OPTION );
+
 		if ( false !== $settings ) {
-			update_option( Settings::OPTION, $settings, false );
+			if ( function_exists( 'wp_set_option_autoload' ) ) {
+				// WordPress 6.6 and later.
+				wp_set_option_autoload( Settings::OPTION, false );
+			} else {
+				// 6.0 to 6.5: removing and re-adding is the only way to change
+				// the column without also changing the value.
+				delete_option( Settings::OPTION );
+				add_option( Settings::OPTION, $settings, '', false );
+			}
 		}
 
 		update_option( self::VERSION_OPTION, RAPLS_SITEMAP_VERSION, false );

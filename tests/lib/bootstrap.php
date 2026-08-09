@@ -79,9 +79,27 @@ if ( ! function_exists( 'get_option' ) ) {
 	}
 }
 
+// Autoload flags, tracked alongside the values so a test can assert on them.
+$GLOBALS['rapls_autoload'] = array();
+
 if ( ! function_exists( 'update_option' ) ) {
 	function update_option( $name, $value, $autoload = null ) {
+		// Core returns here when the serialized value is unchanged, and it does
+		// so *before* looking at $autoload. Reproducing that is the point: a
+		// migration that writes an option back to itself to change its autoload
+		// flag silently does nothing, and only a stub that behaves like core
+		// will catch it.
+		$exists = array_key_exists( $name, $GLOBALS['rapls_options'] );
+		if ( $exists && serialize( $GLOBALS['rapls_options'][ $name ] ) === serialize( $value ) ) {
+			return false;
+		}
+
 		$GLOBALS['rapls_options'][ $name ] = $value;
+
+		if ( null !== $autoload ) {
+			$GLOBALS['rapls_autoload'][ $name ] = (bool) $autoload;
+		}
+
 		return true;
 	}
 }
@@ -91,7 +109,25 @@ if ( ! function_exists( 'add_option' ) ) {
 		if ( array_key_exists( $name, $GLOBALS['rapls_options'] ) ) {
 			return false;
 		}
-		$GLOBALS['rapls_options'][ $name ] = $value;
+		$GLOBALS['rapls_options'][ $name ]  = $value;
+		$GLOBALS['rapls_autoload'][ $name ] = (bool) $autoload;
+		return true;
+	}
+}
+
+if ( ! function_exists( 'delete_option' ) ) {
+	function delete_option( $name ) {
+		unset( $GLOBALS['rapls_options'][ $name ], $GLOBALS['rapls_autoload'][ $name ] );
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_set_option_autoload' ) ) {
+	function wp_set_option_autoload( $name, $autoload ) {
+		if ( ! array_key_exists( $name, $GLOBALS['rapls_options'] ) ) {
+			return false;
+		}
+		$GLOBALS['rapls_autoload'][ $name ] = (bool) $autoload;
 		return true;
 	}
 }
