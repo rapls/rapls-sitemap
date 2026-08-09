@@ -16,7 +16,7 @@ msgid "(%s)"
 msgstr ""
 
 #. translators: %d: post ID.
-#: src/Sitemap/TreeBuilder.php:914
+#: src/Sitemap/TreeBuilder.php:986
 msgid "(no title) #%d"
 msgstr ""
 
@@ -331,7 +331,7 @@ msgid "Exclude post IDs"
 msgstr ""
 
 #. translators: PHP date format for a monthly archive heading. Japanese uses Y年n月.
-#: src/Sitemap/TreeBuilder.php:879
+#: src/Sitemap/TreeBuilder.php:951
 msgid "F Y"
 msgstr ""
 
@@ -929,7 +929,7 @@ msgid "Windows ships no country flag glyphs, so these appear as two letters — 
 msgstr ""
 
 #. translators: PHP date format for a yearly archive heading. Japanese uses Y年.
-#: src/Sitemap/TreeBuilder.php:867
+#: src/Sitemap/TreeBuilder.php:939
 msgid "Y"
 msgstr ""
 

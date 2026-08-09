@@ -500,13 +500,47 @@ final class TreeBuilder {
 		// hide_empty is off so ancestors survive; empty branches go here instead.
 		$groups = $this->drop_postless_terms( $roots );
 
+		if ( $show_count ) {
+			$this->count_entries( $groups );
+		}
+
 		foreach ( $posts as $post ) {
 			if ( ! isset( $claimed[ (int) $post->ID ] ) ) {
 				$groups[] = $this->to_node( $post );
 			}
 		}
 
-		return $groups;
+		return $this->note_if_truncated( $groups, self::term_key( $taxonomy ) );
+	}
+
+	/**
+	 * Replace each heading's count with the entries actually beneath it.
+	 *
+	 * A term's own count is how many posts are assigned to it — not how many
+	 * this sitemap ends up showing, which the exclusions, the noindex filter
+	 * and the entry cap have all had a say in. Printing the former next to the
+	 * latter is a number that contradicts the list under it, so where entries
+	 * are on screen they are what gets counted.
+	 *
+	 * @param Node[] $nodes Nodes to walk.
+	 * @return int Entries in this level and below.
+	 */
+	private function count_entries( array $nodes ): int {
+		$total = 0;
+
+		foreach ( $nodes as $node ) {
+			$below = $this->count_entries( $node->children );
+
+			if ( 'term' === $node->kind ) {
+				$node->count = $below;
+				$total      += $below;
+				continue;
+			}
+
+			$total += 1 + $below;
+		}
+
+		return $total;
 	}
 
 	/**
@@ -540,7 +574,7 @@ final class TreeBuilder {
 
 		$roots = $this->nest_terms( $terms, $nodes );
 
-		return $this->drop_empty_terms( $roots, $counts );
+		return $this->note_if_truncated( $this->drop_empty_terms( $roots, $counts ), self::term_key( $taxonomy ) );
 	}
 
 	/**
@@ -557,15 +591,53 @@ final class TreeBuilder {
 	 * @return object[] Term objects; empty on error.
 	 */
 	private function fetch_terms( string $taxonomy ): array {
-		$terms = get_terms(
-			array(
-				'taxonomy'     => $taxonomy,
-				'hide_empty'   => false,
-				'exclude_tree' => (array) $this->settings['exclude_terms'],
-			)
+		$cap = $this->cap();
+
+		$args = array(
+			'taxonomy'     => $taxonomy,
+			'hide_empty'   => false,
+			'exclude_tree' => (array) $this->settings['exclude_terms'],
 		);
 
-		return ( is_wp_error( $terms ) || ! is_array( $terms ) ) ? array() : $terms;
+		// Counts only mean what a reader expects when nesting is off. With it
+		// on, a parent shows its own direct assignments while displaying its
+		// children's entries too, so the number contradicts the list beneath
+		// it. pad_counts folds the descendants in.
+		if ( ! empty( $this->settings['show_count'] ) && ! empty( $this->settings['nest_terms'] ) ) {
+			$args['pad_counts'] = true;
+		}
+
+		// Bounded for the same reason posts and users are. A tag-heavy blog or
+		// a large store can have more terms than it is safe to load at once.
+		if ( $cap > 0 ) {
+			$args['number'] = $cap + 1;
+		}
+
+		$terms = get_terms( $args );
+
+		if ( is_wp_error( $terms ) || ! is_array( $terms ) ) {
+			return array();
+		}
+
+		if ( $cap > 0 && count( $terms ) > $cap ) {
+			$terms = array_slice( $terms, 0, $cap );
+			$this->truncated[ self::term_key( $taxonomy ) ] = true;
+		}
+
+		return $terms;
+	}
+
+	/**
+	 * The truncation key for one taxonomy.
+	 *
+	 * Namespaced away from post type slugs, which share the same array — a
+	 * taxonomy and a post type can legitimately have the same name.
+	 *
+	 * @param string $taxonomy Taxonomy slug.
+	 * @return string
+	 */
+	private static function term_key( string $taxonomy ): string {
+		return 'tax:' . $taxonomy;
 	}
 
 	/**

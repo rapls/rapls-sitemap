@@ -230,8 +230,10 @@ function get_post_meta( $id, $key, $single = false ) {
 }
 
 function get_terms( $args ) {
-	// Recorded so a test can prove which taxonomy the builder asked for.
+	// Recorded so a test can prove which taxonomy the builder asked for, and
+	// what bounds it put on the query.
 	$GLOBALS['fixture_last_taxonomy'] = $args['taxonomy'];
+	$GLOBALS['fixture_last_term_args'] = $args;
 
 	$excluded = array_map( 'intval', (array) ( $args['exclude_tree'] ?? array() ) );
 	$out      = array();
@@ -609,7 +611,18 @@ $roots = ( new TreeBuilder( tree_settings( array( 'show_excerpt' => true, 'excer
 check( 'A written excerpt.' === $roots[0]->excerpt, 'a hand-written excerpt wins over the content' );
 
 $roots = ( new TreeBuilder( grouped( array( 'show_count' => true ) ) ) )->build();
-check( 2 === $roots[0]->count, 'a term heading carries its entry count when asked' );
+
+// News lists Newest and Middle, and nests Sub which lists Deep. The count has
+// to be the three entries a reader can see under that heading, not the two the
+// term itself records — the exclusions, the noindex filter and the entry cap
+// all get a say in what actually renders, and a number that contradicts the
+// list beneath it is worse than no number.
+check( 3 === $roots[0]->count, 'a term heading counts the entries actually shown beneath it' );
+check( 1 === $roots[0]->children[0]->count, 'and a nested heading counts its own' );
+check( 3 === count( titles( $roots[0]->children ) ), 'which is what the list under it contains' );
+
+$roots = ( new TreeBuilder( grouped() ) )->build();
+check( -1 === $roots[0]->count, 'no count is attached when it was not asked for' );
 
 /* --- the new orderings --------------------------------------------------- */
 
@@ -650,6 +663,26 @@ check( 2 === $GLOBALS['fixture_last_user_args']['number'], 'the user query is ca
 $roots = ( new TreeBuilder( tree_settings( array( 'source' => 'authors', 'max_entries' => 0 ) ) ) )->build();
 check( ! has_note( $roots ), 'lifting the cap lifts it for authors as well' );
 check( ! isset( $GLOBALS['fixture_last_user_args']['number'] ), 'and the user query goes back to unbounded' );
+
+// Terms were the third unbounded query, and the one most easily overlooked: a
+// tag-heavy blog can have more of them than posts.
+$GLOBALS['fixture_last_term_args'] = null;
+$roots = ( new TreeBuilder( grouped( array( 'term_mode' => 'terms_only', 'max_entries' => 1 ) ) ) )->build();
+check( 2 === $GLOBALS['fixture_last_term_args']['number'], 'the term query is capped too' );
+check( has_note( $roots ), 'and a truncated term listing says so' );
+
+$GLOBALS['fixture_last_term_args'] = null;
+( new TreeBuilder( grouped( array( 'term_mode' => 'terms_only', 'max_entries' => 0 ) ) ) )->build();
+check( ! isset( $GLOBALS['fixture_last_term_args']['number'] ), 'lifting the cap lifts it for terms as well' );
+
+// The count only lines up with a nested display if descendants are folded in.
+$GLOBALS['fixture_last_term_args'] = null;
+( new TreeBuilder( grouped( array( 'term_mode' => 'terms_only', 'show_count' => true, 'nest_terms' => true ) ) ) )->build();
+check( ! empty( $GLOBALS['fixture_last_term_args']['pad_counts'] ), 'nested counts ask the database to include descendants' );
+
+$GLOBALS['fixture_last_term_args'] = null;
+( new TreeBuilder( grouped( array( 'term_mode' => 'terms_only', 'show_count' => true, 'nest_terms' => false ) ) ) )->build();
+check( empty( $GLOBALS['fixture_last_term_args']['pad_counts'] ), 'and do not when nothing is nested' );
 
 /* --- authors ------------------------------------------------------------ */
 
