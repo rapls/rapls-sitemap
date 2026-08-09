@@ -50,6 +50,13 @@ final class Cache {
 		add_action( 'edited_term', array( $this, 'flush' ) );
 		add_action( 'delete_term', array( $this, 'flush' ) );
 
+		// User lifecycle. The author listing is built from display names, so a
+		// renamed or removed user would otherwise sit in the cache until it
+		// expired — twelve hours by default.
+		add_action( 'profile_update', array( $this, 'flush' ) );
+		add_action( 'user_register', array( $this, 'flush' ) );
+		add_action( 'deleted_user', array( $this, 'flush' ) );
+
 		// Settings changes alter the hash anyway, but flushing keeps the option
 		// table from accumulating a fresh orphan set on every save.
 		add_action( 'update_option_' . Settings::OPTION, array( $this, 'flush' ) );

@@ -61,7 +61,20 @@ foreach ( array( 'wp_footer', 'wp_head', 'admin_notices', 'all_admin_notices', '
 
 /* --- cache invalidation is wired to content changes --------------------- */
 
-foreach ( array( 'save_post', 'deleted_post', 'trashed_post', 'edited_term', 'delete_term' ) as $hook ) {
+// Users are in here because the author listing is built from display names: a
+// rename would otherwise sit in the cache until it expired, twelve hours later.
+foreach (
+	array(
+		'save_post',
+		'deleted_post',
+		'trashed_post',
+		'edited_term',
+		'delete_term',
+		'profile_update',
+		'user_register',
+		'deleted_user',
+	) as $hook
+) {
 	check( isset( $hooks[ $hook ] ), sprintf( 'the cache flushes on %s', $hook ) );
 }
 

@@ -265,16 +265,22 @@ $base = array_merge( Settings::defaults(), array( 'exclude_ids' => array( 42 ) )
 
 $GLOBALS['rapls_current_post'] = 7;
 $out                          = Settings::for_request( $base );
-check( array( 42, 7 ) === $out['exclude_ids'], 'the current page joins the exclusion list' );
+
+// Recorded apart from exclude_ids, not appended to it. Both keep the page out
+// of the query, but only the listed exclusions take a page's children with
+// them — leaving the sitemap page out of its own list is no reason to hide the
+// pages filed under it.
+check( 7 === $out['exclude_self'], 'the current page is recorded on its own key' );
+check( array( 42 ) === $out['exclude_ids'], 'and the listed exclusions are left as they were' );
 
 $out = Settings::for_request( $out );
-check( array( 42, 7 ) === $out['exclude_ids'], 'applying it twice does not duplicate the ID' );
+check( 7 === $out['exclude_self'], 'applying it twice changes nothing' );
 
 $GLOBALS['rapls_current_post'] = 0;
-check( array( 42 ) === Settings::for_request( $base )['exclude_ids'], 'outside a post nothing is added' );
+check( 0 === Settings::for_request( $base )['exclude_self'], 'outside a post nothing is recorded' );
 
 $GLOBALS['rapls_current_post'] = 7;
 $off                          = array_merge( $base, array( 'exclude_current' => false ) );
-check( array( 42 ) === Settings::for_request( $off )['exclude_ids'], 'the setting can be turned off' );
+check( 0 === Settings::for_request( $off )['exclude_self'], 'the setting can be turned off' );
 
 summary();

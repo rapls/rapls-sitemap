@@ -126,8 +126,13 @@ final class Settings {
 			'post_types'       => array( 'page', 'post' ),
 			// Maximum nesting depth; 0 means unlimited.
 			'depth'            => 0,
-			// Post/page IDs to omit (their descendants are omitted too).
+			// Post/page IDs to omit, along with their descendants.
 			'exclude_ids'      => array(),
+			// The page the sitemap is rendering on, resolved by for_request().
+			// Kept apart from exclude_ids because it must NOT cascade: leaving
+			// the sitemap page out of its own list is no reason to hide the
+			// pages filed under it.
+			'exclude_self'     => 0,
 			// Term IDs (category) whose posts are omitted.
 			'exclude_terms'    => array(),
 			// Post type slugs never listed, whatever `post_types` says. Belt
@@ -533,10 +538,7 @@ final class Settings {
 			return $settings;
 		}
 
-		$current = self::current_post_id();
-		if ( $current > 0 && ! in_array( $current, (array) $settings['exclude_ids'], true ) ) {
-			$settings['exclude_ids'][] = $current;
-		}
+		$settings['exclude_self'] = self::current_post_id();
 
 		return $settings;
 	}

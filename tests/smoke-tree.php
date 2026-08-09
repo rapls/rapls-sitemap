@@ -329,7 +329,27 @@ check( 3 === $roots[0]->total(), 'total() walks the whole subtree (Parent + Chil
 
 $roots = ( new TreeBuilder( tree_settings( array( 'exclude_ids' => array( 2 ) ) ) ) )->build();
 check( ! in_array( 'Child', titles( $roots ), true ), 'an excluded page is gone' );
-check( in_array( 'Grandchild', titles( $roots ), true ), 'its orphaned child surfaces rather than vanishing' );
+
+// The settings screen promises that removing a page removes what is under it,
+// and that is what categories already do through exclude_tree. Listing a page
+// takes the branch, however deep.
+check( ! in_array( 'Grandchild', titles( $roots ), true ), 'and so is the child filed under it' );
+
+$roots = ( new TreeBuilder( tree_settings( array( 'exclude_ids' => array( 1 ) ) ) ) )->build();
+check( ! in_array( 'Child', titles( $roots ), true ), 'excluding a grandparent takes the child' );
+check( ! in_array( 'Grandchild', titles( $roots ), true ), 'and the grandchild below it' );
+check( in_array( 'Standalone', titles( $roots ), true ), 'while an unrelated page is untouched' );
+
+// The automatic exclusion is a different thing and must not cascade: keeping
+// the sitemap page out of its own list is no reason to hide its children.
+$roots = ( new TreeBuilder( tree_settings( array( 'exclude_self' => 1 ) ) ) )->build();
+check( ! in_array( 'Parent', titles( $roots ), true ), 'the current page is left out of its own list' );
+check( in_array( 'Child', titles( $roots ), true ), 'but the pages filed under it are not' );
+
+// A parent absent for any other reason still surfaces its child rather than
+// swallowing it — page 5 has a parent that was never in the result set.
+$roots = ( new TreeBuilder( tree_settings() ) )->build();
+check( in_array( 'Orphan', titles( $roots ), true ), 'a page whose parent simply is not there surfaces at the root' );
 
 /* --- depth -------------------------------------------------------------- */
 
@@ -545,6 +565,37 @@ check( ! in_array( 'Middle', titles( $roots ), true ), 'a Yoast noindex entry is
 check( ! in_array( 'Deep', titles( $roots ), true ), 'a Rank Math noindex entry is dropped' );
 check( in_array( 'Newest', titles( $roots ), true ), 'an entry with no SEO meta at all is kept' );
 
+/* --- a cap reached before the noindex pass still reports itself ---------- */
+
+/*
+ * The query asks for max + 1 and the extra row is the evidence there was more
+ * to show. Deciding truncation after the noindex filter asks the wrong
+ * question: remove even one post and the surviving count falls back to the cap,
+ * the evidence disappears, and the sitemap stops short of the site's content
+ * while saying nothing — the one outcome the cap exists to prevent.
+ *
+ * Posts 11 and 12 are noindex, so a cap of 3 fetches 4, drops 2, and leaves 2.
+ */
+$roots = ( new TreeBuilder(
+	tree_settings(
+		array(
+			'post_types'      => array( 'post' ),
+			'group_by_term'   => false,
+			'max_entries'     => 3,
+			'exclude_noindex' => true,
+		)
+	)
+) )->build();
+
+check( 2 === count( array_filter( $roots, function ( $n ) { return 'more' !== $n->kind; } ) ), 'the noindex entries are gone' );
+check( has_note( $roots ), 'and the list still says it stopped short of the content' );
+
+// Without the cap there is nothing to report, however much noindex removes.
+$roots = ( new TreeBuilder(
+	tree_settings( array( 'post_types' => array( 'post' ), 'group_by_term' => false, 'max_entries' => 0, 'exclude_noindex' => true ) )
+) )->build();
+check( ! has_note( $roots ), 'an uncapped list reports nothing even when noindex removes entries' );
+
 /* --- Cocoon's per-post noindex ------------------------------------------- */
 
 $roots  = ( new TreeBuilder( tree_settings( array( 'exclude_noindex' => true ) ) ) )->build();
@@ -740,6 +791,21 @@ check( empty( $GLOBALS['fixture_last_term_args']['pad_counts'] ), 'and do not wh
 
 $roots = ( new TreeBuilder( tree_settings( array( 'source' => 'authors' ) ) ) )->build();
 check( array( 'Aoi', 'Yuki' ) === titles( $roots ), 'the author listing uses the display names' );
+
+// Asking for the unfiltered post types would keep an author whose only posts
+// are in a type this sitemap excludes — a name linking to an archive with
+// nothing on it the reader may see.
+( new TreeBuilder( tree_settings( array( 'source' => 'authors', 'post_types' => array( 'post', 'page' ) ) ) ) )->build();
+check(
+	array( 'post', 'page' ) === $GLOBALS['fixture_last_user_args']['has_published_posts'],
+	'authors are looked up against the listed post types'
+);
+
+( new TreeBuilder( tree_settings( array( 'source' => 'authors', 'post_types' => array( 'post', 'page' ), 'exclude_types' => array( 'page' ) ) ) ) )->build();
+check(
+	array( 'post' ) === $GLOBALS['fixture_last_user_args']['has_published_posts'],
+	'and an excluded type is taken out of that lookup too'
+);
 check( 'author' === $roots[0]->kind, 'author nodes are marked as such' );
 check( 'https://example.test/author/3' === $roots[0]->url, 'authors link to their archive' );
 

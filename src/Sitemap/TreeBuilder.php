@@ -302,7 +302,7 @@ final class TreeBuilder {
 			$args['has_password'] = false;
 		}
 
-		$exclude = (array) $this->settings['exclude_ids'];
+		$exclude = $this->excluded_ids();
 		if ( array() !== $exclude ) {
 			$args['post__not_in'] = $exclude;
 		}
@@ -338,6 +338,19 @@ final class TreeBuilder {
 			return array();
 		}
 
+		/*
+		 * Whether the query had more to give, decided here — on what came back
+		 * from the database, before anything is filtered out of it.
+		 *
+		 * Deciding it after the noindex pass would ask the wrong question. The
+		 * query asked for max + 1 and the extra row is the evidence there was
+		 * more; if the noindex filter then removes even one post, the surviving
+		 * count drops to max or below and the evidence is gone — so the list
+		 * would stop short of the site's content and say nothing about it,
+		 * which is the one outcome the cap is written to avoid.
+		 */
+		$more = $max > 0 && count( $posts ) > $max;
+
 		// Filtered in PHP rather than with a meta_query: the SEO plugins store
 		// noindex in different shapes, and a meta_query would also drop every
 		// post with no meta row at all, which is most of them.
@@ -354,6 +367,9 @@ final class TreeBuilder {
 
 		if ( $max > 0 && count( $posts ) > $max ) {
 			$posts = array_slice( $posts, 0, $max );
+		}
+
+		if ( $more ) {
 			// Recorded rather than rendered here: the note belongs at the end
 			// of the list this post type produces, which the caller assembles.
 			$this->truncated[ $post_type ] = true;
@@ -414,10 +430,34 @@ final class TreeBuilder {
 	}
 
 	/**
+	 * Every ID kept out of the query: the listed ones and the current page.
+	 *
+	 * @return int[]
+	 */
+	private function excluded_ids(): array {
+		$ids  = array_map( 'intval', (array) $this->settings['exclude_ids'] );
+		$self = (int) $this->settings['exclude_self'];
+
+		if ( $self > 0 ) {
+			$ids[] = $self;
+		}
+
+		return array_values( array_unique( $ids ) );
+	}
+
+	/**
 	 * Nest posts by `post_parent`.
 	 *
-	 * Entries whose parent was excluded (or is not published) surface at the
-	 * root rather than vanishing — an orphaned page is still a real page.
+	 * Two kinds of absent parent, and they mean different things:
+	 *
+	 * - **Listed in `exclude_ids`.** Removing a page is meant to remove the
+	 *   branch, which is what the settings screen promises and what
+	 *   `exclude_tree` already does for categories. The descendants go too,
+	 *   however deep.
+	 * - **Absent for any other reason** — unpublished, filtered away, or simply
+	 *   the current page kept out of its own list. The child surfaces at the
+	 *   root rather than vanishing, because an orphaned page is still a real
+	 *   page and nobody asked for it to go.
 	 *
 	 * @param \WP_Post[] $posts Flat post list.
 	 * @return Node[] Root nodes.
@@ -428,10 +468,36 @@ final class TreeBuilder {
 			$nodes[ (int) $post->ID ] = $this->to_node( $post );
 		}
 
+		// Only the listed exclusions cascade, and a child dropped this way is
+		// itself an exclusion for the next pass — hence the loop rather than a
+		// single sweep, so a grandchild goes with its grandparent.
+		$cascading = array_flip( array_map( 'intval', (array) $this->settings['exclude_ids'] ) );
+
+		do {
+			$dropped = false;
+
+			foreach ( $posts as $post ) {
+				$id     = (int) $post->ID;
+				$parent = (int) $post->post_parent;
+
+				if ( ! isset( $nodes[ $id ] ) || $parent <= 0 || ! isset( $cascading[ $parent ] ) ) {
+					continue;
+				}
+
+				unset( $nodes[ $id ] );
+				$cascading[ $id ] = true;
+				$dropped          = true;
+			}
+		} while ( $dropped );
+
 		$roots = array();
 		foreach ( $posts as $post ) {
 			$id     = (int) $post->ID;
 			$parent = (int) $post->post_parent;
+
+			if ( ! isset( $nodes[ $id ] ) ) {
+				continue;
+			}
 
 			if ( $parent > 0 && isset( $nodes[ $parent ] ) ) {
 				$nodes[ $parent ]->add( $nodes[ $id ] );
@@ -857,8 +923,19 @@ final class TreeBuilder {
 	private function authors(): array {
 		$cap = $this->cap();
 
+		// The same post types the content listing would use. Asking for the
+		// unfiltered list would keep an author whose only posts are in a type
+		// this sitemap excludes — a name linking to an archive with nothing on
+		// it that the reader is allowed to see.
+		$types = array_values(
+			array_diff(
+				array_map( 'strval', (array) $this->settings['post_types'] ),
+				array_map( 'strval', (array) $this->settings['exclude_types'] )
+			)
+		);
+
 		$args = array(
-			'has_published_posts' => (array) $this->settings['post_types'],
+			'has_published_posts' => array() === $types ? true : $types,
 			'orderby'             => 'display_name',
 			'order'               => 'ASC',
 		);
