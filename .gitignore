@@ -1,0 +1,28 @@
+# --- GitHub に同期しない (ローカル開発専用) ---
+
+# Claude Code 関連
+# 兄弟プラグインに合わせてルートの CLAUDE.md を除外する。アンカーを付けないのは
+# ツールがサブディレクトリにも空の CLAUDE.md を生成するため。
+CLAUDE.md
+/.claude/
+
+# 設計ドキュメント
+/docs/
+
+# CI 関連
+/.ci/
+
+# --- 一般的な除外 ---
+
+# 依存 (composer 管理。本プラグインは実行時依存なし)
+/vendor/
+/node_modules/
+
+# ビルド成果物 (ZIP は親の plugins ディレクトリに書き出される)
+*.zip
+
+# OS / ログ
+.DS_Store
+**/.DS_Store
+Thumbs.db
+*.log

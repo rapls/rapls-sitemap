@@ -1,0 +1,98 @@
+<?php
+/**
+ * The legacy `<!-- SITEMAP CONTENT REPLACE POINT -->` placement marker.
+ *
+ * This is the migration path for sites coming from PS Auto Sitemap, so the
+ * cases that matter are the messy ones: the editor wrapping the comment in a
+ * paragraph, odd whitespace, and content that has no marker at all.
+ *
+ *   php tests/smoke-marker.php
+ *
+ * @package RaplsSitemap
+ */
+
+// phpcs:disable
+
+// The tree is not the subject here — no posts, no taxonomies, so the sitemap
+// reduces to its home link and the assertions stay about the marker.
+function get_posts( $args ) {
+	return array();
+}
+
+function get_object_taxonomies( $type, $output = 'names' ) {
+	return array();
+}
+
+function is_post_type_hierarchical( $type ) {
+	return 'page' === $type;
+}
+
+function home_url( $path = '/' ) {
+	return 'https://example.test' . $path;
+}
+
+function get_bloginfo( $key ) {
+	return 'Example Site';
+}
+
+require_once __DIR__ . '/lib/bootstrap.php';
+
+use RaplsSitemap\Frontend\ContentMarker;
+use RaplsSitemap\Sitemap\Cache;
+use RaplsSitemap\Support\Settings;
+
+$marker = new ContentMarker( new Cache() );
+
+// Compatibility is off out of the box; everything below is about how it behaves
+// once switched on. The off case is asserted at the end.
+update_option( Settings::OPTION, array( 'legacy_marker' => true ) );
+
+check( false === Settings::defaults()['legacy_marker'], 'the marker is off by default' );
+
+/**
+ * Did the sitemap land in this content?
+ */
+function rendered( $html ) {
+	return false !== strpos( $html, 'rapls-sitemap' );
+}
+
+/* --- content with no marker is returned untouched ----------------------- */
+
+$plain = '<p>Nothing to see.</p>';
+check( $plain === $marker->replace( $plain ), 'content without the marker is passed straight through' );
+check( '' === $marker->replace( '' ), 'empty content is safe' );
+
+/* --- the bare marker ---------------------------------------------------- */
+
+$out = $marker->replace( '<!-- SITEMAP CONTENT REPLACE POINT -->' );
+check( rendered( $out ), 'the bare marker renders the sitemap' );
+check( false === strpos( $out, 'REPLACE POINT' ), 'the marker itself is consumed' );
+
+/* --- the shapes the editor actually produces ---------------------------- */
+
+$wrapped = "<p>Intro.</p>\n<p><!-- SITEMAP CONTENT REPLACE POINT --></p>\n<p>Outro.</p>";
+$out     = $marker->replace( $wrapped );
+check( rendered( $out ), 'a paragraph-wrapped marker still renders' );
+check( false === strpos( $out, '<p><nav' ), 'the wrapping paragraph is swallowed, not left around the sitemap' );
+check( false !== strpos( $out, 'Intro.' ) && false !== strpos( $out, 'Outro.' ), 'surrounding content survives' );
+
+check( rendered( $marker->replace( '<!--SITEMAP  CONTENT   REPLACE POINT-->' ) ), 'whitespace inside the comment is tolerated' );
+check( rendered( $marker->replace( '<!-- sitemap content replace point -->' ) ), 'the marker is case insensitive' );
+
+/* --- more than one marker on a page ------------------------------------- */
+
+$twice = '<!-- SITEMAP CONTENT REPLACE POINT --><hr /><!-- SITEMAP CONTENT REPLACE POINT -->';
+check( 2 === substr_count( $marker->replace( $twice ), '<nav' ), 'every marker on the page is replaced' );
+
+/* --- the escape hatches ------------------------------------------------- */
+
+$GLOBALS['rapls_is_feed'] = true;
+check( ! rendered( $marker->replace( '<!-- SITEMAP CONTENT REPLACE POINT -->' ) ), 'feeds are left alone' );
+$GLOBALS['rapls_is_feed'] = false;
+
+update_option( Settings::OPTION, array( 'legacy_marker' => false ) );
+$out = $marker->replace( '<!-- SITEMAP CONTENT REPLACE POINT -->' );
+check( ! rendered( $out ), 'the setting disables the marker' );
+check( false !== strpos( $out, 'REPLACE POINT' ), 'and leaves the comment in place' );
+
+summary();

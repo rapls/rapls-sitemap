@@ -1,0 +1,20 @@
+{
+	"name": "rapls/rapls-sitemap",
+	"description": "サイト全体の目次（HTMLサイトマップ）をショートコード/ブロックで設置するプラグイン。PS Auto Sitemap の後継。",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"require": {
+		"php": ">=7.4"
+	},
+	"autoload": {
+		"psr-4": {
+			"RaplsSitemap\\": "src/"
+		}
+	},
+	"config": {
+		"optimize-autoloader": true,
+		"allow-plugins": {
+			"composer/installers": true
+		}
+	}
+}

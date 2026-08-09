@@ -1,0 +1,219 @@
+/*
+ * Settings screen styling. Loaded only on this plugin's own screen.
+ *
+ * The collapsing is done with a checkbox and a sibling selector rather than
+ * JavaScript — the family ships no build toolchain, and a disclosure widget is
+ * one of the few things CSS genuinely does on its own. The checkbox carries no
+ * `name`, so it is a control for the eye only and never reaches the option.
+ */
+
+/* --- collapsible sections ------------------------------------------------ */
+
+.rapls-section {
+	margin-top: 2em;
+}
+
+.rapls-section > .rapls-toggle {
+	margin: 0 0.4em 0 0;
+	vertical-align: middle;
+}
+
+.rapls-section__title {
+	display: inline-block;
+	margin: 0;
+	padding: 0;
+	vertical-align: middle;
+}
+
+.rapls-section__title label {
+	cursor: pointer;
+}
+
+.rapls-section__hint {
+	color: #646970;
+	font-size: 13px;
+	font-style: normal;
+	margin-left: 0.5em;
+}
+
+/* Scoped to the section, so one collapsed panel cannot hide the next one. */
+.rapls-section > .rapls-toggle:not(:checked) ~ .rapls-section__body {
+	display: none;
+}
+
+.rapls-section > .rapls-toggle:checked ~ .rapls-section__body {
+	border-left: 3px solid #dcdcde;
+	margin-top: 0.5em;
+	padding-left: 1.25em;
+}
+
+/* --- number-and-unit pairs ------------------------------------------------ */
+
+.rapls-field {
+	display: inline-flex;
+	align-items: stretch;
+	gap: 0.35em;
+	margin: 0 1.5em 0.6em 0;
+}
+
+.rapls-field__label {
+	align-self: center;
+	white-space: nowrap;
+}
+
+.rapls-field input[type="number"] {
+	/* Tall enough that the stepper is a real target rather than two hairlines.
+	   Firefox cannot be told how big to draw its spinner, so height is the only
+	   lever that works in every browser — the WebKit rules below then make it
+	   fill that height instead of floating in the middle. */
+	height: 36px;
+	padding: 0 0 0 8px;
+	width: 7.5em;
+}
+
+.rapls-field select {
+	height: 36px;
+}
+
+.rapls-field input[type="number"]::-webkit-outer-spin-button,
+.rapls-field input[type="number"]::-webkit-inner-spin-button {
+	-webkit-appearance: inner-spin-button;
+	/* WebKit hides the stepper until hover by default; on a settings screen it
+	   should be visibly there, because it is the point of the control. */
+	opacity: 1;
+	align-self: stretch;
+	cursor: pointer;
+	height: 36px;
+	margin: 0 0 0 6px;
+	width: 1.6em;
+}
+
+/* --- bullet controls ------------------------------------------------------ */
+
+/* `width`, not `min-width`: the inputs carry no `size` attribute, so without an
+   explicit width they fall back to the browser default of about 20 characters.
+   `size` is not the answer either — it counts half-width units, which clips a
+   full-width Japanese placeholder like 絵文字. */
+.rapls-field__emoji {
+	text-align: center;
+	width: 7em;
+}
+
+.rapls-field__icon {
+	width: 22em;
+}
+
+/* --- support ------------------------------------------------------------- */
+
+.rapls-support {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	margin-top: 2.5em;
+	padding: 1.25em 1.5em;
+	text-align: center;
+}
+
+.rapls-support h2 {
+	margin-top: 0;
+}
+
+.rapls-support__buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	justify-content: center;
+	margin: 1em 0 0.75em;
+}
+
+.rapls-support__bmc,
+.rapls-support__review {
+	align-items: center;
+	border-radius: 5px;
+	display: inline-flex;
+	font-size: 14px;
+	font-weight: 600;
+	padding: 10px 20px;
+	text-decoration: none;
+	transition: background 0.2s ease;
+}
+
+.rapls-support__bmc {
+	background: #ffdd00;
+	color: #000;
+}
+
+.rapls-support__bmc:hover,
+.rapls-support__bmc:focus {
+	background: #e5c700;
+	color: #000;
+}
+
+.rapls-support__review {
+	background: #f0f0f1;
+	border: 1px solid #c3c4c7;
+	color: #2c3338;
+}
+
+.rapls-support__review:hover,
+.rapls-support__review:focus {
+	background: #e8e8e9;
+	color: #2c3338;
+}
+
+.rapls-support__icon {
+	font-size: 18px;
+	margin-right: 8px;
+}
+
+.rapls-support__note {
+	color: #646970;
+	margin-bottom: 0;
+}
+
+/* --- inline help panels --------------------------------------------------- */
+
+.rapls-help {
+	max-width: 46em;
+}
+
+.rapls-help h4 {
+	margin-bottom: 0.4em;
+}
+
+.rapls-help__markup {
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	border-radius: 3px;
+	font-size: 12px;
+	line-height: 1.6;
+	margin: 0.75em 0;
+	overflow-x: auto;
+	padding: 0.9em 1em;
+}
+
+.rapls-help__table {
+	margin: 0.75em 0;
+}
+
+.rapls-help__table code {
+	white-space: nowrap;
+}
+
+/* A help panel is a disclosure inside a field, not a section of the page, so it
+   must not read as loudly as one. Matched by its own class rather than by
+   nesting, because one of them sits in a table cell that is not itself a
+   section. */
+.rapls-section--help {
+	margin-top: 0.75em;
+}
+
+.rapls-section--help > .rapls-section__title {
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.rapls-section--help > .rapls-toggle:checked ~ .rapls-section__body {
+	border-left-color: #e5e5e5;
+	padding-left: 1em;
+}

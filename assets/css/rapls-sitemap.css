@@ -1,0 +1,760 @@
+/*
+ * Sitemap design presets.
+ *
+ * Twelve presets, all original to this plugin and all pure CSS — no images, no
+ * sprites, no icon font. Ornaments are drawn with borders and pseudo-elements
+ * in `currentColor`, so every preset inherits the theme's text colour and works
+ * unchanged on a dark background. The "none" preset has no rules at all: it is
+ * the structural markup and nothing else.
+ *
+ * Adding a preset means touching four places — see CLAUDE.md.
+ */
+
+/* --- shared skeleton ----------------------------------------------------- */
+
+.rapls-sitemap__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.rapls-sitemap__list--depth-0 > .rapls-sitemap__item + .rapls-sitemap__item {
+	margin-top: 0.75em;
+}
+
+.rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) {
+	margin-left: 1.25em;
+}
+
+.rapls-sitemap__item {
+	line-height: 1.7;
+}
+
+.rapls-sitemap__label {
+	font-weight: 600;
+}
+
+.rapls-sitemap__empty {
+	opacity: 0.7;
+}
+
+.rapls-sitemap__link:hover {
+	opacity: 0.75;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.rapls-sitemap__link {
+		transition: opacity 120ms ease;
+	}
+}
+
+/* --- simple: headings plus indentation, no ornament ---------------------- */
+
+.rapls-sitemap--simple .rapls-sitemap__item--term > .rapls-sitemap__link,
+.rapls-sitemap--simple .rapls-sitemap__item--archive > .rapls-sitemap__link,
+.rapls-sitemap--simple .rapls-sitemap__item--home > .rapls-sitemap__link {
+	font-weight: 700;
+}
+
+/* --- list: classic bullets ---------------------------------------------- */
+
+.rapls-sitemap--list .rapls-sitemap__list {
+	list-style: disc;
+	padding-left: 1.25em;
+}
+
+.rapls-sitemap--list .rapls-sitemap__list .rapls-sitemap__list {
+	list-style: circle;
+	margin-left: 0;
+}
+
+/* --- tree: connector rules drawn with borders ---------------------------- */
+
+.rapls-sitemap--tree .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) {
+	border-left: 1px solid currentColor;
+	margin-left: 0.5em;
+	padding-left: 1em;
+}
+
+.rapls-sitemap--tree .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) > .rapls-sitemap__item {
+	position: relative;
+}
+
+.rapls-sitemap--tree .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) > .rapls-sitemap__item::before {
+	border-top: 1px solid currentColor;
+	content: "";
+	left: -1em;
+	position: absolute;
+	top: 0.85em;
+	width: 0.75em;
+}
+
+/* --- card: each top-level group in its own boxed panel ------------------- */
+
+.rapls-sitemap--card .rapls-sitemap__list--depth-0 {
+	display: grid;
+	gap: 1rem;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+}
+
+.rapls-sitemap--card .rapls-sitemap__list--depth-0 > .rapls-sitemap__item {
+	border: 1px solid currentColor;
+	border-radius: 0.5rem;
+	margin-top: 0;
+	padding: 1rem 1.25rem;
+}
+
+.rapls-sitemap--card .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
+.rapls-sitemap--card .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+	display: block;
+	font-weight: 700;
+	margin-bottom: 0.5rem;
+}
+
+/* --- marker: headings swept with a highlighter --------------------------- */
+
+.rapls-sitemap--marker .rapls-sitemap__item--term > .rapls-sitemap__link,
+.rapls-sitemap--marker .rapls-sitemap__item--archive > .rapls-sitemap__link,
+.rapls-sitemap--marker .rapls-sitemap__item--term > .rapls-sitemap__label,
+.rapls-sitemap--marker .rapls-sitemap__item--archive > .rapls-sitemap__label,
+.rapls-sitemap--marker .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link {
+	/* The stripe sits behind the lower two-thirds of the text, the way a real
+	   marker lands. currentColor at low alpha keeps it theme-agnostic. */
+	background-image: linear-gradient( to top, rgba(255, 214, 0, 0.55) 0.7em, transparent 0.7em );
+	font-weight: 700;
+	padding: 0 0.15em;
+}
+
+.rapls-sitemap--marker .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) {
+	padding-left: 1em;
+}
+
+/* --- checklist: a drawn tick before every entry -------------------------- */
+
+.rapls-sitemap--checklist .rapls-sitemap__item {
+	padding-left: 1.6em;
+	position: relative;
+}
+
+.rapls-sitemap--checklist .rapls-sitemap__item::before {
+	border-bottom: 2px solid currentColor;
+	border-left: 2px solid currentColor;
+	content: "";
+	height: 0.35em;
+	left: 0.25em;
+	position: absolute;
+	top: 0.5em;
+	transform: rotate(-45deg);
+	width: 0.7em;
+}
+
+.rapls-sitemap--checklist .rapls-sitemap__item--term::before,
+.rapls-sitemap--checklist .rapls-sitemap__item--archive::before,
+.rapls-sitemap--checklist .rapls-sitemap__item--home::before {
+	/* Headings get a filled square instead of a tick — they are not entries. */
+	background: currentColor;
+	border: 0;
+	height: 0.55em;
+	top: 0.55em;
+	transform: none;
+	width: 0.55em;
+}
+
+/* --- label: sticky notes with a folded corner ---------------------------- */
+
+.rapls-sitemap--label .rapls-sitemap__list--depth-0 > .rapls-sitemap__item {
+	border: 1px solid currentColor;
+	margin-bottom: 0.75em;
+	padding: 0.75em 1em;
+	position: relative;
+}
+
+.rapls-sitemap--label .rapls-sitemap__list--depth-0 > .rapls-sitemap__item::after {
+	border-color: transparent transparent currentColor transparent;
+	border-style: solid;
+	border-width: 0 0 0.9em 0.9em;
+	bottom: 0;
+	content: "";
+	position: absolute;
+	right: 0;
+}
+
+.rapls-sitemap--label .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
+.rapls-sitemap--label .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+	display: block;
+	font-weight: 700;
+	margin-bottom: 0.35em;
+}
+
+/* --- index: leader dots running to the right edge ------------------------ */
+
+.rapls-sitemap--index .rapls-sitemap__item {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	align-items: baseline;
+	column-gap: 0.5em;
+}
+
+.rapls-sitemap--index .rapls-sitemap__item > .rapls-sitemap__link,
+.rapls-sitemap--index .rapls-sitemap__item > .rapls-sitemap__label {
+	grid-column: 1;
+}
+
+.rapls-sitemap--index .rapls-sitemap__item::after {
+	border-bottom: 1px dotted currentColor;
+	content: "";
+	grid-column: 2;
+	opacity: 0.5;
+	transform: translateY(-0.25em);
+}
+
+.rapls-sitemap--index .rapls-sitemap__list {
+	grid-column: 1 / -1;
+}
+
+/* --- business: ruled rows with an accent bar on headings ----------------- */
+
+.rapls-sitemap--business .rapls-sitemap__list--depth-0 > .rapls-sitemap__item {
+	border-bottom: 1px solid currentColor;
+	margin-top: 0;
+	padding: 0.6em 0;
+}
+
+.rapls-sitemap--business .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
+.rapls-sitemap--business .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+	border-left: 0.35em solid currentColor;
+	display: block;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	padding-left: 0.6em;
+}
+
+.rapls-sitemap--business .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) {
+	margin: 0.4em 0 0 1em;
+}
+
+/* --- arrow: a chevron pointing at every entry ---------------------------- */
+
+.rapls-sitemap--arrow .rapls-sitemap__item {
+	padding-left: 1.3em;
+	position: relative;
+}
+
+.rapls-sitemap--arrow .rapls-sitemap__item::before {
+	border-right: 2px solid currentColor;
+	border-top: 2px solid currentColor;
+	content: "";
+	height: 0.4em;
+	left: 0.2em;
+	position: absolute;
+	top: 0.6em;
+	transform: rotate(45deg);
+	width: 0.4em;
+}
+
+.rapls-sitemap--arrow .rapls-sitemap__item--term::before,
+.rapls-sitemap--arrow .rapls-sitemap__item--archive::before,
+.rapls-sitemap--arrow .rapls-sitemap__item--home::before {
+	border-width: 3px;
+	height: 0.5em;
+	width: 0.5em;
+}
+
+/* --- dots: a ring for headings, a filled dot for entries ----------------- */
+
+.rapls-sitemap--dots .rapls-sitemap__item {
+	padding-left: 1.4em;
+	position: relative;
+}
+
+.rapls-sitemap--dots .rapls-sitemap__item::before {
+	background: currentColor;
+	border-radius: 50%;
+	content: "";
+	height: 0.4em;
+	left: 0.35em;
+	position: absolute;
+	top: 0.65em;
+	width: 0.4em;
+}
+
+.rapls-sitemap--dots .rapls-sitemap__item--term::before,
+.rapls-sitemap--dots .rapls-sitemap__item--archive::before,
+.rapls-sitemap--dots .rapls-sitemap__item--home::before {
+	background: transparent;
+	border: 2px solid currentColor;
+	height: 0.55em;
+	left: 0.2em;
+	top: 0.55em;
+	width: 0.55em;
+}
+
+/* --- neon: glowing headings on a dark panel ------------------------------ */
+
+/*
+ * A preset that forces its own dark background has to win the colour of EVERY
+ * link inside it, not just the headings. `.rapls-sitemap--neon .rapls-sitemap__link`
+ * is only (0,2,0) — a theme rule like `.entry-content ul li a` is (0,2,3) and
+ * beats it, which left the nested links in the theme's dark text colour on a
+ * near-black panel while the headings, matched at (0,3,0) via their `--term`
+ * class, stayed lit. Hence the extra `__item` in every selector here: on an
+ * inverted panel, unreadable text is a bug, not a style difference.
+ */
+.rapls-sitemap--neon {
+	background: #0d1117;
+	border-radius: 0.5rem;
+	color: #cdefff;
+	padding: 1.5rem;
+}
+
+.rapls-sitemap--neon .rapls-sitemap__item .rapls-sitemap__link,
+.rapls-sitemap--neon .rapls-sitemap__item .rapls-sitemap__link:visited,
+.rapls-sitemap--neon .rapls-sitemap__item .rapls-sitemap__link:hover,
+.rapls-sitemap--neon .rapls-sitemap__item .rapls-sitemap__link:focus,
+.rapls-sitemap--neon .rapls-sitemap__item .rapls-sitemap__label {
+	color: #7fe3ff;
+	text-decoration: none;
+}
+
+/* Nested entries step down in brightness rather than in legibility. */
+.rapls-sitemap--neon .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) .rapls-sitemap__link,
+.rapls-sitemap--neon .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) .rapls-sitemap__link:visited,
+.rapls-sitemap--neon .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) .rapls-sitemap__label {
+	color: #b6f0ff;
+}
+
+.rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--term > .rapls-sitemap__link,
+.rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--archive > .rapls-sitemap__link,
+.rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--term > .rapls-sitemap__label,
+.rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--archive > .rapls-sitemap__label,
+.rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--home > .rapls-sitemap__link {
+	color: #ff6ec7;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-shadow: 0 0 0.4em currentColor;
+	text-transform: uppercase;
+}
+
+.rapls-sitemap--neon .rapls-sitemap__item .rapls-sitemap__link:hover,
+.rapls-sitemap--neon .rapls-sitemap__item .rapls-sitemap__link:focus {
+	opacity: 1;
+	text-shadow: 0 0 0.5em currentColor;
+}
+
+.rapls-sitemap--neon .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) {
+	border-left: 1px solid rgba(127, 227, 255, 0.35);
+	padding-left: 1em;
+}
+
+.rapls-sitemap--neon .rapls-sitemap__empty {
+	color: #cdefff;
+}
+
+/* --- compact: dense rows for a large site -------------------------------- */
+
+.rapls-sitemap--compact {
+	line-height: 1.45;
+}
+
+.rapls-sitemap--compact .rapls-sitemap__list--depth-0 > .rapls-sitemap__item + .rapls-sitemap__item {
+	margin-top: 0.25em;
+}
+
+.rapls-sitemap--compact .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) {
+	margin-left: 0.9em;
+}
+
+.rapls-sitemap--compact .rapls-sitemap__item--term > .rapls-sitemap__link,
+.rapls-sitemap--compact .rapls-sitemap__item--archive > .rapls-sitemap__link,
+.rapls-sitemap--compact .rapls-sitemap__item--term > .rapls-sitemap__label {
+	font-size: 0.95em;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+}
+
+/* --- table: ruled rows, like a printed contents page --------------------- */
+
+.rapls-sitemap--table .rapls-sitemap__list--depth-0 {
+	border-top: 1px solid currentColor;
+}
+
+.rapls-sitemap--table .rapls-sitemap__item {
+	border-bottom: 1px solid currentColor;
+	margin-top: 0;
+	padding: 0.5em 0.25em;
+}
+
+.rapls-sitemap--table .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) {
+	margin: 0.4em 0 0 1em;
+}
+
+.rapls-sitemap--table .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) .rapls-sitemap__item:last-child {
+	border-bottom: 0;
+	padding-bottom: 0;
+}
+
+/* --- columns: one flowing multi-column block ----------------------------- */
+
+.rapls-sitemap--columns .rapls-sitemap__list--depth-0 {
+	column-gap: 2.5rem;
+	column-width: 16rem;
+}
+
+.rapls-sitemap--columns .rapls-sitemap__list--depth-0 > .rapls-sitemap__item {
+	break-inside: avoid;
+	margin-top: 0;
+	padding-bottom: 1em;
+	/* Column layout splits an element across columns without this. */
+	-webkit-column-break-inside: avoid;
+}
+
+.rapls-sitemap--columns .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
+.rapls-sitemap--columns .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+	display: block;
+	font-weight: 700;
+	margin-bottom: 0.3em;
+}
+
+/* --- panel: a tinted block per section ----------------------------------- */
+
+.rapls-sitemap--panel .rapls-sitemap__list--depth-0 > .rapls-sitemap__item {
+	background: rgba(127, 127, 127, 0.09);
+	border-radius: 0.4rem;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+	padding: 0.9em 1.1em;
+}
+
+.rapls-sitemap--panel .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
+.rapls-sitemap--panel .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+	display: block;
+	font-weight: 700;
+	margin-bottom: 0.4em;
+	opacity: 0.85;
+}
+
+/* --- timeline: a rail with a node per entry ------------------------------ */
+
+.rapls-sitemap--timeline .rapls-sitemap__list--depth-0 {
+	border-left: 2px solid currentColor;
+	padding-left: 1.25em;
+}
+
+.rapls-sitemap--timeline .rapls-sitemap__list--depth-0 > .rapls-sitemap__item {
+	position: relative;
+}
+
+.rapls-sitemap--timeline .rapls-sitemap__list--depth-0 > .rapls-sitemap__item::before {
+	background: currentColor;
+	border-radius: 50%;
+	content: "";
+	height: 0.6em;
+	left: calc(-1.25em - 0.3em - 1px);
+	position: absolute;
+	top: 0.55em;
+	width: 0.6em;
+}
+
+.rapls-sitemap--timeline .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
+.rapls-sitemap--timeline .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+	font-weight: 700;
+}
+
+/* --- accordion: the look of a collapsible list, without the behaviour ---- */
+
+.rapls-sitemap--accordion .rapls-sitemap__list--depth-0 > .rapls-sitemap__item {
+	border: 1px solid currentColor;
+	border-radius: 0.3rem;
+	margin-top: 0;
+	margin-bottom: 0.5em;
+	overflow: hidden;
+}
+
+.rapls-sitemap--accordion .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
+.rapls-sitemap--accordion .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+	background: rgba(127, 127, 127, 0.12);
+	display: block;
+	font-weight: 700;
+	padding: 0.6em 0.9em;
+}
+
+.rapls-sitemap--accordion .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) {
+	margin: 0;
+	padding: 0.6em 0.9em 0.6em 1.9em;
+}
+
+/* --- pill: rounded badges, laid out inline ------------------------------- */
+
+.rapls-sitemap--pill .rapls-sitemap__list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5em;
+}
+
+.rapls-sitemap--pill .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) {
+	margin: 0.5em 0 0;
+	width: 100%;
+}
+
+.rapls-sitemap--pill .rapls-sitemap__item {
+	margin-top: 0;
+}
+
+.rapls-sitemap--pill .rapls-sitemap__link,
+.rapls-sitemap--pill .rapls-sitemap__label {
+	border: 1px solid currentColor;
+	border-radius: 999px;
+	display: inline-block;
+	font-size: 0.92em;
+	padding: 0.25em 0.85em;
+	text-decoration: none;
+}
+
+.rapls-sitemap--pill .rapls-sitemap__item--term > .rapls-sitemap__link,
+.rapls-sitemap--pill .rapls-sitemap__item--term > .rapls-sitemap__label {
+	font-weight: 700;
+}
+
+/* --- ribbon: a banner heading over each group ---------------------------- */
+
+.rapls-sitemap--ribbon .rapls-sitemap__list--depth-0 > .rapls-sitemap__item {
+	margin-bottom: 1.25em;
+	margin-top: 0;
+}
+
+/*
+ * The banner is drawn with a low-alpha tint rather than a solid `currentColor`
+ * fill. Filling it solid means the text has to invert against it, and inverting
+ * text (`mix-blend-mode: difference`, `color: canvas`) is exactly the trick that
+ * leaves a heading unreadable the moment a theme's colours are not what the
+ * trick assumed. A tint keeps the theme's own text colour legible on it.
+ */
+.rapls-sitemap--ribbon .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
+.rapls-sitemap--ribbon .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+	background: rgba(127, 127, 127, 0.22);
+	border-left: 0.3em solid currentColor;
+	display: inline-block;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	padding: 0.3em 1.6em 0.3em 0.9em;
+	/* The notched right edge is the ribbon; no image needed. */
+	clip-path: polygon(0 0, 100% 0, calc(100% - 0.7em) 50%, 100% 100%, 0 100%);
+}
+
+.rapls-sitemap--ribbon .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) {
+	margin-top: 0.6em;
+	padding-left: 0.9em;
+}
+
+/* --- magazine: a large serif contents spread ----------------------------- */
+
+.rapls-sitemap--magazine .rapls-sitemap__list--depth-0 {
+	display: grid;
+	gap: 1.5rem 2.5rem;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+
+.rapls-sitemap--magazine .rapls-sitemap__list--depth-0 > .rapls-sitemap__item {
+	margin-top: 0;
+}
+
+.rapls-sitemap--magazine .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
+.rapls-sitemap--magazine .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+	border-bottom: 2px solid currentColor;
+	display: block;
+	font-family: Georgia, "Times New Roman", "Yu Mincho", "Hiragino Mincho ProN", serif;
+	font-size: 1.35em;
+	margin-bottom: 0.5em;
+	padding-bottom: 0.25em;
+}
+
+.rapls-sitemap--magazine .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) {
+	margin-left: 0;
+}
+
+.rapls-sitemap--magazine .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) .rapls-sitemap__item {
+	font-size: 0.95em;
+	opacity: 0.9;
+}
+
+/* --- numbered: CSS counters, so the list reads like a contents page ------- */
+
+.rapls-sitemap--numbered .rapls-sitemap__list {
+	counter-reset: rapls-item;
+}
+
+.rapls-sitemap--numbered .rapls-sitemap__item {
+	counter-increment: rapls-item;
+	padding-left: 2.4em;
+	position: relative;
+}
+
+.rapls-sitemap--numbered .rapls-sitemap__item::before {
+	content: counters(rapls-item, ".") ".";
+	font-variant-numeric: tabular-nums;
+	left: 0;
+	opacity: 0.65;
+	position: absolute;
+	text-align: right;
+	top: 0;
+	width: 2em;
+}
+
+/* --- outline: hairline boxes, nothing else ------------------------------- */
+
+.rapls-sitemap--outline .rapls-sitemap__item {
+	border: 1px solid currentColor;
+	margin-top: 0;
+	margin-bottom: 0.4em;
+	opacity: 0.95;
+	padding: 0.45em 0.8em;
+}
+
+.rapls-sitemap--outline .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) {
+	margin: 0.4em 0 0 0.8em;
+}
+
+.rapls-sitemap--outline .rapls-sitemap__item--term > .rapls-sitemap__link,
+.rapls-sitemap--outline .rapls-sitemap__item--term > .rapls-sitemap__label,
+.rapls-sitemap--outline .rapls-sitemap__item--archive > .rapls-sitemap__link {
+	font-weight: 700;
+}
+
+/* --- grid: equal cells, good for a flat list of many pages --------------- */
+
+.rapls-sitemap--grid .rapls-sitemap__list--depth-0 {
+	display: grid;
+	gap: 0.6rem;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 1fr));
+}
+
+.rapls-sitemap--grid .rapls-sitemap__list--depth-0 > .rapls-sitemap__item {
+	background: rgba(127, 127, 127, 0.08);
+	border-radius: 0.35rem;
+	margin-top: 0;
+	padding: 0.7em 0.9em;
+}
+
+.rapls-sitemap--grid .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) {
+	margin: 0.4em 0 0;
+	opacity: 0.85;
+}
+
+.rapls-sitemap--grid .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
+.rapls-sitemap--grid .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+	font-weight: 700;
+}
+
+/* --- book: a printed table of contents, leaders and all ------------------ */
+
+.rapls-sitemap--book {
+	font-family: Georgia, "Times New Roman", "Yu Mincho", "Hiragino Mincho ProN", serif;
+}
+
+.rapls-sitemap--book .rapls-sitemap__list--depth-0 > .rapls-sitemap__item {
+	margin-top: 1.1em;
+}
+
+.rapls-sitemap--book .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
+.rapls-sitemap--book .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+	display: block;
+	font-size: 1.15em;
+	letter-spacing: 0.06em;
+	margin-bottom: 0.35em;
+	text-align: center;
+}
+
+.rapls-sitemap--book .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) {
+	margin-left: 2.5em;
+}
+
+.rapls-sitemap--book .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) .rapls-sitemap__item {
+	padding-left: 1.2em;
+	position: relative;
+}
+
+.rapls-sitemap--book .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) .rapls-sitemap__item::before {
+	content: "—";
+	left: 0;
+	opacity: 0.5;
+	position: absolute;
+}
+
+/* --- underline: a heavy rule under each heading -------------------------- */
+
+.rapls-sitemap--underline .rapls-sitemap__list--depth-0 > .rapls-sitemap__item {
+	margin-top: 1.5em;
+}
+
+.rapls-sitemap--underline .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
+.rapls-sitemap--underline .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label {
+	border-bottom: 0.2em solid currentColor;
+	display: block;
+	font-weight: 700;
+	padding-bottom: 0.2em;
+	margin-bottom: 0.6em;
+}
+
+.rapls-sitemap--underline .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0) {
+	margin-left: 0.75em;
+}
+
+/*
+ * --- terminal: monospace on a dark panel ---------------------------------
+ *
+ * Same rule as neon: a preset that supplies its own background must out-specify
+ * the theme on EVERY link, not only on the headings. The extra `__item` in each
+ * selector is what buys that.
+ */
+
+.rapls-sitemap--terminal {
+	background: #10120f;
+	border-radius: 0.35rem;
+	color: #b8ffca;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Noto Sans Mono CJK JP", monospace;
+	font-size: 0.95em;
+	padding: 1.4rem;
+}
+
+.rapls-sitemap--terminal .rapls-sitemap__item .rapls-sitemap__link,
+.rapls-sitemap--terminal .rapls-sitemap__item .rapls-sitemap__link:visited,
+.rapls-sitemap--terminal .rapls-sitemap__item .rapls-sitemap__link:hover,
+.rapls-sitemap--terminal .rapls-sitemap__item .rapls-sitemap__link:focus,
+.rapls-sitemap--terminal .rapls-sitemap__item .rapls-sitemap__label,
+.rapls-sitemap--terminal .rapls-sitemap__empty {
+	color: #b8ffca;
+	text-decoration: none;
+}
+
+.rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--term > .rapls-sitemap__link,
+.rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--term > .rapls-sitemap__label,
+.rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--archive > .rapls-sitemap__link,
+.rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--home > .rapls-sitemap__link {
+	color: #ffe066;
+	font-weight: 700;
+}
+
+.rapls-sitemap--terminal .rapls-sitemap__item {
+	padding-left: 1.4em;
+	position: relative;
+}
+
+.rapls-sitemap--terminal .rapls-sitemap__item::before {
+	content: "$";
+	left: 0;
+	opacity: 0.55;
+	position: absolute;
+}
+
+.rapls-sitemap--terminal .rapls-sitemap__item--term::before,
+.rapls-sitemap--terminal .rapls-sitemap__item--home::before {
+	content: "#";
+	opacity: 0.8;
+}
+
+.rapls-sitemap--terminal .rapls-sitemap__item .rapls-sitemap__link:hover,
+.rapls-sitemap--terminal .rapls-sitemap__item .rapls-sitemap__link:focus {
+	opacity: 1;
+	text-decoration: underline;
+}
