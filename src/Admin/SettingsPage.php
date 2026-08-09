@@ -411,6 +411,17 @@ final class SettingsPage {
 									<?php echo esc_html__( 'Nest child categories inside their parents', 'rapls-sitemap' ); ?>
 								</label>
 							</p>
+							<p>
+								<label>
+									<input type="checkbox" value="1"
+										name="<?php echo esc_attr( $name . '[duplicate_in_terms]' ); ?>"
+										<?php checked( ! empty( $settings['duplicate_in_terms'] ) ); ?> />
+									<?php echo esc_html__( 'List a post under every category it belongs to', 'rapls-sitemap' ); ?>
+								</label>
+								<span class="description">
+									<?php echo esc_html__( 'Off lists it once, under the first category that claims it.', 'rapls-sitemap' ); ?>
+								</span>
+							</p>
 							<fieldset style="margin-top:0.5em">
 								<label style="display:block">
 									<input type="radio" value="posts"
@@ -429,13 +440,42 @@ final class SettingsPage {
 					</tr>
 
 					<tr>
-						<th scope="row"><?php echo esc_html__( 'This page', 'rapls-sitemap' ); ?></th>
+						<th scope="row"><?php echo esc_html__( 'Also leave out', 'rapls-sitemap' ); ?></th>
 						<td>
-							<label>
+							<label style="display:block">
 								<input type="checkbox" value="1"
 									name="<?php echo esc_attr( $name . '[exclude_current]' ); ?>"
 									<?php checked( ! empty( $settings['exclude_current'] ) ); ?> />
-								<?php echo esc_html__( 'Leave the page holding the sitemap out of its own list', 'rapls-sitemap' ); ?>
+								<?php echo esc_html__( 'The page holding the sitemap, from its own list', 'rapls-sitemap' ); ?>
+							</label>
+							<label style="display:block">
+								<input type="checkbox" value="1"
+									name="<?php echo esc_attr( $name . '[exclude_protected]' ); ?>"
+									<?php checked( ! empty( $settings['exclude_protected'] ) ); ?> />
+								<?php echo esc_html__( 'Password-protected entries', 'rapls-sitemap' ); ?>
+							</label>
+							<label style="display:block">
+								<input type="checkbox" value="1"
+									name="<?php echo esc_attr( $name . '[exclude_noindex]' ); ?>"
+									<?php checked( ! empty( $settings['exclude_noindex'] ) ); ?> />
+								<?php echo esc_html__( 'Entries an SEO plugin has marked noindex', 'rapls-sitemap' ); ?>
+							</label>
+							<p class="description">
+								<?php echo esc_html__( 'Yoast SEO and Rank Math are read directly. WordPress records nothing about noindex itself, so other SEO plugins need the rapls_sitemap/is_noindex filter. Reading the setting costs one extra query per render.', 'rapls-sitemap' ); ?>
+							</p>
+
+							<?php $this->exclusion_checkboxes( $name, $settings ); ?>
+						</td>
+					</tr>
+
+					<tr>
+						<th scope="row"><?php echo esc_html__( 'Links', 'rapls-sitemap' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" value="1"
+									name="<?php echo esc_attr( $name . '[nofollow]' ); ?>"
+									<?php checked( ! empty( $settings['nofollow'] ) ); ?> />
+								<?php echo esc_html__( 'Add rel="nofollow" to every link', 'rapls-sitemap' ); ?>
 							</label>
 						</td>
 					</tr>
@@ -1179,6 +1219,82 @@ final class SettingsPage {
 				esc_html( $post_type->labels->singular_name )
 			);
 		}
+	}
+
+	/**
+	 * The post-type and taxonomy exclusion lists.
+	 *
+	 * These overlap the inclusion checkboxes above on purpose. Unchecking a
+	 * post type there stops listing it *today*; naming it here keeps it out
+	 * even after a plugin registers something new and somebody re-saves the
+	 * screen. The same goes for a taxonomy that should never be used for
+	 * grouping, whichever post type it is attached to.
+	 *
+	 * @param string              $name     Option name.
+	 * @param array<string,mixed> $settings Effective settings.
+	 */
+	private function exclusion_checkboxes( string $name, array $settings ): void {
+		$types      = self::available_post_types();
+		$taxonomies = self::available_taxonomies();
+
+		if ( array() === $types && array() === $taxonomies ) {
+			return;
+		}
+
+		self::open_section(
+			'exclusions',
+			__( 'Never list these, whatever else is set', 'rapls-sitemap' ),
+			'',
+			array() !== (array) $settings['exclude_types'] || array() !== (array) $settings['exclude_tax'],
+			'rapls-section--help'
+		);
+
+		$excluded_types = (array) $settings['exclude_types'];
+		$excluded_tax   = (array) $settings['exclude_tax'];
+
+		echo '<p class="description">' . esc_html__( 'An exclusion here always wins.', 'rapls-sitemap' ) . '</p>';
+
+		echo '<p><strong>' . esc_html__( 'Post types', 'rapls-sitemap' ) . '</strong></p>';
+		printf( '<input type="hidden" name="%s" value="" />', esc_attr( $name . '[exclude_types][]' ) );
+		foreach ( $types as $post_type ) {
+			printf(
+				'<label style="display:inline-block;margin:0 1.5em 0.4em 0"><input type="checkbox" name="%1$s" value="%2$s" %3$s /> %4$s <code>%2$s</code></label>',
+				esc_attr( $name . '[exclude_types][]' ),
+				esc_attr( $post_type->name ),
+				checked( in_array( $post_type->name, $excluded_types, true ), true, false ),
+				esc_html( $post_type->labels->singular_name )
+			);
+		}
+
+		echo '<p><strong>' . esc_html__( 'Taxonomies', 'rapls-sitemap' ) . '</strong></p>';
+		printf( '<input type="hidden" name="%s" value="" />', esc_attr( $name . '[exclude_tax][]' ) );
+		foreach ( $taxonomies as $taxonomy ) {
+			printf(
+				'<label style="display:inline-block;margin:0 1.5em 0.4em 0"><input type="checkbox" name="%1$s" value="%2$s" %3$s /> %4$s <code>%2$s</code></label>',
+				esc_attr( $name . '[exclude_tax][]' ),
+				esc_attr( $taxonomy->name ),
+				checked( in_array( $taxonomy->name, $excluded_tax, true ), true, false ),
+				esc_html( $taxonomy->labels->singular_name )
+			);
+		}
+
+		self::close_section();
+	}
+
+	/**
+	 * Taxonomies offered on this screen.
+	 *
+	 * @return \WP_Taxonomy[]
+	 */
+	private static function available_taxonomies(): array {
+		$taxonomies = get_taxonomies( array( 'public' => true ), 'objects' );
+
+		/**
+		 * Filters the selectable taxonomies.
+		 *
+		 * @param \WP_Taxonomy[] $taxonomies Taxonomy objects, keyed by slug.
+		 */
+		return (array) apply_filters( Hooks::TAXONOMIES, $taxonomies );
 	}
 
 	/**

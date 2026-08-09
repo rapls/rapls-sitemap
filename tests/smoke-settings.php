@@ -111,6 +111,30 @@ check( 'yomi' === Settings::sanitize( array( 'sort_meta_key' => 'yomi' ) )['sort
 $key = Settings::sanitize( array( 'sort_meta_key' => 'a b;DROP TABLE' ) )['sort_meta_key'];
 check( 1 === preg_match( '/^[a-z0-9_-]*$/', $key ), 'a sort key keeps only characters legal in a meta key', $key );
 
+/* --- exclusion lists ----------------------------------------------------- */
+
+$clean = Settings::sanitize( array( 'exclude_types' => array( 'product', 'Bad Slug!', '' ) ) );
+check( array( 'product', 'badslug' ) === $clean['exclude_types'], 'excluded post types are reduced to key-safe slugs' );
+
+$clean = Settings::sanitize( array( 'exclude_tax' => array( 'post_tag' ) ) );
+check( array( 'post_tag' ) === $clean['exclude_tax'], 'an excluded taxonomy is kept' );
+
+// The screen submits a hidden empty entry so clearing every box still posts the
+// key; it must not survive as a slug.
+check( array() === Settings::sanitize( array( 'exclude_types' => array( '' ) ) )['exclude_types'], 'the hidden placeholder entry is dropped' );
+
+/* --- the new toggles ------------------------------------------------------ */
+
+$clean = Settings::sanitize( array( 'depth' => 1 ) );
+check( false === $clean['nofollow'], 'nofollow is off unless asked for' );
+check( false === $clean['exclude_protected'], 'protected entries are listed unless asked otherwise' );
+check( false === $clean['exclude_noindex'], 'noindex entries too' );
+check( false === $clean['duplicate_in_terms'], 'an omitted checkbox saves as off, like the others' );
+
+$defaults = Settings::defaults();
+check( true === $defaults['duplicate_in_terms'], 'but listing under every category is the default' );
+check( false === $defaults['nofollow'], 'and links are followed by default' );
+
 /* --- the nested style key -------------------------------------------------*/
 
 // array_merge would replace the nested array whole, so a catalogue saved before

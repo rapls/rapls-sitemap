@@ -69,6 +69,19 @@ $html               = ( new Renderer( $settings ) )->render( array( $flat ) );
 check( false !== strpos( $html, 'rapls-sitemap--tree' ), 'the design preset reaches the wrapper class' );
 check( false !== strpos( $html, '<nav ' ), 'a populated sitemap is a landmark' );
 
+/* --- nofollow ------------------------------------------------------------ */
+
+$plain = ( new Renderer( Settings::defaults() ) )->render( array( $flat ) );
+check( false === strpos( $plain, 'rel=' ), 'no rel attribute is emitted by default' );
+
+$settings             = Settings::defaults();
+$settings['nofollow'] = true;
+$html                 = ( new Renderer( $settings ) )->render( array( $parent ) );
+
+check( false !== strpos( $html, 'rel="nofollow"' ), 'nofollow reaches the links' );
+check( 2 === substr_count( $html, 'rel="nofollow"' ), 'every link, not only the top level' );
+check( false === strpos( $html, '__label" rel=' ), 'a heading with no link gains no rel attribute' );
+
 /* --- design tokens reach the markup ------------------------------------- */
 
 $settings          = Settings::defaults();

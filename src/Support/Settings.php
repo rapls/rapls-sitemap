@@ -98,6 +98,20 @@ final class Settings {
 			'exclude_ids'      => array(),
 			// Term IDs (category) whose posts are omitted.
 			'exclude_terms'    => array(),
+			// Post type slugs never listed, whatever `post_types` says. Belt
+			// and braces for a type a plugin registers later.
+			'exclude_types'    => array(),
+			// Taxonomy slugs never used for grouping.
+			'exclude_tax'      => array(),
+			// Skip entries WordPress has a password on.
+			'exclude_protected' => false,
+			// Skip entries an SEO plugin has marked noindex.
+			'exclude_noindex'  => false,
+			// A post in several categories appears under each of them. Off
+			// lists it once, under the first category that claims it.
+			'duplicate_in_terms' => true,
+			// Add rel="nofollow" to every link the sitemap emits.
+			'nofollow'         => false,
 			// Prepend a link to the front page.
 			'show_home'        => true,
 			// Label for that link; empty falls back to the site title.
@@ -218,8 +232,34 @@ final class Settings {
 			}
 		}
 
-		foreach ( array( 'show_home', 'group_by_term', 'nest_terms', 'exclude_current', 'legacy_marker', 'legacy_shortcode', 'load_styles' ) as $key ) {
+		foreach (
+			array(
+				'show_home',
+				'group_by_term',
+				'nest_terms',
+				'exclude_current',
+				'exclude_protected',
+				'exclude_noindex',
+				'duplicate_in_terms',
+				'nofollow',
+				'legacy_marker',
+				'legacy_shortcode',
+				'load_styles',
+			) as $key
+		) {
 			$clean[ $key ] = ! empty( $input[ $key ] );
+		}
+
+		if ( isset( $input['exclude_types'] ) && is_array( $input['exclude_types'] ) ) {
+			$clean['exclude_types'] = array_values(
+				array_filter( array_map( 'sanitize_key', $input['exclude_types'] ) )
+			);
+		}
+
+		if ( isset( $input['exclude_tax'] ) && is_array( $input['exclude_tax'] ) ) {
+			$clean['exclude_tax'] = array_values(
+				array_filter( array_map( 'sanitize_key', $input['exclude_tax'] ) )
+			);
 		}
 
 		if ( isset( $input['home_label'] ) ) {

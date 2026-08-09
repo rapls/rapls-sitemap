@@ -106,7 +106,18 @@ final class Shortcode {
 			$settings['taxonomy'] = sanitize_key( (string) $atts['taxonomy'] );
 		}
 
-		foreach ( array( 'show_home', 'group_by_term', 'nest_terms', 'exclude_current' ) as $flag ) {
+		foreach (
+			array(
+				'show_home',
+				'group_by_term',
+				'nest_terms',
+				'exclude_current',
+				'exclude_protected',
+				'exclude_noindex',
+				'duplicate_in_terms',
+				'nofollow',
+			) as $flag
+		) {
 			if ( isset( $atts[ $flag ] ) ) {
 				$settings[ $flag ] = self::to_bool( $atts[ $flag ] );
 			}

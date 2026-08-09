@@ -27,6 +27,9 @@ final class Hooks {
 	/** Filters the post types offered on the settings screen. */
 	public const POST_TYPES = 'rapls_sitemap/post_types';
 
+	/** Filters the taxonomies offered on the settings screen. */
+	public const TAXONOMIES = 'rapls_sitemap/taxonomies';
+
 	/** Filters the WP_Query args used to fetch entries for one post type. */
 	public const QUERY_ARGS = 'rapls_sitemap/query_args';
 
@@ -44,6 +47,15 @@ final class Hooks {
 
 	/** Vetoes claiming the `[wp_sitemap_page]` tag, on top of the setting. */
 	public const LEGACY_SHORTCODE = 'rapls_sitemap/legacy_shortcode';
+
+	/**
+	 * Filters whether one post counts as noindex.
+	 *
+	 * Yoast and Rank Math are detected directly; every other SEO plugin hooks
+	 * here. WordPress itself records nothing per post, so there is no core
+	 * source of truth to read instead.
+	 */
+	public const IS_NOINDEX = 'rapls_sitemap/is_noindex';
 
 	/* Extension points (actions). */
 

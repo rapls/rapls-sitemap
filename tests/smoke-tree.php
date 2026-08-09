@@ -14,14 +14,21 @@
 
 /* --- fixtures ----------------------------------------------------------- */
 
-function fixture_post( $id, $title, $parent = 0, $date = '2026-01-15 10:00:00' ) {
-	$post              = new stdClass();
-	$post->ID          = $id;
-	$post->post_title  = $title;
-	$post->post_parent = $parent;
-	$post->post_date   = $date;
+function fixture_post( $id, $title, $parent = 0, $date = '2026-01-15 10:00:00', $password = '' ) {
+	$post                = new stdClass();
+	$post->ID            = $id;
+	$post->post_title    = $title;
+	$post->post_parent   = $parent;
+	$post->post_date     = $date;
+	$post->post_password = $password;
 	return $post;
 }
+
+// Post 11 is noindex according to Yoast, post 12 according to Rank Math.
+$GLOBALS['fixture_meta'] = array(
+	11 => array( '_yoast_wpseo_meta-robots-noindex' => '1' ),
+	12 => array( 'rank_math_robots' => array( 'noindex', 'nofollow' ) ),
+);
 
 $GLOBALS['fixture_pages'] = array(
 	fixture_post( 1, 'Parent' ),
@@ -35,7 +42,7 @@ $GLOBALS['fixture_posts'] = array(
 	fixture_post( 10, 'Newest', 0, '2026-03-01 09:00:00' ),
 	fixture_post( 11, 'Middle', 0, '2026-01-15 09:00:00' ),
 	fixture_post( 12, 'Deep', 0, '2025-11-20 09:00:00' ),
-	fixture_post( 13, 'Loose', 0, '2025-11-05 09:00:00' ),
+	fixture_post( 13, 'Loose', 0, '2025-11-05 09:00:00', 'secret' ),
 );
 
 function fixture_term( $id, $name, $parent, $count ) {
@@ -75,6 +82,19 @@ function get_posts( $args ) {
 	$GLOBALS['fixture_last_args']     = $args;
 
 	$posts = 'page' === $args['post_type'] ? $GLOBALS['fixture_pages'] : $GLOBALS['fixture_posts'];
+
+	// WP_Query drops password-protected posts when has_password is false; the
+	// stub has to do the same or the exclusion test would prove nothing.
+	if ( isset( $args['has_password'] ) && false === $args['has_password'] ) {
+		$posts = array_values(
+			array_filter(
+				$posts,
+				function ( $post ) {
+					return '' === $post->post_password;
+				}
+			)
+		);
+	}
 
 	if ( ! empty( $args['post__not_in'] ) ) {
 		$posts = array_values(
@@ -146,6 +166,11 @@ function get_month_link( $year, $month ) {
 
 function date_i18n( $format, $timestamp ) {
 	return date( $format, $timestamp );
+}
+
+function get_post_meta( $id, $key, $single = false ) {
+	$meta = $GLOBALS['fixture_meta'][ $id ][ $key ] ?? '';
+	return $single ? $meta : array( $meta );
 }
 
 function get_terms( $args ) {
@@ -352,6 +377,66 @@ check( 'meta_value' === $args['orderby'] && 'yomi' === $args['meta_key'], 'a cus
 // nothing to sort on, so it must not silently return an arbitrary order.
 $args = order_for( 'post', array( 'orderby' => 'meta', 'sort_meta_key' => '' ) );
 check( 'title' === $args['orderby'] && ! isset( $args['meta_key'] ), 'a custom field ordering with no key falls back to title' );
+
+/* --- a post in several categories --------------------------------------- */
+
+// Post 10 sits in both News (5) and Sub (6) for this block only.
+$GLOBALS['fixture_term_members'][6][] = 10;
+
+$roots = ( new TreeBuilder( grouped() ) )->build();
+check(
+	in_array( 'Newest', titles( $roots[0]->children ), true ) && in_array( 'Newest', titles( $roots[0]->children[0]->children ), true ),
+	'a post in two categories is listed under both by default'
+);
+
+$roots = ( new TreeBuilder( grouped( array( 'duplicate_in_terms' => false ) ) ) )->build();
+$under_news = titles( $roots[0]->children );
+$under_sub  = titles( $roots[0]->children[0]->children );
+check(
+	1 === (int) in_array( 'Newest', $under_news, true ) + (int) in_array( 'Newest', $under_sub, true ),
+	'switched off, it appears exactly once',
+	'News: ' . implode( ',', $under_news ) . ' / Sub: ' . implode( ',', $under_sub )
+);
+
+array_pop( $GLOBALS['fixture_term_members'][6] );
+
+/* --- excluding whole post types and taxonomies -------------------------- */
+
+$roots = ( new TreeBuilder( tree_settings( array( 'exclude_types' => array( 'page' ) ) ) ) )->build();
+check( array() === $roots, 'an excluded post type contributes nothing, even though it is in post_types' );
+
+$GLOBALS['fixture_last_taxonomy'] = null;
+$roots = ( new TreeBuilder( grouped( array( 'exclude_tax' => array( 'category' ) ) ) ) )->build();
+check( null === $GLOBALS['fixture_last_taxonomy'], 'an excluded taxonomy is never queried' );
+check( 'post' === $roots[0]->kind, 'and the entries fall back to a flat list' );
+
+// An exclusion has to beat an explicit choice, or it is not an exclusion.
+$GLOBALS['fixture_last_taxonomy'] = null;
+( new TreeBuilder( grouped( array( 'taxonomy' => 'post_tag', 'exclude_tax' => array( 'post_tag' ) ) ) ) )->build();
+check( null === $GLOBALS['fixture_last_taxonomy'], 'an exclusion beats an explicitly chosen taxonomy' );
+
+/* --- password-protected entries ----------------------------------------- */
+
+$roots = ( new TreeBuilder( grouped( array( 'group_by_term' => false ) ) ) )->build();
+check( in_array( 'Loose', titles( $roots ), true ), 'a protected entry is listed by default, as WordPress does' );
+
+$roots = ( new TreeBuilder( grouped( array( 'group_by_term' => false, 'exclude_protected' => true ) ) ) )->build();
+check( ! in_array( 'Loose', titles( $roots ), true ), 'and is dropped once the setting is on' );
+check( array( 'Newest', 'Middle', 'Deep' ) === titles( $roots ), 'while everything else survives' );
+
+/* --- noindex entries ----------------------------------------------------- */
+
+$roots = ( new TreeBuilder( grouped( array( 'group_by_term' => false, 'exclude_noindex' => true ) ) ) )->build();
+check( ! in_array( 'Middle', titles( $roots ), true ), 'a Yoast noindex entry is dropped' );
+check( ! in_array( 'Deep', titles( $roots ), true ), 'a Rank Math noindex entry is dropped' );
+check( in_array( 'Newest', titles( $roots ), true ), 'an entry with no SEO meta at all is kept' );
+
+// Priming meta for every post costs a query, so it must only happen when
+// something is going to read it.
+order_for( 'post', array() );
+check( false === $GLOBALS['fixture_last_args']['update_post_meta_cache'], 'meta is not primed when nothing reads it' );
+order_for( 'post', array( 'exclude_noindex' => true ) );
+check( true === $GLOBALS['fixture_last_args']['update_post_meta_cache'], 'and is primed when the noindex check needs it' );
 
 /* --- authors ------------------------------------------------------------ */
 

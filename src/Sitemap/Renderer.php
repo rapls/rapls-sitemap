@@ -197,6 +197,8 @@ final class Renderer {
 			return '<span class="' . esc_attr( self::BASE . '__label' ) . '">' . $label . '</span>';
 		}
 
-		return '<a class="' . esc_attr( self::BASE . '__link' ) . '" href="' . esc_url( $node->url ) . '">' . $label . '</a>';
+		$rel = empty( $this->settings['nofollow'] ) ? '' : ' rel="nofollow"';
+
+		return '<a class="' . esc_attr( self::BASE . '__link' ) . '" href="' . esc_url( $node->url ) . '"' . $rel . '>' . $label . '</a>';
 	}
 }

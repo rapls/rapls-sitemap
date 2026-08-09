@@ -100,6 +100,13 @@ final class TreeBuilder {
 	 * @return Node[]
 	 */
 	private function build_post_type( string $post_type ): array {
+		// An explicit exclusion wins over the inclusion list, so a post type a
+		// plugin registers later can be kept out for good rather than only
+		// until somebody re-saves the settings screen.
+		if ( in_array( $post_type, (array) $this->settings['exclude_types'], true ) ) {
+			return array();
+		}
+
 		$taxonomy  = $this->primary_taxonomy( $post_type );
 		$grouping  = ! empty( $this->settings['group_by_term'] ) && '' !== $taxonomy
 			&& ! is_post_type_hierarchical( $post_type );
@@ -133,18 +140,26 @@ final class TreeBuilder {
 	 * @return \WP_Post[]
 	 */
 	private function fetch( string $post_type ): array {
+		$noindex = ! empty( $this->settings['exclude_noindex'] );
+
 		$args = array_merge(
 			array(
-				'post_type'              => $post_type,
-				'post_status'            => 'publish',
-				'posts_per_page'         => -1,
-				'ignore_sticky_posts'    => true,
-				'no_found_rows'          => true,
-				'update_post_meta_cache' => false,
-				'suppress_filters'       => false,
+				'post_type'           => $post_type,
+				'post_status'         => 'publish',
+				'posts_per_page'      => -1,
+				'ignore_sticky_posts' => true,
+				'no_found_rows'       => true,
+				// Meta is only primed when something is actually going to read
+				// it; otherwise this is a wasted query on every render.
+				'update_post_meta_cache' => $noindex,
+				'suppress_filters'    => false,
 			),
 			$this->order_args( $post_type )
 		);
+
+		if ( ! empty( $this->settings['exclude_protected'] ) ) {
+			$args['has_password'] = false;
+		}
 
 		$exclude = (array) $this->settings['exclude_ids'];
 		if ( array() !== $exclude ) {
@@ -175,7 +190,23 @@ final class TreeBuilder {
 		 */
 		$args = apply_filters( Hooks::QUERY_ARGS, $args, $post_type );
 
-		return get_posts( $args );
+		$posts = get_posts( $args );
+
+		// Filtered in PHP rather than with a meta_query: the SEO plugins store
+		// noindex in different shapes, and a meta_query would also drop every
+		// post with no meta row at all, which is most of them.
+		if ( $noindex ) {
+			$posts = array_values(
+				array_filter(
+					$posts,
+					function ( $post ) {
+						return ! $this->is_noindex( $post );
+					}
+				)
+			);
+		}
+
+		return $posts;
 	}
 
 	/**
@@ -293,6 +324,12 @@ final class TreeBuilder {
 			$by_id[ (int) $post->ID ] = $post;
 		}
 
+		// With this off, the first term to claim a post keeps it — which is why
+		// the loop below checks `$claimed` before adding rather than only
+		// after. Terms are walked in the order get_terms returned them, so the
+		// choice is at least stable between renders.
+		$duplicate = ! empty( $this->settings['duplicate_in_terms'] );
+
 		$claimed = array();
 		foreach ( $terms as $term ) {
 			$ids = get_objects_in_term( array( (int) $term->term_id ), $taxonomy );
@@ -306,6 +343,9 @@ final class TreeBuilder {
 			foreach ( $posts as $post ) {
 				$id = (int) $post->ID;
 				if ( ! isset( $members[ $id ] ) ) {
+					continue;
+				}
+				if ( ! $duplicate && isset( $claimed[ $id ] ) ) {
 					continue;
 				}
 				$nodes[ (int) $term->term_id ]->add( $this->to_node( $by_id[ $id ] ) );
@@ -469,18 +509,58 @@ final class TreeBuilder {
 	 * @return string Taxonomy slug, or '' when there is none.
 	 */
 	private function primary_taxonomy( string $post_type ): string {
+		$excluded = (array) $this->settings['exclude_tax'];
+
 		$configured = (string) $this->settings['taxonomy'];
 		if ( '' !== $configured ) {
+			if ( in_array( $configured, $excluded, true ) ) {
+				return '';
+			}
 			return in_array( $configured, get_object_taxonomies( $post_type, 'names' ), true ) ? $configured : '';
 		}
 
 		foreach ( get_object_taxonomies( $post_type, 'objects' ) as $taxonomy ) {
+			if ( in_array( $taxonomy->name, $excluded, true ) ) {
+				continue;
+			}
 			if ( $taxonomy->public && $taxonomy->hierarchical ) {
 				return $taxonomy->name;
 			}
 		}
 
 		return '';
+	}
+
+	/**
+	 * Has an SEO plugin marked this post noindex?
+	 *
+	 * WordPress stores nothing per post, so this reads the two plugins that
+	 * cover most of the market and leaves the rest to a filter. Guessing at a
+	 * third plugin's storage would risk hiding content that was never marked.
+	 *
+	 * @param \WP_Post $post Post object.
+	 * @return bool
+	 */
+	private function is_noindex( $post ): bool {
+		$id      = (int) $post->ID;
+		$noindex = false;
+
+		if ( '1' === (string) get_post_meta( $id, '_yoast_wpseo_meta-robots-noindex', true ) ) {
+			$noindex = true;
+		}
+
+		$rank_math = get_post_meta( $id, 'rank_math_robots', true );
+		if ( is_array( $rank_math ) && in_array( 'noindex', $rank_math, true ) ) {
+			$noindex = true;
+		}
+
+		/**
+		 * Filters whether a post counts as noindex.
+		 *
+		 * @param bool $noindex Whether it is already considered noindex.
+		 * @param int  $id      Post ID.
+		 */
+		return (bool) apply_filters( Hooks::IS_NOINDEX, $noindex, $id );
 	}
 
 	/**
