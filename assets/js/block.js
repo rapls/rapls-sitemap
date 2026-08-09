@@ -89,13 +89,19 @@
 		{ value: 'ol', label: __( 'Ordered (ol)', 'rapls-sitemap' ) },
 	];
 
+	/*
+	 * Only `edit` and `save` are declared here.
+	 *
+	 * The name, title, description, category, icon, supports and — importantly
+	 * — the attributes all come from blocks/sitemap/block.json. WordPress
+	 * hands them to the editor itself: register_block_type_from_metadata()
+	 * prints the server-side block definition ahead of this script, so the
+	 * editor already knows the block's shape by the time this runs.
+	 *
+	 * Repeating any of it here would create a second copy that wins over the
+	 * JSON, which is how an icon changes in block.json and nothing happens.
+	 */
 	wp.blocks.registerBlockType( 'rapls/sitemap', {
-		title: __( 'Sitemap', 'rapls-sitemap' ),
-		description: __( 'A table of contents for the whole site.', 'rapls-sitemap' ),
-		category: 'widgets',
-		icon: 'networking',
-		supports: { html: false, align: [ 'wide', 'full' ] },
-
 		edit: function ( props ) {
 			var atts = props.attributes;
 			var set = props.setAttributes;
@@ -182,7 +188,19 @@
 						select( __( 'Sort entries by', 'rapls-sitemap' ), 'orderby', ORDERBY ),
 						select( __( 'Direction', 'rapls-sitemap' ), 'order', ORDER ),
 						range( __( 'Maximum depth', 'rapls-sitemap' ), 'depth', -1, 10, __( '-1 uses the site default, 0 shows every level.', 'rapls-sitemap' ) ),
-						range( __( 'Entries per list', 'rapls-sitemap' ), 'number', -1, 500, __( '-1 uses the site default, 0 lifts the cap.', 'rapls-sitemap' ) )
+						// A number field, not a slider: the site default is
+						// 2000, and a slider whose top end sits below the value
+						// it is overriding cannot express what it replaces.
+						el( components.TextControl, {
+							label: __( 'Entries per list', 'rapls-sitemap' ),
+							help: __( '-1 uses the site default, 0 lifts the cap.', 'rapls-sitemap' ),
+							type: 'number',
+							min: -1,
+							value: atts.number,
+							onChange: function ( value ) {
+								set( { number: '' === value ? -1 : parseInt( value, 10 ) } );
+							},
+						} )
 					),
 					el(
 						components.PanelBody,

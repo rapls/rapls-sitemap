@@ -1105,16 +1105,13 @@ final class SettingsPage {
 	private static function length_field( string $field, string $key, string $label, array $style, bool $unitless = false ): void {
 		list( $number, $unit ) = Design::split( $style[ $key ] );
 
-		$units = $unitless
-			? array( '' => '—', 'px' => 'px', 'em' => 'em', 'rem' => 'rem', '%' => '%' )
-			: array( 'px' => 'px', 'em' => 'em', 'rem' => 'rem', '%' => '%', 'pt' => 'pt' );
-
 		// An unset length has no unit yet; offer the one people reach for first.
 		if ( '' === $unit && ! $unitless ) {
 			$unit = 'px';
 		}
 
-		$id = 'rapls-sitemap-' . str_replace( '_', '-', $key );
+		$units = self::length_units( $unitless, $unit );
+		$id    = 'rapls-sitemap-' . str_replace( '_', '-', $key );
 
 		printf(
 			'<span class="rapls-field"><label class="rapls-field__label" for="%1$s">%2$s</label>'
@@ -1137,6 +1134,34 @@ final class SettingsPage {
 			);
 		}
 		echo '</select></span>';
+	}
+
+	/**
+	 * The unit options for a length control.
+	 *
+	 * `Design` accepts units this list does not lead with — `vw` and `ch` — and
+	 * a filter, an import, or a hand-edited option can set one. A select with
+	 * no matching option falls back to its first entry, so the next save would
+	 * silently rewrite `50vw` as `50px`. Whatever is currently set is therefore
+	 * always among the options, even if nobody would have picked it from a menu.
+	 *
+	 * Public so `smoke-design.php` can prove that holds for every unit the
+	 * validator accepts.
+	 *
+	 * @param bool   $unitless Whether a bare number is meaningful.
+	 * @param string $current  The unit currently stored.
+	 * @return array<string,string> Value => label.
+	 */
+	public static function length_units( bool $unitless, string $current = '' ): array {
+		$units = $unitless
+			? array( '' => '—', 'px' => 'px', 'em' => 'em', 'rem' => 'rem', '%' => '%' )
+			: array( 'px' => 'px', 'em' => 'em', 'rem' => 'rem', '%' => '%', 'pt' => 'pt' );
+
+		if ( ! isset( $units[ $current ] ) ) {
+			$units[ $current ] = $current;
+		}
+
+		return $units;
 	}
 
 	/**

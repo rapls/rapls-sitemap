@@ -291,6 +291,42 @@ function scan_js( $path, $relative, $domain ) {
 }
 
 /**
+ * Extract the translatable fields from one block.json.
+ *
+ * WordPress translates these through the plugin's text domain when the block
+ * registers, so they belong in the catalogue even though no `__()` call
+ * mentions them. Leaving them out is easy to do and hard to notice: the block
+ * simply shows its English title in the editor.
+ *
+ * The field list is WordPress's own i18n schema for block metadata, minus the
+ * parts this plugin does not use (styles, variations).
+ *
+ * @param string $path     Absolute path to a block.json.
+ * @param string $relative Path recorded in the POT.
+ */
+function scan_block_json( $path, $relative ) {
+	$data = json_decode( (string) file_get_contents( $path ), true );
+
+	if ( ! is_array( $data ) ) {
+		return;
+	}
+
+	foreach ( array( 'title', 'description' ) as $field ) {
+		if ( ! empty( $data[ $field ] ) && is_string( $data[ $field ] ) ) {
+			record( $data[ $field ], $relative, 'block.json: ' . $field );
+		}
+	}
+
+	if ( ! empty( $data['keywords'] ) && is_array( $data['keywords'] ) ) {
+		foreach ( $data['keywords'] as $keyword ) {
+			if ( is_string( $keyword ) ) {
+				record( $keyword, $relative, 'block.json: keyword' );
+			}
+		}
+	}
+}
+
+/**
  * Escape a string for a PO file.
  */
 function po_escape( $text ) {
@@ -311,6 +347,10 @@ scan_php( $root . '/rapls-sitemap.php', 'rapls-sitemap.php', $targets, $domain )
 
 foreach ( files( $root . '/assets/js', array( 'js' ) ) as $path ) {
 	scan_js( $path, ltrim( str_replace( $root, '', $path ), '/' ), $domain );
+}
+
+foreach ( files( $root . '/blocks', array( 'json' ) ) as $path ) {
+	scan_block_json( $path, ltrim( str_replace( $root, '', $path ), '/' ) );
 }
 
 ksort( $entries );

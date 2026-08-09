@@ -52,6 +52,35 @@ check( '' === Design::sanitize( array( 'font_size_value' => '20', 'font_size_uni
 // The plain form has to keep working for filters and programmatic updates.
 check( '2em' === Design::sanitize( array( 'indent' => '2em' ) )['indent'], 'a single string is still accepted' );
 
+// Every unit the validator accepts has to survive a trip through the settings
+// screen. One it accepts but the screen does not offer would fall back to the
+// select's first entry, and the next save would rewrite the value.
+$strays = array();
+
+foreach ( array( 'px', 'rem', 'em', '%', 'pt', 'vw', 'ch' ) as $unit ) {
+	$kept = Design::sanitize( array( 'font_size' => '50' . $unit ) )['font_size'];
+	if ( '50' . $unit !== $kept ) {
+		continue;
+	}
+
+	list( , $split ) = Design::split( $kept );
+
+	if ( ! isset( RaplsSitemap\Admin\SettingsPage::length_units( false, $split )[ $split ] ) ) {
+		$strays[] = $unit;
+	}
+}
+
+check(
+	array() === $strays,
+	'every accepted unit is one the settings screen can show',
+	'no option for: ' . implode( ', ', $strays )
+);
+
+// The common units lead the list; an unusual one is appended rather than
+// replacing anything, so the menu stays short for the people who never use it.
+check( 5 === count( RaplsSitemap\Admin\SettingsPage::length_units( false, 'px' ) ), 'an ordinary unit adds nothing to the menu' );
+check( 6 === count( RaplsSitemap\Admin\SettingsPage::length_units( false, 'vw' ) ), 'and an unusual one is added rather than swapped in' );
+
 check( array( '1.25', 'em' ) === Design::split( '1.25em' ), 'a stored length splits back for the UI' );
 check( array( '18', 'px' ) === Design::split( '18px' ), 'and so does a pixel value' );
 check( array( '1.7', '' ) === Design::split( '1.7' ), 'a unitless number splits with an empty unit' );
@@ -197,6 +226,18 @@ foreach ( array_keys( $json['attributes'] ) as $attribute ) {
 
 check( array() === $no_control, sprintf( 'all %d block attributes have an editor control', count( $json['attributes'] ) ), implode( ', ', $no_control ) );
 check( array() === $no_mapping, 'and all of them are mapped onto settings in PHP', implode( ', ', $no_mapping ) );
+
+// block.json is the single declaration of the block's metadata. A copy in the
+// editor script wins over the JSON, so changing the icon there would do
+// nothing — the same reason Block::NAME was deleted.
+$duplicated = array();
+foreach ( array( 'title', 'description', 'category', 'icon', 'supports' ) as $key ) {
+	if ( preg_match( '/^\t\t' . $key . ':/m', $block_js ) ) {
+		$duplicated[] = $key;
+	}
+}
+
+check( array() === $duplicated, 'the editor script does not restate block.json metadata', implode( ', ', $duplicated ) );
 
 /* --- every preset is registered in all four places ----------------------- */
 

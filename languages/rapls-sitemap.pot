@@ -11,7 +11,7 @@ msgstr ""
 "X-Domain: rapls-sitemap\n"
 
 #. translators: %s: number of entries in a category.
-#: src/Sitemap/Renderer.php:184
+#: src/Sitemap/Renderer.php:189
 msgid "(%s)"
 msgstr ""
 
@@ -20,11 +20,11 @@ msgstr ""
 msgid "(no title) #%d"
 msgstr ""
 
-#: assets/js/block.js:185
+#: assets/js/block.js:196
 msgid "-1 uses the site default, 0 lifts the cap."
 msgstr ""
 
-#: assets/js/block.js:184
+#: assets/js/block.js:190
 msgid "-1 uses the site default, 0 shows every level."
 msgstr ""
 
@@ -60,11 +60,12 @@ msgstr ""
 msgid "A sitemap asks for every entry of every post type at once, which is the query that runs out of memory on a large site. 0 lifts the cap; a list that stops short always says so in the output."
 msgstr ""
 
-#: assets/js/block.js:94
+#. block.json: description
+#: blocks/sitemap/block.json
 msgid "A table of contents for the whole site."
 msgstr ""
 
-#: assets/js/block.js:168
+#: assets/js/block.js:174
 msgid "A taxonomy slug such as post_tag. Empty picks one automatically."
 msgstr ""
 
@@ -72,11 +73,11 @@ msgstr ""
 msgid "A year heading in the date archives."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1476 assets/js/block.js:36
+#: src/Admin/SettingsPage.php:1501 assets/js/block.js:36
 msgid "Accordion"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:514 assets/js/block.js:196
+#: src/Admin/SettingsPage.php:514 assets/js/block.js:214
 msgid "Add rel=\"nofollow\" to every link"
 msgstr ""
 
@@ -100,7 +101,7 @@ msgstr ""
 msgid "Also render where a WP Sitemap Page shortcode appears"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1321
+#: src/Admin/SettingsPage.php:1346
 msgid "Always"
 msgstr ""
 
@@ -108,7 +109,7 @@ msgstr ""
 msgid "An author entry."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1393
+#: src/Admin/SettingsPage.php:1418
 msgid "An exclusion here always wins."
 msgstr ""
 
@@ -130,11 +131,11 @@ msgstr ""
 msgid "Any row that has a nested list under it."
 msgstr ""
 
-#: assets/js/block.js:189
+#: assets/js/block.js:207
 msgid "Appearance"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1482 assets/js/block.js:42
+#: src/Admin/SettingsPage.php:1507 assets/js/block.js:42
 msgid "Arrows"
 msgstr ""
 
@@ -142,7 +143,7 @@ msgstr ""
 msgid "Ascending (oldest, A to Z)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1308 assets/js/block.js:64
+#: src/Admin/SettingsPage.php:1333 assets/js/block.js:64
 msgid "Authors"
 msgstr ""
 
@@ -150,11 +151,11 @@ msgstr ""
 msgid "Automatic picks the first hierarchical taxonomy, which is Categories. A flat one such as Tags has to be chosen here."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1210
+#: src/Admin/SettingsPage.php:1235
 msgid "Bold"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1487 assets/js/block.js:47
+#: src/Admin/SettingsPage.php:1512 assets/js/block.js:47
 msgid "Book contents"
 msgstr ""
 
@@ -166,7 +167,7 @@ msgstr ""
 msgid "Bullet colour"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1464 assets/js/block.js:24
+#: src/Admin/SettingsPage.php:1489 assets/js/block.js:24
 msgid "Bulleted list"
 msgstr ""
 
@@ -174,7 +175,7 @@ msgstr ""
 msgid "Bullets"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1473 assets/js/block.js:33
+#: src/Admin/SettingsPage.php:1498 assets/js/block.js:33
 msgid "Business"
 msgstr ""
 
@@ -186,7 +187,7 @@ msgstr ""
 msgid "Cache lifetime"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1472 assets/js/block.js:32
+#: src/Admin/SettingsPage.php:1497 assets/js/block.js:32
 msgid "Cards"
 msgstr ""
 
@@ -202,7 +203,7 @@ msgstr ""
 msgid "Categories, years, and the front-page link."
 msgstr ""
 
-#: assets/js/block.js:174
+#: assets/js/block.js:180
 msgid "Category display"
 msgstr ""
 
@@ -210,7 +211,7 @@ msgstr ""
 msgid "Celebration"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1480 assets/js/block.js:40
+#: src/Admin/SettingsPage.php:1505 assets/js/block.js:40
 msgid "Checklist"
 msgstr ""
 
@@ -226,7 +227,7 @@ msgstr ""
 msgid "Class"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1173
+#: src/Admin/SettingsPage.php:1198
 msgid "Clear the colour"
 msgstr ""
 
@@ -242,7 +243,7 @@ msgstr ""
 msgid "Colours accept #hex, rgb(), hsl(), a CSS variable, or a colour name."
 msgstr ""
 
-#: assets/js/block.js:160
+#: assets/js/block.js:166
 msgid "Comma separated slugs. Empty uses the site default."
 msgstr ""
 
@@ -250,15 +251,15 @@ msgstr ""
 msgid "Comma separated. Children of an excluded page are excluded too."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1294 assets/js/block.js:76
+#: src/Admin/SettingsPage.php:1319 assets/js/block.js:76
 msgid "Comment count"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1465 assets/js/block.js:25
+#: src/Admin/SettingsPage.php:1490 assets/js/block.js:25
 msgid "Compact"
 msgstr ""
 
-#: assets/js/block.js:156
+#: assets/js/block.js:162
 msgid "Content"
 msgstr ""
 
@@ -266,7 +267,7 @@ msgstr ""
 msgid "Content to include"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1296
+#: src/Admin/SettingsPage.php:1321
 msgid "Custom field"
 msgstr ""
 
@@ -282,15 +283,15 @@ msgstr ""
 msgid "Descending (newest, Z to A)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:582 assets/js/block.js:190
+#: src/Admin/SettingsPage.php:582 assets/js/block.js:208
 msgid "Design"
 msgstr ""
 
-#: assets/js/block.js:183
+#: assets/js/block.js:189
 msgid "Direction"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1466 assets/js/block.js:26
+#: src/Admin/SettingsPage.php:1491 assets/js/block.js:26
 msgid "Document tree"
 msgstr ""
 
@@ -298,7 +299,7 @@ msgstr ""
 msgid "Documents"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:139 src/Admin/SettingsPage.php:1483 assets/js/block.js:43
+#: src/Admin/SettingsPage.php:139 src/Admin/SettingsPage.php:1508 assets/js/block.js:43
 msgid "Dots"
 msgstr ""
 
@@ -306,11 +307,11 @@ msgstr ""
 msgid "Editing CSS needs the unfiltered_html capability, which a network reserves for super administrators. Any CSS already saved keeps working; it is only shown here to those who may change it."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1240
+#: src/Admin/SettingsPage.php:1265
 msgid "Emoji"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1269
+#: src/Admin/SettingsPage.php:1294
 msgid "Emoji bullet"
 msgstr ""
 
@@ -322,11 +323,11 @@ msgstr ""
 msgid "Entries an SEO plugin has marked noindex"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:712 assets/js/block.js:185
+#: src/Admin/SettingsPage.php:712 assets/js/block.js:195
 msgid "Entries per list"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:551 assets/js/block.js:195
+#: src/Admin/SettingsPage.php:551 assets/js/block.js:213
 msgid "Entry count beside each category"
 msgstr ""
 
@@ -342,7 +343,7 @@ msgstr ""
 msgid "Examples"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:539 assets/js/block.js:194
+#: src/Admin/SettingsPage.php:539 assets/js/block.js:212
 msgid "Excerpt"
 msgstr ""
 
@@ -371,7 +372,7 @@ msgstr ""
 msgid "Field name"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1237
+#: src/Admin/SettingsPage.php:1262
 msgid "Filled circle"
 msgstr ""
 
@@ -387,7 +388,7 @@ msgstr ""
 msgid "Food"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1477 assets/js/block.js:37
+#: src/Admin/SettingsPage.php:1502 assets/js/block.js:37
 msgid "Grid"
 msgstr ""
 
@@ -395,11 +396,11 @@ msgstr ""
 msgid "Group by"
 msgstr ""
 
-#: assets/js/block.js:167
+#: assets/js/block.js:173
 msgid "Group by taxonomy"
 msgstr ""
 
-#: assets/js/block.js:176
+#: assets/js/block.js:182
 msgid "Group posts by category"
 msgstr ""
 
@@ -419,11 +420,11 @@ msgstr ""
 msgid "Hide the second level and deeper"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1479 assets/js/block.js:39
+#: src/Admin/SettingsPage.php:1504 assets/js/block.js:39
 msgid "Highlighter"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1238
+#: src/Admin/SettingsPage.php:1263
 msgid "Hollow circle"
 msgstr ""
 
@@ -435,11 +436,11 @@ msgstr ""
 msgid "Hover colour"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1293 assets/js/block.js:75
+#: src/Admin/SettingsPage.php:1318 assets/js/block.js:75
 msgid "ID"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1241 src/Admin/SettingsPage.php:1277
+#: src/Admin/SettingsPage.php:1266 src/Admin/SettingsPage.php:1302
 msgid "Icon class"
 msgstr ""
 
@@ -451,7 +452,7 @@ msgstr ""
 msgid "Indent per level"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1467 assets/js/block.js:27
+#: src/Admin/SettingsPage.php:1492 assets/js/block.js:27
 msgid "Index"
 msgstr ""
 
@@ -459,7 +460,7 @@ msgstr ""
 msgid "Interface"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1290 assets/js/block.js:72
+#: src/Admin/SettingsPage.php:1315 assets/js/block.js:72
 msgid "Last modified"
 msgstr ""
 
@@ -471,11 +472,11 @@ msgstr ""
 msgid "Leave a review"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1208 src/Admin/SettingsPage.php:1235
+#: src/Admin/SettingsPage.php:1233 src/Admin/SettingsPage.php:1260
 msgid "Leave to the design"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1320
+#: src/Admin/SettingsPage.php:1345
 msgid "Leave to the theme"
 msgstr ""
 
@@ -495,7 +496,7 @@ msgstr ""
 msgid "List a post under every category it belongs to"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:570 assets/js/block.js:191
+#: src/Admin/SettingsPage.php:570 assets/js/block.js:209
 msgid "List element"
 msgstr ""
 
@@ -511,7 +512,7 @@ msgstr ""
 msgid "Load the bundled stylesheet"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1486 assets/js/block.js:46
+#: src/Admin/SettingsPage.php:1511 assets/js/block.js:46
 msgid "Magazine"
 msgstr ""
 
@@ -523,7 +524,7 @@ msgstr ""
 msgid "Marks"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:361 assets/js/block.js:184
+#: src/Admin/SettingsPage.php:361 assets/js/block.js:190
 msgid "Maximum depth"
 msgstr ""
 
@@ -531,7 +532,7 @@ msgstr ""
 msgid "Migration"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1309 assets/js/block.js:65
+#: src/Admin/SettingsPage.php:1334 assets/js/block.js:65
 msgid "Monthly archives"
 msgstr ""
 
@@ -539,11 +540,11 @@ msgstr ""
 msgid "Nature"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1488 assets/js/block.js:48
+#: src/Admin/SettingsPage.php:1513 assets/js/block.js:48
 msgid "Neon"
 msgstr ""
 
-#: assets/js/block.js:177
+#: assets/js/block.js:183
 msgid "Nest child categories"
 msgstr ""
 
@@ -559,11 +560,11 @@ msgstr ""
 msgid "Nested items"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1323
+#: src/Admin/SettingsPage.php:1348
 msgid "Never"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1384
+#: src/Admin/SettingsPage.php:1409
 msgid "Never list these, whatever else is set"
 msgstr ""
 
@@ -571,7 +572,7 @@ msgstr ""
 msgid "News"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1469 assets/js/block.js:29
+#: src/Admin/SettingsPage.php:1494 assets/js/block.js:29
 msgid "Newspaper columns"
 msgstr ""
 
@@ -583,15 +584,15 @@ msgstr ""
 msgid "No entries yet."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1462 assets/js/block.js:22
+#: src/Admin/SettingsPage.php:1487 assets/js/block.js:22
 msgid "No style"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1236
+#: src/Admin/SettingsPage.php:1261
 msgid "None"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1209
+#: src/Admin/SettingsPage.php:1234
 msgid "Normal"
 msgstr ""
 
@@ -599,7 +600,7 @@ msgstr ""
 msgid "Notes"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1471 assets/js/block.js:31
+#: src/Admin/SettingsPage.php:1496 assets/js/block.js:31
 msgid "Numbered"
 msgstr ""
 
@@ -607,7 +608,7 @@ msgstr ""
 msgid "Off lists it once, under the first category that claims it."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1322
+#: src/Admin/SettingsPage.php:1347
 msgid "On hover only"
 msgstr ""
 
@@ -624,7 +625,7 @@ msgstr ""
 msgid "Open a post or page for editing."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:684 assets/js/block.js:181
+#: src/Admin/SettingsPage.php:684 assets/js/block.js:187
 msgid "Order"
 msgstr ""
 
@@ -632,15 +633,15 @@ msgstr ""
 msgid "Ordered (ol)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1470 assets/js/block.js:30
+#: src/Admin/SettingsPage.php:1495 assets/js/block.js:30
 msgid "Outlined boxes"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1292 assets/js/block.js:74
+#: src/Admin/SettingsPage.php:1317 assets/js/block.js:74
 msgid "Page order"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1474 assets/js/block.js:34
+#: src/Admin/SettingsPage.php:1499 assets/js/block.js:34
 msgid "Panels"
 msgstr ""
 
@@ -652,7 +653,7 @@ msgstr ""
 msgid "People"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1172
+#: src/Admin/SettingsPage.php:1197
 msgid "Pick a colour"
 msgstr ""
 
@@ -664,7 +665,7 @@ msgstr ""
 msgid "Pick automatically"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1484 assets/js/block.js:44
+#: src/Admin/SettingsPage.php:1509 assets/js/block.js:44
 msgid "Pills"
 msgstr ""
 
@@ -684,11 +685,11 @@ msgstr ""
 msgid "Post title"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1395 assets/js/block.js:159
+#: src/Admin/SettingsPage.php:1420 assets/js/block.js:165
 msgid "Post types"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1307 assets/js/block.js:63
+#: src/Admin/SettingsPage.php:1332 assets/js/block.js:63
 msgid "Posts and pages"
 msgstr ""
 
@@ -704,11 +705,11 @@ msgstr ""
 msgid "Printed with the sitemap, after everything above, so it wins. Scope your rules to .rapls-sitemap to avoid affecting the rest of the page."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:526 src/Admin/SettingsPage.php:1289 assets/js/block.js:71 assets/js/block.js:193
+#: src/Admin/SettingsPage.php:526 src/Admin/SettingsPage.php:1314 assets/js/block.js:71 assets/js/block.js:211
 msgid "Published date"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:563 assets/js/block.js:192
+#: src/Admin/SettingsPage.php:563 assets/js/block.js:210
 msgid "Put a heading above each post type"
 msgstr ""
 
@@ -716,7 +717,7 @@ msgstr ""
 msgid "Puts every setting on this screen back to its default. Your pages and posts are not touched."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1295 assets/js/block.js:77
+#: src/Admin/SettingsPage.php:1320 assets/js/block.js:77
 msgid "Random"
 msgstr ""
 
@@ -744,11 +745,11 @@ msgstr ""
 msgid "Reviews help other people find the plugin. Thank you."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1485 assets/js/block.js:45
+#: src/Admin/SettingsPage.php:1510 assets/js/block.js:45
 msgid "Ribbons"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1468 assets/js/block.js:28
+#: src/Admin/SettingsPage.php:1493 assets/js/block.js:28
 msgid "Ruled rows"
 msgstr ""
 
@@ -772,7 +773,7 @@ msgstr ""
 msgid "Show a link to the front page first"
 msgstr ""
 
-#: assets/js/block.js:175
+#: assets/js/block.js:181
 msgid "Show the home link"
 msgstr ""
 
@@ -780,7 +781,7 @@ msgstr ""
 msgid "Show with each entry"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1463 assets/js/block.js:23
+#: src/Admin/SettingsPage.php:1488 assets/js/block.js:23
 msgid "Simple"
 msgstr ""
 
@@ -788,7 +789,8 @@ msgstr ""
 msgid "Site map"
 msgstr ""
 
-#: assets/js/block.js:93
+#. block.json: title
+#: blocks/sitemap/block.json
 msgid "Sitemap"
 msgstr ""
 
@@ -796,7 +798,7 @@ msgstr ""
 msgid "Skip the first"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:688 assets/js/block.js:182
+#: src/Admin/SettingsPage.php:688 assets/js/block.js:188
 msgid "Sort entries by"
 msgstr ""
 
@@ -804,11 +806,11 @@ msgstr ""
 msgid "Space above"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1239
+#: src/Admin/SettingsPage.php:1264
 msgid "Square"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1481 assets/js/block.js:41
+#: src/Admin/SettingsPage.php:1506 assets/js/block.js:41
 msgid "Sticky notes"
 msgstr ""
 
@@ -820,11 +822,11 @@ msgstr ""
 msgid "Support this plugin"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1407
+#: src/Admin/SettingsPage.php:1432
 msgid "Taxonomies"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1489 assets/js/block.js:49
+#: src/Admin/SettingsPage.php:1514 assets/js/block.js:49
 msgid "Terminal"
 msgstr ""
 
@@ -888,11 +890,11 @@ msgstr ""
 msgid "This is how a true kana ordering is possible. Store the reading of each title in one field, name that field here, and entries sort by the reading instead of by the characters."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1475 assets/js/block.js:35
+#: src/Admin/SettingsPage.php:1500 assets/js/block.js:35
 msgid "Timeline"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1291 assets/js/block.js:73
+#: src/Admin/SettingsPage.php:1316 assets/js/block.js:73
 msgid "Title"
 msgstr ""
 
@@ -920,11 +922,11 @@ msgstr ""
 msgid "Underline"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1478 assets/js/block.js:38
+#: src/Admin/SettingsPage.php:1503 assets/js/block.js:38
 msgid "Underlined headings"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1130
+#: src/Admin/SettingsPage.php:1127
 msgid "Unit"
 msgstr ""
 
@@ -968,11 +970,11 @@ msgstr ""
 msgid "What it is"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:333 assets/js/block.js:157
+#: src/Admin/SettingsPage.php:333 assets/js/block.js:163
 msgid "What to list"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1288 assets/js/block.js:70
+#: src/Admin/SettingsPage.php:1313 assets/js/block.js:70
 msgid "Whatever suits each list"
 msgstr ""
 
@@ -997,7 +999,7 @@ msgstr ""
 msgid "You do not have permission to change these settings."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1268
+#: src/Admin/SettingsPage.php:1293
 msgid "emoji"
 msgstr ""
 

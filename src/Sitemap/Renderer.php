@@ -154,8 +154,13 @@ final class Renderer {
 			$classes .= ' ' . self::BASE . '__item--has-children';
 		}
 
+		// A bullet belongs on an entry. A section heading is a label for the
+		// list below it, and the "and more" line is an apology — neither is a
+		// thing in the list, so neither gets a marker.
+		$decorated = ! in_array( $node->kind, array( 'section', 'more' ), true );
+
 		$html = '<li class="' . esc_attr( $classes ) . '">'
-			. $this->icon( $depth )
+			. ( $decorated ? $this->icon( $depth ) : '' )
 			. $this->link( $node )
 			. $this->count( $node )
 			. $this->date( $node )

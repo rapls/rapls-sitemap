@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-08-09 13:13:38+0000",
+    "translation-revision-date": "2026-08-09 13:20:59+0000",
     "generator": "rapls-sitemap\/bin\/make-json.php",
     "domain": "messages",
     "locale_data": {
@@ -9,9 +9,6 @@
             ],
             "-1 uses the site default, 0 shows every level.": [
                 "-1でサイト全体の設定を使い、0ですべての階層を表示します。"
-            ],
-            "A table of contents for the whole site.": [
-                "サイト全体の目次です。"
             ],
             "A taxonomy slug such as post_tag. Empty picks one automatically.": [
                 "post_tag のようなタクソノミーのスラッグを指定します。空欄の場合は自動で選ばれます。"
@@ -186,9 +183,6 @@
             ],
             "Simple": [
                 "シンプル"
-            ],
-            "Sitemap": [
-                "サイトマップ"
             ],
             "Sort entries by": [
                 "並べ替えの基準"

@@ -144,6 +144,19 @@ check( 0 === strpos( $html, '<style>' ), 'the token stylesheet is emitted ahead 
 check( false !== strpos( $html, 'color:#c00' ), 'and carries the configured value' );
 check( false !== strpos( $html, 'rapls-sitemap--t' ), 'the wrapper carries the scope class the stylesheet targets' );
 check( false !== strpos( $html, '<i class="rapls-sitemap__icon fa-solid fa-star" aria-hidden="true">' ), 'an icon bullet renders as a real element' );
+
+// A heading labels the list below it and the "and more" line apologises for it.
+// Neither is an entry, so neither takes a bullet.
+// All three sit at depth 0, where the icon bullet is configured, so any
+// difference between them is down to their kind and nothing else.
+$section = new Node( 0, 'Pages', '', 'section' );
+$note    = new Node( 0, 'Only the first 10 entries are listed.', '', 'more' );
+$entry   = new Node( 30, 'A page', 'https://example.test/a' );
+
+$html = ( new Renderer( $settings ) )->render( array( $section, $note, $entry ) );
+check( 1 === substr_count( $html, '<i class' ), 'only the entry itself is given a bullet' );
+check( false === strpos( $html, 'item--section"><i' ), 'a section heading gets none' );
+check( false === strpos( $html, 'item--more"><i' ), 'and neither does the truncation note' );
 check( 1 === substr_count( $html, '<style>' ), 'one style element, not one per level' );
 
 // Untouched tokens must add nothing at all — a sitemap that was fine before

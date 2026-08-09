@@ -168,6 +168,28 @@ foreach ( glob( $root . '/src/*/*.php' ) as $path ) {
 
 check( array() === $wrong_domain, 'every translator call uses the rapls-sitemap text domain', implode( ' | ', $wrong_domain ) );
 
+/* --- block.json metadata is translated too ------------------------------ */
+
+// WordPress translates these through the plugin's text domain at registration,
+// so they need to be in the catalogue even though no __() call mentions them.
+// Nothing breaks loudly when they are missing — the block just shows its
+// English title in the editor, which is easy to ship without noticing.
+foreach ( glob( $root . '/blocks/*/block.json' ) as $block_file ) {
+	$block = json_decode( (string) file_get_contents( $block_file ), true );
+
+	foreach ( array( 'title', 'description' ) as $field ) {
+		if ( empty( $block[ $field ] ) ) {
+			continue;
+		}
+
+		check(
+			isset( $pot[ $block[ $field ] ] ),
+			sprintf( '%s: %s is in the catalogue', basename( dirname( $block_file ) ), $field ),
+			$block[ $field ]
+		);
+	}
+}
+
 /* --- the editor script gets its Jed payload ----------------------------- */
 
 $json_path = $languages . '/' . $domain . '-ja-' . $domain . '-block.json';
