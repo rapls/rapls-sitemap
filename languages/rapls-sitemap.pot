@@ -11,7 +11,7 @@ msgstr ""
 "X-Domain: rapls-sitemap\n"
 
 #. translators: %d: post ID.
-#: src/Sitemap/TreeBuilder.php:702
+#: src/Sitemap/TreeBuilder.php:743
 msgid "(no title) #%d"
 msgstr ""
 
@@ -290,7 +290,7 @@ msgid "Exclude post IDs"
 msgstr ""
 
 #. translators: PHP date format for a monthly archive heading. Japanese uses Y年n月.
-#: src/Sitemap/TreeBuilder.php:667
+#: src/Sitemap/TreeBuilder.php:708
 msgid "F Y"
 msgstr ""
 
@@ -847,12 +847,12 @@ msgid "Windows ships no country flag glyphs, so these appear as two letters — 
 msgstr ""
 
 #. translators: PHP date format for a yearly archive heading. Japanese uses Y年.
-#: src/Sitemap/TreeBuilder.php:655
+#: src/Sitemap/TreeBuilder.php:696
 msgid "Y"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:464
-msgid "Yoast SEO and Rank Math are read directly. WordPress records nothing about noindex itself, so other SEO plugins need the rapls_sitemap/is_noindex filter. Reading the setting costs one extra query per render."
+msgid "Yoast SEO, Rank Math, and the Cocoon theme are read directly. WordPress records nothing about noindex itself, so anything else needs the rapls_sitemap/is_noindex filter. Reading the setting costs one extra query per render."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:254

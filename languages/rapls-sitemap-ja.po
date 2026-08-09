@@ -18,7 +18,7 @@ msgstr ""
 "X-Domain: rapls-sitemap\n"
 
 #. translators: %d: post ID.
-#: src/Sitemap/TreeBuilder.php:702
+#: src/Sitemap/TreeBuilder.php:743
 msgid "(no title) #%d"
 msgstr "(タイトルなし) #%d"
 
@@ -297,7 +297,7 @@ msgid "Exclude post IDs"
 msgstr "除外する投稿 ID"
 
 #. translators: PHP date format for a monthly archive heading. Japanese uses Y年n月.
-#: src/Sitemap/TreeBuilder.php:667
+#: src/Sitemap/TreeBuilder.php:708
 msgid "F Y"
 msgstr "Y年n月"
 
@@ -854,13 +854,13 @@ msgid "Windows ships no country flag glyphs, so these appear as two letters — 
 msgstr "Windows は国旗の字形を持たないため、Windows の閲覧者には 🇯🇵 が JP のように2文字で表示されます。先頭の5つは通常の記号なので、どの環境でも表示されます。"
 
 #. translators: PHP date format for a yearly archive heading. Japanese uses Y年.
-#: src/Sitemap/TreeBuilder.php:655
+#: src/Sitemap/TreeBuilder.php:696
 msgid "Y"
 msgstr "Y年"
 
 #: src/Admin/SettingsPage.php:464
-msgid "Yoast SEO and Rank Math are read directly. WordPress records nothing about noindex itself, so other SEO plugins need the rapls_sitemap/is_noindex filter. Reading the setting costs one extra query per render."
-msgstr "Yoast SEO と Rank Math は直接読み取ります。WordPress 自体は noindex の情報を保存していないため、他の SEO プラグインでは rapls_sitemap/is_noindex フィルターが必要です。この設定を有効にすると、描画のたびにクエリが1つ増えます。"
+msgid "Yoast SEO, Rank Math, and the Cocoon theme are read directly. WordPress records nothing about noindex itself, so anything else needs the rapls_sitemap/is_noindex filter. Reading the setting costs one extra query per render."
+msgstr "Yoast SEO、Rank Math、Cocoon テーマは直接読み取ります。WordPress 自体は noindex の情報を保存していないため、それ以外では rapls_sitemap/is_noindex フィルターが必要です。この設定を有効にすると、描画のたびにクエリが1つ増えます。"
 
 #: src/Admin/SettingsPage.php:254
 msgid "You do not have permission to change these settings."

@@ -30,6 +30,14 @@ $GLOBALS['fixture_meta'] = array(
 	12 => array( 'rank_math_robots' => array( 'noindex', 'nofollow' ) ),
 );
 
+// Pages 1-5 stand in for Cocoon's storage, which writes 0 rather than deleting
+// the row, and falls back to Simplicity's `is_noindex` when its own key is
+// empty. Page 4 has both, disagreeing, to prove which one is authoritative.
+$GLOBALS['fixture_meta'][1] = array( 'the_page_noindex' => 1 );
+$GLOBALS['fixture_meta'][2] = array( 'the_page_noindex' => 0 );
+$GLOBALS['fixture_meta'][3] = array( 'is_noindex' => 1 );
+$GLOBALS['fixture_meta'][4] = array( 'the_page_noindex' => 0, 'is_noindex' => 1 );
+
 $GLOBALS['fixture_pages'] = array(
 	fixture_post( 1, 'Parent' ),
 	fixture_post( 2, 'Child', 1 ),
@@ -166,6 +174,19 @@ function get_month_link( $year, $month ) {
 
 function date_i18n( $format, $timestamp ) {
 	return date( $format, $timestamp );
+}
+
+// The bootstrap's apply_filters returns the value untouched, which is right for
+// every other test. The noindex filter is a documented extension point, so it
+// needs one that actually calls something.
+$GLOBALS['rapls_noindex_filter'] = null;
+
+function apply_filters( $hook, $value ) {
+	if ( 'rapls_sitemap/is_noindex' === $hook && $GLOBALS['rapls_noindex_filter'] ) {
+		$args = func_get_args();
+		return call_user_func( $GLOBALS['rapls_noindex_filter'], $value, $args[2] ?? 0 );
+	}
+	return $value;
 }
 
 function get_post_meta( $id, $key, $single = false ) {
@@ -430,6 +451,28 @@ $roots = ( new TreeBuilder( grouped( array( 'group_by_term' => false, 'exclude_n
 check( ! in_array( 'Middle', titles( $roots ), true ), 'a Yoast noindex entry is dropped' );
 check( ! in_array( 'Deep', titles( $roots ), true ), 'a Rank Math noindex entry is dropped' );
 check( in_array( 'Newest', titles( $roots ), true ), 'an entry with no SEO meta at all is kept' );
+
+/* --- Cocoon's per-post noindex ------------------------------------------- */
+
+$roots  = ( new TreeBuilder( tree_settings( array( 'exclude_noindex' => true ) ) ) )->build();
+$listed = titles( $roots );
+
+check( ! in_array( 'Parent', $listed, true ), 'a Cocoon noindex page is dropped (the_page_noindex = 1)' );
+check( in_array( 'Child', $listed, true ), 'an explicit 0 is kept — Cocoon stores 0 rather than removing the row' );
+check( ! in_array( 'Grandchild', $listed, true ), 'the Simplicity key Cocoon inherits is honoured when its own is absent' );
+check( in_array( 'Standalone', $listed, true ), 'but Cocoon\'s own 0 wins over a stale Simplicity 1, as Cocoon itself decides it' );
+check( in_array( 'Orphan', $listed, true ), 'a page with no SEO meta at all is kept' );
+
+/* --- the filter has the last word ---------------------------------------- */
+
+$GLOBALS['rapls_noindex_filter'] = function ( $noindex, $id ) {
+	return 13 === (int) $id ? true : $noindex;
+};
+
+$roots = ( new TreeBuilder( grouped( array( 'group_by_term' => false, 'exclude_noindex' => true ) ) ) )->build();
+check( ! in_array( 'Loose', titles( $roots ), true ), 'a plugin can mark a post noindex through the filter' );
+
+$GLOBALS['rapls_noindex_filter'] = null;
 
 // Priming meta for every post costs a query, so it must only happen when
 // something is going to read it.

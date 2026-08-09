@@ -532,28 +532,69 @@ final class TreeBuilder {
 	}
 
 	/**
-	 * Has an SEO plugin marked this post noindex?
+	 * Has an SEO plugin or theme marked this post noindex?
 	 *
-	 * WordPress stores nothing per post, so this reads the two plugins that
-	 * cover most of the market and leaves the rest to a filter. Guessing at a
-	 * third plugin's storage would risk hiding content that was never marked.
+	 * WordPress stores nothing per post, so each source has to be read on its
+	 * own terms. Only sources whose storage has been verified against their
+	 * source code are listed here; guessing at another one's meta key would
+	 * risk hiding content nobody marked. Everything else hooks the filter.
 	 *
 	 * @param \WP_Post $post Post object.
 	 * @return bool
 	 */
 	private function is_noindex( $post ): bool {
-		$id      = (int) $post->ID;
-		$noindex = false;
+		$id = (int) $post->ID;
 
 		if ( '1' === (string) get_post_meta( $id, '_yoast_wpseo_meta-robots-noindex', true ) ) {
-			$noindex = true;
+			return $this->filter_noindex( true, $id );
 		}
 
 		$rank_math = get_post_meta( $id, 'rank_math_robots', true );
 		if ( is_array( $rank_math ) && in_array( 'noindex', $rank_math, true ) ) {
-			$noindex = true;
+			return $this->filter_noindex( true, $id );
 		}
 
+		if ( $this->cocoon_noindex( $id ) ) {
+			return $this->filter_noindex( true, $id );
+		}
+
+		return $this->filter_noindex( false, $id );
+	}
+
+	/**
+	 * The Cocoon theme's per-post noindex checkbox.
+	 *
+	 * Cocoon writes `1` when ticked and `0` when not — it keeps the row rather
+	 * than deleting it, so an emptiness test is what distinguishes them, and
+	 * `'0'` is conveniently falsy in PHP.
+	 *
+	 * The `is_noindex` fallback is Cocoon's own: it is the key inherited from
+	 * Simplicity, the theme Cocoon succeeded, and Cocoon consults it exactly
+	 * this way when its own key is empty. Reading it unconditionally would be
+	 * wrong — the name is generic enough for something else to own it — so it
+	 * is only consulted in the same situation Cocoon consults it.
+	 *
+	 * @param int $id Post ID.
+	 * @return bool
+	 */
+	private function cocoon_noindex( int $id ): bool {
+		$value = get_post_meta( $id, 'the_page_noindex', true );
+
+		if ( '' !== $value && null !== $value ) {
+			return ! empty( $value );
+		}
+
+		return ! empty( get_post_meta( $id, 'is_noindex', true ) );
+	}
+
+	/**
+	 * Let anything else have the last word on one post.
+	 *
+	 * @param bool $noindex Verdict so far.
+	 * @param int  $id      Post ID.
+	 * @return bool
+	 */
+	private function filter_noindex( bool $noindex, int $id ): bool {
 		/**
 		 * Filters whether a post counts as noindex.
 		 *

@@ -85,11 +85,17 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 絵文字ピッカーの「旗」タブにも同じ注意を表示しています。🏁 🚩 🏳️ 🏴 🎌 は通常の記号なので、どの環境でも意図どおり表示されます。
 
-= noindex の判定はどのプラグインに対応していますか =
+= noindex の判定はどれに対応していますか =
 
-Yoast SEO と Rank Math は投稿メタを直接読み取ります。
+以下は投稿メタを直接読み取ります。
 
-WordPress 本体は noindex の情報をどこにも保存していないため、それ以外の SEO プラグインには対応コードが必要です。`rapls_sitemap/is_noindex` フィルターを用意しているので、次のように追加できます。
+* Yoast SEO
+* Rank Math
+* Cocoon テーマ（記事ごとの「インデックスしない（noindex）」）
+
+Cocoon はチェックを外したときに 0 を保存し、行そのものは残します。また Cocoon 自身が、自前のキーが空のときに前身テーマ Simplicity のキーを参照します。本プラグインもこの挙動をそのまま再現しているので、Simplicity から移行したサイトでも正しく判定されます。
+
+WordPress 本体は noindex の情報をどこにも保存していないため、それ以外には対応コードが必要です。`rapls_sitemap/is_noindex` フィルターを用意しているので、次のように追加できます。
 
 `add_filter( 'rapls_sitemap/is_noindex', function ( $noindex, $post_id ) {
     return $noindex || 'yes' === get_post_meta( $post_id, '_your_seo_noindex', true );
