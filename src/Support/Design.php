@@ -468,7 +468,6 @@ final class Design {
 			return '';
 		}
 
-		$list   = $items . ':first-child';
 		$before = $items . '::before';
 
 		// Every custom bullet starts by clearing whatever the preset drew.

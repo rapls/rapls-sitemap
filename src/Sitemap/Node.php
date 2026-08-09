@@ -115,12 +115,16 @@ final class Node {
 	/**
 	 * Total nodes in this subtree, including itself.
 	 *
+	 * Named `total()` rather than `count()` so it cannot be confused with the
+	 * `$count` property beside it, which means something else entirely — the
+	 * number of entries a category holds.
+	 *
 	 * @return int
 	 */
-	public function count(): int {
+	public function total(): int {
 		$total = 1;
 		foreach ( $this->children as $child ) {
-			$total += $child->count();
+			$total += $child->total();
 		}
 		return $total;
 	}

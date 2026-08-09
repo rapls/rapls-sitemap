@@ -183,6 +183,8 @@ function get_object_taxonomies( $type, $output = 'names' ) {
 }
 
 function get_users( $args ) {
+	$GLOBALS['fixture_last_user_args'] = $args;
+
 	$out = array();
 	foreach ( array( 3 => 'Aoi', 1 => 'Yuki' ) as $id => $name ) {
 		$user               = new stdClass();
@@ -314,7 +316,7 @@ $roots = ( new TreeBuilder( tree_settings() ) )->build();
 check( array( 'Parent', 'Standalone', 'Orphan' ) === titles( $roots ), 'only true roots stay at the top level' );
 check( array( 'Child' ) === titles( $roots[0]->children ), 'children nest under their parent' );
 check( array( 'Grandchild' ) === titles( $roots[0]->children[0]->children ), 'nesting is recursive' );
-check( 3 === $roots[0]->count(), 'count() walks the whole subtree (Parent + Child + Grandchild)' );
+check( 3 === $roots[0]->total(), 'total() walks the whole subtree (Parent + Child + Grandchild)' );
 
 /* --- exclusion removes the subtree, and orphans still surface ----------- */
 
@@ -616,6 +618,38 @@ check( 'comment_count' === $args['orderby'], 'comment count ordering is passed t
 
 $args = order_for( 'post', array( 'orderby' => 'rand' ) );
 check( 'rand' === $args['orderby'] && ! isset( $args['order'] ), 'a random order carries no direction' );
+
+/* --- truncation is never silent, whatever the source -------------------- */
+
+/**
+ * Does this node list end with the "and more" note?
+ */
+function has_note( array $nodes ) {
+	foreach ( $nodes as $node ) {
+		if ( 'more' === $node->kind ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+// The archive list is derived from the post query, so it inherits its cap. A
+// year missing because the 2001st post was never fetched looks like a year with
+// nothing published in it — the one truncation a reader cannot possibly spot.
+$roots = ( new TreeBuilder( tree_settings( array( 'source' => 'archives', 'post_types' => array( 'post' ), 'max_entries' => 2 ) ) ) )->build();
+check( has_note( $roots ), 'a truncated archive listing says so' );
+
+$roots = ( new TreeBuilder( tree_settings( array( 'source' => 'archives', 'post_types' => array( 'post' ), 'max_entries' => 0 ) ) ) )->build();
+check( ! has_note( $roots ), 'and an untruncated one does not' );
+
+$GLOBALS['fixture_last_user_args'] = null;
+$roots = ( new TreeBuilder( tree_settings( array( 'source' => 'authors', 'max_entries' => 1 ) ) ) )->build();
+check( has_note( $roots ), 'a truncated author listing says so too' );
+check( 2 === $GLOBALS['fixture_last_user_args']['number'], 'the user query is capped rather than loading every account' );
+
+$roots = ( new TreeBuilder( tree_settings( array( 'source' => 'authors', 'max_entries' => 0 ) ) ) )->build();
+check( ! has_note( $roots ), 'lifting the cap lifts it for authors as well' );
+check( ! isset( $GLOBALS['fixture_last_user_args']['number'] ), 'and the user query goes back to unbounded' );
 
 /* --- authors ------------------------------------------------------------ */
 

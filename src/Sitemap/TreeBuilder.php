@@ -114,22 +114,7 @@ final class TreeBuilder {
 				continue;
 			}
 
-			// A list that stops short says so. Silent truncation would read as
-			// a sitemap that is simply missing pages.
-			if ( ! empty( $this->truncated[ $post_type ] ) ) {
-				$nodes[] = new Node(
-					0,
-					sprintf(
-						/* translators: %s: number of entries shown. */
-						__( 'Only the first %s entries are listed.', 'rapls-sitemap' ),
-						number_format_i18n( (int) $this->settings['max_entries'] )
-					),
-					'',
-					'more'
-				);
-			}
-
-			$sections[ $post_type ] = $nodes;
+			$sections[ $post_type ] = $this->note_if_truncated( $nodes, $post_type );
 		}
 
 		// One list needs no label to tell it apart from the others.
@@ -149,6 +134,45 @@ final class TreeBuilder {
 		}
 
 		return $roots;
+	}
+
+	/**
+	 * Append the "and more" note when this key's query hit the cap.
+	 *
+	 * Every source funnels through here rather than only the content listing:
+	 * a truncated archive is *more* misleading than a truncated page list,
+	 * because a missing year looks like a year with nothing published in it.
+	 *
+	 * @param Node[] $nodes Nodes produced for this key.
+	 * @param string $key   Whatever `fetch()`-alike recorded truncation under.
+	 * @return Node[]
+	 */
+	private function note_if_truncated( array $nodes, string $key ): array {
+		if ( empty( $this->truncated[ $key ] ) ) {
+			return $nodes;
+		}
+
+		$nodes[] = new Node(
+			0,
+			sprintf(
+				/* translators: %s: number of entries shown. */
+				__( 'Only the first %s entries are listed.', 'rapls-sitemap' ),
+				number_format_i18n( (int) $this->settings['max_entries'] )
+			),
+			'',
+			'more'
+		);
+
+		return $nodes;
+	}
+
+	/**
+	 * The entry cap, or 0 when there is none.
+	 *
+	 * @return int
+	 */
+	private function cap(): int {
+		return max( 0, (int) $this->settings['max_entries'] );
 	}
 
 	/**
@@ -234,7 +258,7 @@ final class TreeBuilder {
 	 */
 	private function fetch( string $post_type ): array {
 		$noindex = ! empty( $this->settings['exclude_noindex'] );
-		$max     = max( 0, (int) $this->settings['max_entries'] );
+		$max     = $this->cap();
 		$offset  = max( 0, (int) $this->settings['offset'] );
 
 		$args = array_merge(
@@ -736,13 +760,26 @@ final class TreeBuilder {
 	 * @return Node[]
 	 */
 	private function authors(): array {
-		$users = get_users(
-			array(
-				'has_published_posts' => (array) $this->settings['post_types'],
-				'orderby'             => 'display_name',
-				'order'               => 'ASC',
-			)
+		$cap = $this->cap();
+
+		$args = array(
+			'has_published_posts' => (array) $this->settings['post_types'],
+			'orderby'             => 'display_name',
+			'order'               => 'ASC',
 		);
+
+		// Capped for the same reason posts are: a site with a large membership
+		// would otherwise load every user object to draw a list.
+		if ( $cap > 0 ) {
+			$args['number'] = $cap + 1;
+		}
+
+		$users = get_users( $args );
+
+		if ( $cap > 0 && count( $users ) > $cap ) {
+			$users                       = array_slice( $users, 0, $cap );
+			$this->truncated['authors'] = true;
+		}
 
 		$nodes = array();
 		foreach ( $users as $user ) {
@@ -754,7 +791,7 @@ final class TreeBuilder {
 			);
 		}
 
-		return $nodes;
+		return $this->note_if_truncated( $nodes, 'authors' );
 	}
 
 	/**
@@ -805,7 +842,15 @@ final class TreeBuilder {
 			$nodes[] = $node;
 		}
 
-		return $nodes;
+		// The archive list is derived from the post query, so it inherits that
+		// query's cap — and a year that quietly vanished because the 2001st
+		// post was never fetched is exactly the kind of gap a reader cannot see.
+		$truncated = array_intersect_key( $this->truncated, array_flip( (array) $this->settings['post_types'] ) );
+		if ( array() !== $truncated ) {
+			$this->truncated['archives'] = true;
+		}
+
+		return $this->note_if_truncated( $nodes, 'archives' );
 	}
 
 	/**

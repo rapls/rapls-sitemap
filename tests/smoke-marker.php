@@ -84,6 +84,22 @@ check( rendered( $marker->replace( '<!-- sitemap content replace point -->' ) ),
 $twice = '<!-- SITEMAP CONTENT REPLACE POINT --><hr /><!-- SITEMAP CONTENT REPLACE POINT -->';
 check( 2 === substr_count( $marker->replace( $twice ), '<nav' ), 'every marker on the page is replaced' );
 
+/* --- PCRE giving up must not blank the post ----------------------------- */
+
+// A backtrack limit is the realistic way preg_replace_callback returns null on
+// a very long page. Casting that null to a string would wipe the content, which
+// is a far worse failure than leaving the marker unreplaced.
+$limit = ini_get( 'pcre.backtrack_limit' );
+ini_set( 'pcre.backtrack_limit', '1' );
+
+$long = str_repeat( 'sitemap ', 200 ) . '<p><!-- SITEMAP CONTENT REPLACE POINT --></p>';
+$out  = $marker->replace( $long );
+
+check( '' !== $out, 'content survives a PCRE failure' );
+check( false !== strpos( $out, 'sitemap sitemap' ), 'and comes back intact rather than blanked' );
+
+ini_set( 'pcre.backtrack_limit', false === $limit ? '1000000' : $limit );
+
 /* --- the escape hatches ------------------------------------------------- */
 
 $GLOBALS['rapls_is_feed'] = true;

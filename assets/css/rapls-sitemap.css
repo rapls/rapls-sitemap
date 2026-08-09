@@ -783,8 +783,7 @@
 }
 
 /* The "and N more" line is a note, not an entry, so it must not read as one. */
-.rapls-sitemap__item--more {
-	font-size: 0.9em;
+X	font-size: 0.9em;
 	font-style: italic;
 	opacity: 0.7;
 }

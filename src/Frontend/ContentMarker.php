@@ -98,12 +98,17 @@ final class ContentMarker {
 
 		// The callback form keeps `$` and `\` sequences in the rendered HTML
 		// from being read as backreferences.
-		return (string) preg_replace_callback(
+		$replaced = preg_replace_callback(
 			self::PATTERN,
 			static function () use ( $html ) {
 				return $html;
 			},
 			$content
 		);
+
+		// PCRE returns null when it gives up — a backtrack limit on a very long
+		// page, most plausibly. Casting that to a string would blank the post,
+		// which is a far worse outcome than leaving the marker unreplaced.
+		return null === $replaced ? $content : (string) $replaced;
 	}
 }

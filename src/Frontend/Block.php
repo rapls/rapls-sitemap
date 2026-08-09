@@ -24,10 +24,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class Block {
 
-	/** Block name. */
-	public const NAME = 'rapls/sitemap';
-
-	/** Editor script handle. */
+	/**
+	 * Editor script handle.
+	 *
+	 * The block's own name is not duplicated here: `blocks/sitemap/block.json`
+	 * owns it, and a second copy in PHP is a copy that can drift.
+	 */
 	private const SCRIPT = 'rapls-sitemap-block';
 
 	/**
