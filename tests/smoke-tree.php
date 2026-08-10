@@ -327,6 +327,26 @@ $GLOBALS['fixture_menu_items'] = array(
 	fixture_menu_item( 105, 'Adrift', 999, 'custom', 'custom', 0 ),
 );
 
+// All in One SEO's bootstrap function is how the builder knows the plugin is
+// active, and its table only exists while it is.
+$GLOBALS['fixture_aioseo_rows']    = array();
+$GLOBALS['fixture_aioseo_queries'] = 0;
+
+function aioseo() {
+	return new stdClass();
+}
+
+class Rapls_Fake_Wpdb {
+	public $prefix = 'wp_';
+
+	public function get_col( $sql ) {
+		$GLOBALS['fixture_aioseo_queries']++;
+		return $GLOBALS['fixture_aioseo_rows'];
+	}
+}
+
+$GLOBALS['wpdb'] = new Rapls_Fake_Wpdb();
+
 function get_ancestors( $object_id, $object_type, $resource_type = '' ) {
 	// Term 6 is filed under term 5; the rest are roots.
 	return 6 === (int) $object_id ? array( 5 ) : array();
@@ -713,6 +733,42 @@ $roots = ( new TreeBuilder( grouped( array( 'group_by_term' => false, 'exclude_n
 check( ! in_array( 'Middle', titles( $roots ), true ), 'a Yoast noindex entry is dropped' );
 check( ! in_array( 'Deep', titles( $roots ), true ), 'a Rank Math noindex entry is dropped' );
 check( in_array( 'Newest', titles( $roots ), true ), 'an entry with no SEO meta at all is kept' );
+
+// Each of these was read off the plugin it belongs to rather than guessed —
+// a wrong key here hides a page nobody asked to hide.
+$noindex = grouped( array( 'group_by_term' => false, 'exclude_noindex' => true ) );
+
+// SEO SIMPLE PACK keeps one string, and 'noindex,nofollow' is one of its
+// choices — matching the substring covers every value that contains it.
+$GLOBALS['fixture_meta'][10] = array( 'ssp_meta_robots' => 'noindex,nofollow' );
+check( ! in_array( 'Newest', titles( ( new TreeBuilder( $noindex ) )->build() ), true ), 'a SEO SIMPLE PACK noindex entry is dropped' );
+
+$GLOBALS['fixture_meta'][10] = array( 'ssp_meta_robots' => 'nofollow' );
+check( in_array( 'Newest', titles( ( new TreeBuilder( $noindex ) )->build() ), true ), 'while its other robots values are not noindex' );
+
+// SEOPress: the key reads as "index" and the value as "yes", but the box says
+// "do not show this in search results".
+$GLOBALS['fixture_meta'][10] = array( '_seopress_robots_index' => 'yes' );
+check( ! in_array( 'Newest', titles( ( new TreeBuilder( $noindex ) )->build() ), true ), 'a SEOPress noindex entry is dropped' );
+
+// The SEO Framework keeps a tri-state. -1 is truthy and means the opposite, so
+// this has to be a comparison rather than a truth test.
+$GLOBALS['fixture_meta'][10] = array( '_genesis_noindex' => '1' );
+check( ! in_array( 'Newest', titles( ( new TreeBuilder( $noindex ) )->build() ), true ), 'a SEO Framework noindex entry is dropped' );
+
+$GLOBALS['fixture_meta'][10] = array( '_genesis_noindex' => '-1' );
+check( in_array( 'Newest', titles( ( new TreeBuilder( $noindex ) )->build() ), true ), 'while its -1 forces the entry to stay' );
+
+$GLOBALS['fixture_meta'][10] = array();
+
+// All in One SEO keeps none of this in post meta — one row per post in a table
+// of its own, read once for the whole render rather than once per entry.
+$GLOBALS['fixture_aioseo_rows'] = array( 10 );
+$GLOBALS['fixture_aioseo_queries'] = 0;
+check( ! in_array( 'Newest', titles( ( new TreeBuilder( $noindex ) )->build() ), true ), 'an All in One SEO noindex entry is dropped' );
+check( 1 === $GLOBALS['fixture_aioseo_queries'], 'and its table is read once, not once per entry', (string) $GLOBALS['fixture_aioseo_queries'] );
+
+$GLOBALS['fixture_aioseo_rows'] = array();
 
 /* --- a cap reached before the noindex pass still reports itself ---------- */
 

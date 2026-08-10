@@ -54,7 +54,9 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 **WP Sitemap Page から** — オンにすると `[wp_sitemap_page]` を認識します。`only="page"` `only="post"` `only="category"` `only="tag"` `only="author"` `only="archive"`、およびカスタム投稿タイプの指定にも対応しています。WP Sitemap Page 本体が有効な間はショートコードを登録しないため、両方が有効でも競合しません。
 
-**PS Auto Sitemap から** — オンにすると本文中の `<!-- SITEMAP CONTENT REPLACE POINT -->` を認識します。除外 ID の入力欄も同じ「カンマ・空白区切り」の書式を受け付けるので、設定値は貼り付けるだけで移せます。旧プラグインの「サイトマップを表示する記事」の ID 指定は不要です。そのページ自身は自動で一覧から除外されます。
+**PS Auto Sitemap から** — オンにすると本文中の `<!-- SITEMAP CONTENT REPLACE POINT -->` を認識します。旧プラグインの「サイトマップを表示する記事」の ID 指定は不要です。そのページ自身は自動で一覧から除外されます。
+
+**設定はボタン一つで読み込めます。** PS Auto Sitemap の設定はプラグインを削除しても残るため、以前使っていたサイトなら設定画面に「PS Auto Sitemap から読み込む」が現れます。表示するリストとその順序、階層の深さ、除外カテゴリー・除外記事、キャッシュの有無、そしてデザインの近いものが入ります。読み込んでも旧設定はそのまま残るので、何度でもやり直せます。
 
 == Installation ==
 
@@ -194,11 +196,19 @@ WordPress をインストールしたときの管理アカウントや、制作�
 
 = noindex の判定はどれに対応していますか =
 
-以下は投稿メタを直接読み取ります。
+以下は追加の設定なしで判定します。
 
 * Yoast SEO
 * Rank Math
+* SEO SIMPLE PACK
+* SEOPress
+* The SEO Framework
+* All in One SEO
 * Cocoon テーマ（記事ごとの「インデックスしない（noindex）」）
+
+All in One SEO だけは投稿メタではなく専用のテーブルに保存するため、1 回の描画につき 1 クエリで一括して読み取ります。記事ごとにクエリを発行することはありません。他はすべて投稿メタです。
+
+いずれも**記事ごとの noindex 設定**を見ます。「この投稿タイプ全体を noindex にする」といったサイト全体の既定値は対象外です。それは「除外するカスタム投稿タイプ」で指定してください。
 
 Cocoon はチェックを外したときに 0 を保存し、行そのものは残します。また Cocoon 自身が、自前のキーが空のときに前身テーマ Simplicity のキーを参照します。本プラグインもこの挙動をそのまま再現しているので、Simplicity から移行したサイトでも正しく判定されます。
 

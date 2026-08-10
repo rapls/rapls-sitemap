@@ -299,8 +299,10 @@ $uninstall = (string) file_get_contents( dirname( __DIR__ ) . '/uninstall.php' )
 $leftover  = array();
 
 foreach ( array_unique( $written ) as $option ) {
-	// Transient keys expire on their own; only real options need removing.
-	if ( 'rapls_sitemap_html_' === $option || 'rapls_sitemap_reset' === $option ) {
+	// Not everything shaped like an option name is one. Transient keys expire
+	// on their own, and the two `admin-post.php` actions are hook names that
+	// nothing ever writes to the database.
+	if ( in_array( $option, array( 'rapls_sitemap_html_', 'rapls_sitemap_reset', 'rapls_sitemap_import_ps' ), true ) ) {
 		continue;
 	}
 	if ( false === strpos( $uninstall, "'" . $option . "'" ) ) {

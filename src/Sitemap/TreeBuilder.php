@@ -44,6 +44,13 @@ final class TreeBuilder {
 	private $truncated = array();
 
 	/**
+	 * All in One SEO's noindexed post IDs, or null before they are read.
+	 *
+	 * @var array<int,bool>|null
+	 */
+	private $aioseo_noindex = null;
+
+	/**
 	 * @param array<string,mixed> $settings Settings from Settings::get().
 	 */
 	public function __construct( array $settings ) {
@@ -1492,11 +1499,83 @@ final class TreeBuilder {
 			return $this->filter_noindex( true, $id );
 		}
 
+		// SEO SIMPLE PACK stores one string: 'noindex', 'noindex,nofollow', or
+		// the 'noindex,follow' its own metabox rewrites on sight. Matching the
+		// substring covers all three without pinning the list.
+		$ssp = (string) get_post_meta( $id, 'ssp_meta_robots', true );
+		if ( '' !== $ssp && false !== strpos( $ssp, 'noindex' ) ) {
+			return $this->filter_noindex( true, $id );
+		}
+
+		// SEOPress. The key reads as "index" and the value as "yes", but the
+		// box it belongs to is "do not show this in search results".
+		if ( 'yes' === (string) get_post_meta( $id, '_seopress_robots_index', true ) ) {
+			return $this->filter_noindex( true, $id );
+		}
+
+		// The SEO Framework keeps a tri-state: 1 forces noindex, -1 forces
+		// index, 0 defers to the site default. Only the first is an answer, so
+		// this must be a comparison and not a truth test — -1 is truthy and
+		// means the opposite.
+		if ( (int) get_post_meta( $id, '_genesis_noindex', true ) > 0 ) {
+			return $this->filter_noindex( true, $id );
+		}
+
 		if ( $this->cocoon_noindex( $id ) ) {
 			return $this->filter_noindex( true, $id );
 		}
 
+		if ( isset( $this->aioseo_noindex()[ $id ] ) ) {
+			return $this->filter_noindex( true, $id );
+		}
+
 		return $this->filter_noindex( false, $id );
+	}
+
+	/**
+	 * The posts All in One SEO has marked noindex, keyed by ID.
+	 *
+	 * AIOSEO is the one that keeps none of this in post meta: it has a table of
+	 * its own, one row per post. Read per post that would be a query per entry —
+	 * the thing a sitemap must never do — so the whole set is fetched once and
+	 * remembered. It is bounded by how many posts somebody has explicitly
+	 * marked, not by how many posts exist, which on every real site is a short
+	 * list.
+	 *
+	 * `robots_default` is the row's "use the site setting" flag; only a row that
+	 * has turned it off and set `robots_noindex` is an answer about this post.
+	 *
+	 * @return array<int,bool>
+	 */
+	private function aioseo_noindex(): array {
+		if ( null !== $this->aioseo_noindex ) {
+			return $this->aioseo_noindex;
+		}
+
+		$this->aioseo_noindex = array();
+
+		// The plugin's own bootstrap function. Present only while it is active,
+		// which is also the only time its table can be relied on to exist.
+		if ( ! function_exists( 'aioseo' ) ) {
+			return $this->aioseo_noindex;
+		}
+
+		global $wpdb;
+
+		if ( ! isset( $wpdb ) || ! is_object( $wpdb ) ) {
+			return $this->aioseo_noindex;
+		}
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$ids = $wpdb->get_col(
+			"SELECT post_id FROM {$wpdb->prefix}aioseo_posts WHERE robots_default = 0 AND robots_noindex = 1"
+		);
+
+		foreach ( (array) $ids as $id ) {
+			$this->aioseo_noindex[ (int) $id ] = true;
+		}
+
+		return $this->aioseo_noindex;
 	}
 
 	/**

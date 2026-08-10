@@ -14,6 +14,7 @@ namespace RaplsSitemap\Admin;
 use RaplsSitemap\Frontend\Shortcode;
 use RaplsSitemap\Support\Design;
 use RaplsSitemap\Support\Hooks;
+use RaplsSitemap\Support\PsMigration;
 use RaplsSitemap\Support\Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -36,6 +37,9 @@ final class SettingsPage {
 
 	/** `admin-post.php` action backing the reset button. */
 	public const RESET_ACTION = 'rapls_sitemap_reset';
+
+	/** ...and the one backing the PS Auto Sitemap import. */
+	public const IMPORT_ACTION = 'rapls_sitemap_import_ps';
 
 	/**
 	 * What a colour swatch shows when the field holds no hex.
@@ -61,6 +65,7 @@ final class SettingsPage {
 		add_action( 'admin_menu', array( $this, 'add_page' ) );
 		add_action( 'admin_init', array( $this, 'register_setting' ) );
 		add_action( 'admin_post_' . self::RESET_ACTION, array( $this, 'handle_reset' ) );
+		add_action( 'admin_post_' . self::IMPORT_ACTION, array( $this, 'handle_import' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 	}
 
@@ -271,6 +276,40 @@ final class SettingsPage {
 	}
 
 	/**
+	 * Fold a stored PS Auto Sitemap configuration into these settings.
+	 *
+	 * A POST for the same reason the reset is one: it rewrites the settings, so
+	 * merely loading a URL must not be able to do it.
+	 */
+	public function handle_import(): void {
+		if ( ! current_user_can( self::CAPABILITY ) ) {
+			wp_die( esc_html__( 'You do not have permission to change these settings.', 'rapls-sitemap' ), '', array( 'response' => 403 ) );
+		}
+
+		check_admin_referer( self::IMPORT_ACTION );
+
+		$old = PsMigration::stored();
+
+		if ( array() !== $old ) {
+			update_option(
+				Settings::OPTION,
+				Settings::sanitize( PsMigration::to_settings( $old, Settings::get() ) )
+			);
+		}
+
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'         => self::SLUG,
+					'rapls-import' => array() === $old ? '0' : '1',
+				),
+				admin_url( 'options-general.php' )
+			)
+		);
+		exit;
+	}
+
+	/**
 	 * Add the submenu entry.
 	 */
 	public function add_page(): void {
@@ -312,6 +351,12 @@ final class SettingsPage {
 		?>
 		<div class="wrap">
 			<h1><?php echo esc_html__( 'Rapls Sitemap', 'rapls-sitemap' ); ?></h1>
+
+			<?php if ( isset( $_GET['rapls-import'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+				<div class="notice notice-success is-dismissible">
+					<p><?php echo esc_html__( 'The PS Auto Sitemap settings were read in. Check them over before saving anything else — the design is the nearest match, not the same stylesheet.', 'rapls-sitemap' ); ?></p>
+				</div>
+			<?php endif; ?>
 
 			<?php if ( isset( $_GET['rapls-reset'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
 				<div class="notice notice-success is-dismissible">
@@ -772,6 +817,7 @@ final class SettingsPage {
 			</form>
 
 			<?php
+			$this->render_import();
 			$this->render_reset();
 			SupportPanel::render_support();
 			?>
@@ -1177,6 +1223,44 @@ final class SettingsPage {
 	 */
 	private static function close_section(): void {
 		echo '</div></div>';
+	}
+
+	/**
+	 * The PS Auto Sitemap import form.
+	 *
+	 * Shown only when there is something to import. That plugin's option
+	 * survives its deletion, so a site that ran it years ago still holds the
+	 * answers its owner already gave — and a button that is not there on the
+	 * millions of sites that never ran it costs them nothing.
+	 */
+	private function render_import(): void {
+		if ( ! PsMigration::available() ) {
+			return;
+		}
+
+		?>
+		<hr />
+		<h2><?php echo esc_html__( 'Import from PS Auto Sitemap', 'rapls-sitemap' ); ?></h2>
+		<form action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="post">
+			<input type="hidden" name="action" value="<?php echo esc_attr( self::IMPORT_ACTION ); ?>" />
+			<?php wp_nonce_field( self::IMPORT_ACTION ); ?>
+			<p class="description">
+				<?php echo esc_html__( 'This site still holds a PS Auto Sitemap configuration. Reading it in fills this screen with the answers you already gave there: which lists to show and in which order, the depth, the categories and posts to leave out, and the nearest design.', 'rapls-sitemap' ); ?>
+			</p>
+			<p class="description">
+				<?php echo esc_html__( 'It overwrites the settings on this screen and nothing else. The old configuration is left where it is, so you can do this again.', 'rapls-sitemap' ); ?>
+			</p>
+			<?php
+			submit_button(
+				__( 'Read in the old settings', 'rapls-sitemap' ),
+				'secondary',
+				'submit',
+				true,
+				array( 'onclick' => 'return confirm(' . wp_json_encode( __( 'Overwrite the settings on this screen with the PS Auto Sitemap ones?', 'rapls-sitemap' ) ) . ');' )
+			);
+			?>
+		</form>
+		<?php
 	}
 
 	/**

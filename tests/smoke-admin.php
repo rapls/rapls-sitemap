@@ -188,6 +188,7 @@ use RaplsSitemap\Frontend\Block;
 use RaplsSitemap\Frontend\Styles;
 use RaplsSitemap\Plugin;
 use RaplsSitemap\Sitemap\Cache;
+use RaplsSitemap\Support\PsMigration;
 use RaplsSitemap\Support\Settings;
 
 /* --- activation and deactivation ---------------------------------------- */
@@ -293,6 +294,75 @@ $GLOBALS['rapls_caps']['unfiltered_html'] = true;
 
 check( false === strpos( $restricted, 'rapls_sitemap_settings[custom_css]' ), 'and no CSS field for a user who may not' );
 check( false !== strpos( $restricted, 'unfiltered_html' ), 'with the reason given rather than an empty space' );
+
+/* --- reading a PS Auto Sitemap configuration ---------------------------- */
+
+// The option survives that plugin's deletion, so a site that ran it years ago
+// still holds the answers its owner already gave.
+check( ! PsMigration::available(), 'nothing is offered on a site that never ran it' );
+
+$before = $html;
+update_option(
+	PsMigration::OPTION,
+	array(
+		'home_list'      => '1',
+		'post_tree'      => '1',
+		'page_tree'      => '1',
+		'disp_first'     => 'page',
+		'disp_level'     => '3',
+		'disp_posts'     => 'divide',
+		'ex_cat_ids'     => '5, 9',
+		'ex_post_ids'    => '12,34',
+		'prepared_style' => 'marker',
+		'use_cache'      => '',
+		'post_id'        => '7',
+		'suppress_link'  => '1',
+	)
+);
+
+check( PsMigration::available(), 'and offered on a site that did' );
+
+$mapped = PsMigration::to_settings( PsMigration::stored(), Settings::defaults() );
+
+check( array( 'page', 'post' ) === $mapped['post_types'], 'disp_first decides which list comes first' );
+check( 3 === $mapped['depth'], 'the depth carries over' );
+check( true === $mapped['show_home'], 'so does the home link' );
+check( 'terms_only' === $mapped['term_mode'], '"divide" becomes the category listing on its own' );
+check( array( 5, 9 ) === $mapped['exclude_terms'], 'the excluded categories carry over' );
+check( array( 12, 34 ) === $mapped['exclude_ids'], 'and the excluded posts' );
+check( 'marker' === $mapped['design'], 'a preset with a counterpart here is matched' );
+check( 0 === $mapped['cache_ttl'], 'and caching switched off there is switched off here' );
+
+// `post_id` named the page the sitemap sat on, so that page could be kept out
+// of its own list. `exclude_current` does that without being told which page.
+check( ! in_array( 7, $mapped['exclude_ids'], true ), 'the page it was placed on is not imported as an exclusion' );
+
+$partial = PsMigration::to_settings( array( 'disp_level' => '2' ), Settings::defaults() );
+check( array( 'page', 'post' ) === $partial['post_types'], 'a configuration missing keys leaves those settings alone' );
+
+$none = PsMigration::to_settings( array( 'post_tree' => '', 'page_tree' => '' ), Settings::defaults() );
+check( array( 'page', 'post' ) === $none['post_types'], 'and both lists switched off is not read as a sitemap of nothing' );
+
+ob_start();
+$page->render();
+$html = (string) ob_get_clean();
+
+check( false === strpos( $before, 'rapls_sitemap_import_ps' ), 'the import button is absent with nothing to import' );
+check( false !== strpos( $html, 'rapls_sitemap_import_ps' ), 'and present once there is' );
+
+$GLOBALS['rapls_nonce_checked'] = null;
+try {
+	$page->handle_import();
+	check( false, 'importing redirects' );
+} catch ( Rapls_Redirect $e ) {
+	check( false !== strpos( $e->getMessage(), 'rapls-import=1' ), 'importing redirects back with a notice' );
+}
+
+check( SettingsPage::IMPORT_ACTION === $GLOBALS['rapls_nonce_checked'], 'behind its own nonce' );
+check( 3 === Settings::get()['depth'], 'and the settings were actually written' );
+
+delete_option( PsMigration::OPTION );
+update_option( Settings::OPTION, Settings::defaults() );
 
 /* --- the reset button --------------------------------------------------- */
 
