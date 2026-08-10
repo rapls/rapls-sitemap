@@ -157,9 +157,14 @@ final class TreeBuilder {
 		}
 
 		$left    = $budget;
-		$trimmed = $this->trim( $roots, $left );
+		$cut     = false;
+		$trimmed = $this->trim( $roots, $left, $cut );
 
-		if ( $left > 0 ) {
+		// Whether anything was dropped, not whether the budget ran out. A
+		// sitemap of exactly the budget spends its last node on the last entry
+		// and loses nothing — announcing a limit there would be an apology for
+		// something that did not happen.
+		if ( ! $cut ) {
 			return $roots;
 		}
 
@@ -182,20 +187,31 @@ final class TreeBuilder {
 	 *
 	 * @param Node[] $nodes Nodes at this level.
 	 * @param int    $left  Remaining budget, by reference.
+	 * @param bool   $cut   Set when something was actually dropped.
 	 * @return Node[]
 	 */
-	private function trim( array $nodes, int &$left ): array {
+	private function trim( array $nodes, int &$left, bool &$cut ): array {
 		$kept = array();
 
 		foreach ( $nodes as $node ) {
 			if ( $left <= 0 ) {
+				$cut = true;
 				break;
 			}
 
 			--$left;
 
-			$node->children = $this->trim( $node->children, $left );
-			$kept[]         = $node;
+			$before         = count( $node->children );
+			$node->children = $this->trim( $node->children, $left, $cut );
+
+			// A count beside a heading is the number of entries listed under
+			// it, everywhere else in this plugin. Cutting the children without
+			// re-counting would leave "12" over eight lines.
+			if ( count( $node->children ) !== $before && $node->count > 0 ) {
+				$node->count = $this->count_entries( $node->children );
+			}
+
+			$kept[] = $node;
 		}
 
 		return $kept;
@@ -226,6 +242,30 @@ final class TreeBuilder {
 			default:
 				return $this->content( $depth );
 		}
+	}
+
+	/**
+	 * The post types this sitemap actually lists.
+	 *
+	 * Configured, minus the ones excluded outright, minus the ones nothing may
+	 * view. One definition rather than three: the same subtraction was written
+	 * out in `content()` and `authors()` and left out of `archives()`, so
+	 * excluding a post type removed it from the listing while its years and
+	 * months went on being generated from it.
+	 *
+	 * @return string[]
+	 */
+	private function effective_post_types(): array {
+		$excluded = array_map( 'strval', (array) $this->settings['exclude_types'] );
+
+		return array_values(
+			array_filter(
+				array_map( 'strval', (array) $this->settings['post_types'] ),
+				function ( $post_type ) use ( $excluded ) {
+					return ! in_array( $post_type, $excluded, true ) && self::is_listable_post_type( $post_type );
+				}
+			)
+		);
 	}
 
 	/**
@@ -774,11 +814,12 @@ final class TreeBuilder {
 			array_filter(
 				(array) $object->object_type,
 				static function ( $type ) use ( $excluded ) {
-					// An excluded type is skipped here rather than left to
-					// build_post_type(), which would return nothing and take the
-					// whole section with it — even where the taxonomy has
-					// another post type that is perfectly listable.
-					return post_type_exists( $type )
+					// Skipped here rather than left to build_post_type() or
+					// fetch(), either of which would return nothing and take
+					// the whole section with it — even where the taxonomy has
+					// another post type that is perfectly listable. A type
+					// nothing may view counts the same way as an excluded one.
+					return self::is_listable_post_type( $type )
 						&& ! is_post_type_hierarchical( $type )
 						&& ! in_array( $type, $excluded, true );
 				}
@@ -824,8 +865,7 @@ final class TreeBuilder {
 	private function content( int $depth ): array {
 		$sections = array();
 
-		foreach ( (array) $this->settings['post_types'] as $post_type ) {
-			$post_type = (string) $post_type;
+		foreach ( $this->effective_post_types() as $post_type ) {
 			$nodes = $this->depth_limited( $this->build_post_type( $post_type ), $depth );
 
 			// An empty list is normally nothing to say. It is not when the cap
@@ -1319,7 +1359,13 @@ final class TreeBuilder {
 			return array();
 		}
 
-		return $this->nest( $this->bounded( $this->fetch( $post_type, false, $ids ), $post_type ) );
+		// Bounded on the query, not in memory. The IDs already narrow it to the
+		// branch, so `posts_per_page` and `offset` do their usual work — and
+		// they must: fetching fifty thousand WP_Post objects to keep two
+		// thousand of them is the exact failure `max_entries` exists to
+		// prevent, and doing it on the one path that narrows first would be
+		// worse for being invisible.
+		return $this->nest( $this->fetch( $post_type, true, $ids ) );
 	}
 
 	/**
@@ -1349,85 +1395,6 @@ final class TreeBuilder {
 		unset( $inside[ $root ] );
 
 		return array_map( 'intval', array_keys( $inside ) );
-	}
-
-	/**
-	 * Apply `offset` and the entry cap to a list already in memory.
-	 *
-	 * The query-side cap cannot be used where the rows have to be narrowed
-	 * first — a branch of the page tree — so the same two numbers are applied
-	 * here instead, and truncation is recorded the same way so the note still
-	 * appears.
-	 *
-	 * @param \WP_Post[] $posts     Posts to bound.
-	 * @param string     $post_type Post type, for the truncation record.
-	 * @return \WP_Post[]
-	 */
-	private function bounded( array $posts, string $post_type ): array {
-		$offset = max( 0, (int) $this->settings['offset'] );
-		if ( $offset > 0 ) {
-			$posts = array_slice( $posts, $offset );
-		}
-
-		$max = $this->cap();
-		if ( $max > 0 && count( $posts ) > $max ) {
-			$posts                          = array_slice( $posts, 0, $max );
-			$this->truncated[ $post_type ] = true;
-		}
-
-		return $posts;
-	}
-
-	/**
-	 * Narrow a post list to what sits under one page.
-	 *
-	 * Worked out from the `post_parent` links already in hand rather than with
-	 * another query, and the root does not have to be among them — only its ID
-	 * is needed. That matters, because the most useful form of this is
-	 * `child_of="current"` on a page that `exclude_current` has just taken out
-	 * of its own listing.
-	 *
-	 * The root is never included. WordPress means "descendants of" by
-	 * `child_of`, and a heading for the page the reader is already on says
-	 * nothing.
-	 *
-	 * @param \WP_Post[] $posts Flat post list.
-	 * @param int        $root  Page to descend from; 0 for the whole site.
-	 * @return \WP_Post[]
-	 */
-	private function descendants_of( array $posts, int $root ): array {
-		if ( $root <= 0 ) {
-			return $posts;
-		}
-
-		$inside = array( $root => true );
-
-		// One pass per level of nesting: a page joins once its parent has.
-		do {
-			$added = false;
-
-			foreach ( $posts as $post ) {
-				$id = (int) $post->ID;
-
-				if ( isset( $inside[ $id ] ) || ! isset( $inside[ (int) $post->post_parent ] ) ) {
-					continue;
-				}
-
-				$inside[ $id ] = true;
-				$added         = true;
-			}
-		} while ( $added );
-
-		unset( $inside[ $root ] );
-
-		return array_values(
-			array_filter(
-				$posts,
-				static function ( $post ) use ( $inside ) {
-					return isset( $inside[ (int) $post->ID ] );
-				}
-			)
-		);
 	}
 
 	/**
@@ -2248,27 +2215,24 @@ final class TreeBuilder {
 		// unfiltered list would keep an author whose only posts are in a type
 		// this sitemap excludes — a name linking to an archive with nothing on
 		// it that the reader is allowed to see.
-		$named = array_values(
-			array_diff(
-				array_map( 'strval', (array) $this->settings['post_types'] ),
-				array_map( 'strval', (array) $this->settings['exclude_types'] )
-			)
-		);
+		$types = $this->effective_post_types();
 
-		$types = array_values( array_filter( $named, array( self::class, 'is_listable_post_type' ) ) );
-
-		// Naming types and having none of them survive is not the same as
-		// naming none: `has_published_posts => true` means "any post type at
-		// all", so falling back to it here would answer a narrower question
+		// Configuring types and having none of them survive is not the same as
+		// configuring none: `has_published_posts => true` means "any post type
+		// at all", so falling back to it here would answer a narrower question
 		// with a wider list — including, on a site with a private post type,
-		// who writes in it.
-		if ( array() === $types && array() !== $named ) {
+		// who writes in it. Excluding every type a site lists lands here too,
+		// and means the same thing: nobody to list.
+		if ( array() === $types && array() !== (array) $this->settings['post_types'] ) {
 			return array();
 		}
 
 		$args = array(
 			'has_published_posts' => array() === $types ? true : $types,
 			'orderby'             => 'display_name',
+			// Nothing here asks how many authors the site has, and WP_User_Query
+			// counts them all unless told not to.
+			'count_total'         => false,
 			// Always ascending, and deliberately not `order`. That setting means
 			// "newest first" and defaults to DESC; spending it on a list of
 			// names would turn every author listing on a default install
@@ -2347,9 +2311,10 @@ final class TreeBuilder {
 	 */
 	private function archives(): array {
 		$months = array();
+		$types  = $this->effective_post_types();
 
-		foreach ( (array) $this->settings['post_types'] as $post_type ) {
-			foreach ( $this->fetch( (string) $post_type ) as $post ) {
+		foreach ( $types as $post_type ) {
+			foreach ( $this->fetch( $post_type ) as $post ) {
 				$year  = (int) substr( $post->post_date, 0, 4 );
 				$month = (int) substr( $post->post_date, 5, 2 );
 
@@ -2387,7 +2352,7 @@ final class TreeBuilder {
 		// The archive list is derived from the post query, so it inherits that
 		// query's cap — and a year that quietly vanished because the 2001st
 		// post was never fetched is exactly the kind of gap a reader cannot see.
-		$truncated = array_intersect_key( $this->truncated, array_flip( (array) $this->settings['post_types'] ) );
+		$truncated = array_intersect_key( $this->truncated, array_flip( $types ) );
 		if ( array() !== $truncated ) {
 			$this->truncated['archives'] = true;
 		}

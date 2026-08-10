@@ -50,6 +50,12 @@ final class Cache {
 		add_action( 'edited_term', array( $this, 'flush' ) );
 		add_action( 'delete_term', array( $this, 'flush' ) );
 
+		// Grouping reads which posts are in which term. Editing a post writes
+		// that through `save_post`, but code calling `wp_set_object_terms()`
+		// directly changes the relationship and nothing else — and the grouped
+		// listing would go on showing the old one.
+		add_action( 'set_object_terms', array( $this, 'flush' ) );
+
 		// User lifecycle. The author listing is built from display names, so a
 		// renamed or removed user would otherwise sit in the cache until it
 		// expired — twelve hours by default.
@@ -195,7 +201,10 @@ final class Cache {
 		 * @param array $settings Effective settings.
 		 */
 		$variant = apply_filters( Hooks::CACHE_VARIANT, array(), $settings );
-		$variant = is_array( $variant ) ? implode( '|', array_map( 'strval', $variant ) ) : '';
+		// Encoded rather than joined with a separator: `['a|b', 'c']` and
+		// `['a', 'b|c']` join to the same string, and putting two different
+		// contexts under one key is the one thing this must never do.
+		$variant = wp_json_encode( is_array( $variant ) ? $variant : array() );
 
 		return self::PREFIX . md5( $salt . '|' . $version . '|' . $locale . '|' . $variant . '|' . wp_json_encode( $settings ) );
 	}

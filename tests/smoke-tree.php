@@ -1568,11 +1568,36 @@ $walk( $roots );
 check( 3 === $counted, 'the tree is cut to the budget', (string) $counted );
 check( has_note( $roots ), 'and the cut is stated rather than left to be noticed' );
 
+// Exactly the budget spends its last node on the last entry and loses nothing.
+// Announcing a limit there would be an apology for something that did not
+// happen — the note has to mean "something was cut", not "the budget ran out".
+$GLOBALS['rapls_max_nodes'] = 3;
+$exact = ( new TreeBuilder( tree_settings( array( 'post_types' => array( 'page' ), 'child_of' => 1 ) ) ) )->build();
+$GLOBALS['rapls_max_nodes'] = 4;
+$loose = ( new TreeBuilder( tree_settings( array( 'post_types' => array( 'page' ), 'child_of' => 1 ) ) ) )->build();
+
+check( titles( $exact ) === titles( $loose ), 'a tree that exactly fits is untouched', implode( ', ', titles( $exact ) ) );
+check( ! has_note( $exact ), 'and says nothing about a limit it did not hit' );
+
 $GLOBALS['rapls_max_nodes'] = 0;
 $roots = ( new TreeBuilder( tree_settings() ) )->build();
 check( ! has_note( $roots ), 'a budget of 0 removes the ceiling' );
 
+// A count beside a heading is the number of entries listed under it, everywhere
+// else in this plugin — cutting the children without re-counting would leave
+// "12" over eight lines.
 $GLOBALS['rapls_max_nodes'] = null;
+$whole = ( new TreeBuilder( grouped( array( 'show_count' => true ) ) ) )->build();
+
+$GLOBALS['rapls_max_nodes'] = 3;
+$cut = ( new TreeBuilder( grouped( array( 'show_count' => true ) ) ) )->build();
+
+check( 3 === $whole[0]->count, 'a heading counts what is under it', (string) $whole[0]->count );
+check( 1 === $cut[0]->count, 'and counts again once the budget has cut some of it away', (string) $cut[0]->count );
+check( count( $cut[0]->children ) === $cut[0]->count, 'so the number and the list still agree' );
+
+$GLOBALS['rapls_max_nodes'] = null;
+
 
 /* --- a password is a statement about the text ---------------------------- */
 
@@ -1659,8 +1684,13 @@ list( $GLOBALS['fixture_meta'][2], $GLOBALS['fixture_meta'][3] ) = $was;
 $GLOBALS['fixture_last_args'] = null;
 $roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 1, 'max_entries' => 1 ) ) ) )->build();
 check( 'Child' === $roots[0]->title, 'a capped branch lists the branch, not whatever the cap reached first' );
-check( has_note( $roots ), 'and says it stopped short, which the query-side cap could not have known' );
-check( -1 === $GLOBALS['fixture_last_args']['posts_per_page'], 'the query is unbounded because the branch is what gets bounded' );
+check( has_note( $roots ), 'and says it stopped short' );
+
+// Bounded on the query, not in memory. The IDs already narrow it to the branch,
+// so fetching everything under it to then keep two of them would be the exact
+// failure the cap exists to prevent.
+check( 2 === $GLOBALS['fixture_last_args']['posts_per_page'], 'the branch query asks for the cap plus one, like every other', (string) $GLOBALS['fixture_last_args']['posts_per_page'] );
+check( ! empty( $GLOBALS['fixture_last_args']['post__in'] ), 'and names the branch it is asking about' );
 
 $roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 1, 'max_entries' => 0 ) ) ) )->build();
 check( array( 'Child' ) === titles( $roots ), 'and an uncapped one is unchanged' );
