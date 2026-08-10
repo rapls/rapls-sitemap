@@ -75,6 +75,17 @@
 		{ value: 'term_order', label: __( 'The order set by hand', 'rapls-sitemap' ) },
 	];
 
+	// The three exclusion switches are selects rather than toggles, and that is
+	// not a style choice. A toggle has no third state, so a block carrying one
+	// would force its own default onto every placement — and the default that
+	// would be forced for "leave out noindexed entries" is off, quietly undoing
+	// a site-wide decision on every page the block is dropped on.
+	var INHERIT_BOOL = [
+		{ value: '', label: __( 'Use the site default', 'rapls-sitemap' ) },
+		{ value: '1', label: __( 'On', 'rapls-sitemap' ) },
+		{ value: '0', label: __( 'Off', 'rapls-sitemap' ) },
+	];
+
 	var ORDERBY = [
 		{ value: '', label: __( 'Use the site default', 'rapls-sitemap' ) },
 		{ value: 'default', label: __( 'Whatever suits each list', 'rapls-sitemap' ) },
@@ -215,6 +226,37 @@
 						toggle( __( 'Show the home link', 'rapls-sitemap' ), 'showHome' ),
 						toggle( __( 'Group posts by category', 'rapls-sitemap' ), 'groupByTerm' ),
 						toggle( __( 'Nest child categories', 'rapls-sitemap' ), 'nestTerms' )
+					),
+					el(
+						components.PanelBody,
+						{ title: __( 'Exclusions', 'rapls-sitemap' ), initialOpen: false },
+						el( components.TextControl, {
+							label: __( 'Exclude post IDs', 'rapls-sitemap' ),
+							help: __( 'Comma separated. Children of an excluded page go too. Empty uses the site default.', 'rapls-sitemap' ),
+							value: atts.excludeIds,
+							onChange: function ( value ) {
+								set( { excludeIds: value } );
+							},
+						} ),
+						el( components.TextControl, {
+							label: __( 'Exclude category IDs', 'rapls-sitemap' ),
+							help: __( 'Comma separated. Child categories go too.', 'rapls-sitemap' ),
+							value: atts.excludeTerms,
+							onChange: function ( value ) {
+								set( { excludeTerms: value } );
+							},
+						} ),
+						el( components.TextControl, {
+							label: __( 'Exclude user IDs', 'rapls-sitemap' ),
+							help: __( 'The author listing only.', 'rapls-sitemap' ),
+							value: atts.excludeUsers,
+							onChange: function ( value ) {
+								set( { excludeUsers: value } );
+							},
+						} ),
+						select( __( 'Leave out this page', 'rapls-sitemap' ), 'excludeCurrent', INHERIT_BOOL ),
+						select( __( 'Leave out password-protected entries', 'rapls-sitemap' ), 'excludeProtected', INHERIT_BOOL ),
+						select( __( 'Leave out noindexed entries', 'rapls-sitemap' ), 'excludeNoindex', INHERIT_BOOL )
 					),
 					el(
 						components.PanelBody,

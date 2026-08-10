@@ -122,6 +122,16 @@ final class Block {
 			'postTypes'       => 'post_types',
 			'taxonomy'        => 'taxonomy',
 			'childOf'         => 'child_of',
+			// Empty means inherit for these too, which is the whole reason the
+			// three switches among them are selects in the editor rather than
+			// toggles: forcing a block's own default onto every placement is
+			// wrong for an exclusion in a way it is not for a heading.
+			'excludeIds'      => 'exclude_ids',
+			'excludeTerms'    => 'exclude_terms',
+			'excludeUsers'    => 'exclude_users',
+			'excludeCurrent'  => 'exclude_current',
+			'excludeProtected' => 'exclude_protected',
+			'excludeNoindex'  => 'exclude_noindex',
 			'termMode'        => 'term_mode',
 			'orderby'         => 'orderby',
 			'order'           => 'order',

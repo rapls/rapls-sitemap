@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-08-10 04:01:30+0000",
+    "translation-revision-date": "2026-08-10 04:04:03+0000",
     "generator": "rapls-sitemap\/bin\/make-json.php",
     "domain": "messages",
     "locale_data": {
@@ -70,6 +70,12 @@
             "Comma separated, in order: post type slugs, taxonomy slugs, author, archive, menu. Empty uses the saved setting.": [
                 "表示する順にコンマ区切りで指定します。投稿タイプのスラッグ、タクソノミーのスラッグ、author、archive、menu が使えます。空欄なら保存済みの設定を使います。"
             ],
+            "Comma separated. Child categories go too.": [
+                "コンマ区切りです。子カテゴリーも一緒に除外されます。"
+            ],
+            "Comma separated. Children of an excluded page go too. Empty uses the site default.": [
+                "コンマ区切りです。除外したページの子ページも一緒に除外されます。空欄ならサイト全体の設定を使います。"
+            ],
             "Comment count": [
                 "コメント数"
             ],
@@ -106,6 +112,18 @@
             "Excerpt": [
                 "抜粋"
             ],
+            "Exclude category IDs": [
+                "除外するカテゴリー ID"
+            ],
+            "Exclude post IDs": [
+                "除外する投稿 ID"
+            ],
+            "Exclude user IDs": [
+                "除外するユーザー ID"
+            ],
+            "Exclusions": [
+                "除外"
+            ],
             "Grid": [
                 "グリッド"
             ],
@@ -126,6 +144,15 @@
             ],
             "Last modified": [
                 "更新日"
+            ],
+            "Leave out noindexed entries": [
+                "noindex の項目を除外する"
+            ],
+            "Leave out password-protected entries": [
+                "パスワード保護された項目を除外する"
+            ],
+            "Leave out this page": [
+                "このページを除外する"
             ],
             "Limit to one branch": [
                 "一覧にする範囲"
@@ -168,6 +195,12 @@
             ],
             "Numbered": [
                 "連番"
+            ],
+            "Off": [
+                "オフ"
+            ],
+            "On": [
+                "オン"
             ],
             "Order": [
                 "並び順"
@@ -240,6 +273,9 @@
             ],
             "The ID, slug or name of a navigation menu. Naming one selects it as the source.": [
                 "ナビゲーションメニューの ID、スラッグ、または名前です。指定するとメニュー表示になります。"
+            ],
+            "The author listing only.": [
+                "投稿者一覧にのみ効きます。"
             ],
             "The order set by hand": [
                 "手動で設定した順序"

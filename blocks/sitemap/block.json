@@ -39,6 +39,30 @@
 			"type": "string",
 			"default": ""
 		},
+		"excludeIds": {
+			"type": "string",
+			"default": ""
+		},
+		"excludeTerms": {
+			"type": "string",
+			"default": ""
+		},
+		"excludeUsers": {
+			"type": "string",
+			"default": ""
+		},
+		"excludeCurrent": {
+			"type": "string",
+			"default": ""
+		},
+		"excludeProtected": {
+			"type": "string",
+			"default": ""
+		},
+		"excludeNoindex": {
+			"type": "string",
+			"default": ""
+		},
 		"termMode": {
 			"type": "string",
 			"default": ""
