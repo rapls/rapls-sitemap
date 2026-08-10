@@ -56,6 +56,10 @@ final class Cache {
 		// listing would go on showing the old one.
 		add_action( 'set_object_terms', array( $this, 'flush' ) );
 
+		// `wp_remove_object_terms()` never fires that one. It is the other half
+		// of the same door.
+		add_action( 'deleted_term_relationships', array( $this, 'flush' ) );
+
 		// User lifecycle. The author listing is built from display names, so a
 		// renamed or removed user would otherwise sit in the cache until it
 		// expired — twelve hours by default.

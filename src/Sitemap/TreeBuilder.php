@@ -119,6 +119,20 @@ final class TreeBuilder {
 	}
 
 	/**
+	 * Does a heading's number mean "entries this term holds"?
+	 *
+	 * In `terms_only` it does: nothing is listed under the term, so the number
+	 * is the term's own count, padded with its children's. Everywhere else it
+	 * means "entries listed under this heading", which is a number the tree
+	 * itself can answer.
+	 *
+	 * @return bool
+	 */
+	private function counts_the_term(): bool {
+		return 'terms_only' === (string) $this->settings['term_mode'];
+	}
+
+	/**
 	 * How many nodes one sitemap may render, before anything is rendered.
 	 *
 	 * `max_entries` bounds each QUERY, which is what keeps the fetch from
@@ -202,15 +216,26 @@ final class TreeBuilder {
 			--$left;
 
 			$before         = count( $node->children );
-			$node->children = $this->trim( $node->children, $left, $cut );
+			$below          = false;
+			$node->children = $this->trim( $node->children, $left, $below );
 
 			// A count beside a heading is the number of entries listed under
 			// it, everywhere else in this plugin. Cutting the children without
 			// re-counting would leave "12" over eight lines.
-			if ( count( $node->children ) !== $before && $node->count > 0 ) {
+			//
+			// `$below` rather than a comparison of the direct children: a
+			// grandchild can be cut while this node still has exactly the same
+			// number of children as before, and the number over them would go
+			// on counting what used to be there.
+			//
+			// Not in `terms_only`, where the number means something else
+			// entirely — how many entries the category holds, not how many are
+			// listed under it, because nothing is listed under it.
+			if ( ( $below || count( $node->children ) !== $before ) && $node->count > 0 && ! $this->counts_the_term() ) {
 				$node->count = $this->count_entries( $node->children );
 			}
 
+			$cut    = $cut || $below;
 			$kept[] = $node;
 		}
 
@@ -261,6 +286,47 @@ final class TreeBuilder {
 		return array_values(
 			array_filter(
 				array_map( 'strval', (array) $this->settings['post_types'] ),
+				function ( $post_type ) use ( $excluded ) {
+					return ! in_array( $post_type, $excluded, true ) && self::is_listable_post_type( $post_type );
+				}
+			)
+		);
+	}
+
+	/**
+	 * The post types the author and date listings answer for.
+	 *
+	 * A narrower question than `effective_post_types()`, and deliberately so.
+	 * Both listings link at archives WordPress generates — `get_author_posts_url()`
+	 * and `get_year_link()` — and neither URL carries a post type. Core queries
+	 * `post` on both, so a year derived from a page, or an author who has only
+	 * ever written pages, links somewhere with nothing on it.
+	 *
+	 * A theme that widens those archives through `pre_get_posts` widens this
+	 * through the filter to match.
+	 *
+	 * @return string[]
+	 */
+	private function archive_post_types(): array {
+		/**
+		 * Filters the post types the author and date listings are built from.
+		 *
+		 * @param string[] $types    Post types core shows on those archives.
+		 * @param array    $settings Effective settings.
+		 */
+		$types = apply_filters( Hooks::ARCHIVE_TYPES, array( 'post' ), $this->settings );
+
+		// Not intersected with the listed types: which post types this sitemap
+		// lists is a different question from what an author archive contains.
+		// A site listing only its pages still has authors, and their archives
+		// still show posts. `exclude_types` does apply — naming a type there
+		// means "never list this", and a listing derived from it is a listing
+		// of it.
+		$excluded = array_map( 'strval', (array) $this->settings['exclude_types'] );
+
+		return array_values(
+			array_filter(
+				array_map( 'strval', (array) $types ),
 				function ( $post_type ) use ( $excluded ) {
 					return ! in_array( $post_type, $excluded, true ) && self::is_listable_post_type( $post_type );
 				}
@@ -459,6 +525,14 @@ final class TreeBuilder {
 		$keep = array();
 
 		foreach ( $this->fetch( $post_type ) as $post ) {
+			// The post query is capped, so a category whose only entry inside
+			// the window sits past the cap is one this listing cannot see. It
+			// says so rather than simply not appearing — recorded against the
+			// TERM listing, which is what the reader is looking at.
+			if ( ! empty( $this->truncated[ $post_type ] ) ) {
+				$this->truncated[ self::term_key( $taxonomy ) ] = true;
+			}
+
 			$terms = get_the_terms( $post, $taxonomy );
 
 			if ( ! is_array( $terms ) ) {
@@ -1102,7 +1176,27 @@ final class TreeBuilder {
 		}
 
 		$exclude = $this->excluded_ids();
-		if ( array() !== $exclude ) {
+
+		if ( array() !== $only_ids ) {
+			// `post__in` and `post__not_in` cannot both be honoured: WP_Query
+			// tests them with an `elseif`, so naming the IDs silently switches
+			// the exclusions off. A page excluded by ID would come back, and —
+			// because `nest()` cascades exclusions to descendants on the
+			// assumption the page itself was already gone — its children would
+			// disappear instead. Exactly the wrong way round.
+			//
+			// So the subtraction happens here, on the list, and only one of the
+			// two clauses is ever sent.
+			$only_ids = array_values( array_diff( array_map( 'intval', $only_ids ), $exclude ) );
+
+			// An empty `post__in` is not "no posts" to WP_Query — it is dropped,
+			// and the query answers with everything.
+			if ( array() === $only_ids ) {
+				return array();
+			}
+
+			$args['post__in'] = $only_ids;
+		} elseif ( array() !== $exclude ) {
 			$args['post__not_in'] = $exclude;
 		}
 
@@ -1133,10 +1227,6 @@ final class TreeBuilder {
 		 * @param array  $args      Query args.
 		 * @param string $post_type Post type slug.
 		 */
-		if ( array() !== $only_ids ) {
-			$args['post__in'] = $only_ids;
-		}
-
 		$filtered = apply_filters( Hooks::QUERY_ARGS, $args, $post_type );
 		$args     = is_array( $filtered ) ? $filtered : $args;
 
@@ -2215,15 +2305,13 @@ final class TreeBuilder {
 		// unfiltered list would keep an author whose only posts are in a type
 		// this sitemap excludes — a name linking to an archive with nothing on
 		// it that the reader is allowed to see.
-		$types = $this->effective_post_types();
+		$types = $this->archive_post_types();
 
-		// Configuring types and having none of them survive is not the same as
-		// configuring none: `has_published_posts => true` means "any post type
-		// at all", so falling back to it here would answer a narrower question
-		// with a wider list — including, on a site with a private post type,
-		// who writes in it. Excluding every type a site lists lands here too,
-		// and means the same thing: nobody to list.
-		if ( array() === $types && array() !== (array) $this->settings['post_types'] ) {
+		// Nothing left is nobody to list. `has_published_posts => true` means
+		// "any post type at all", so falling back to it here would answer a
+		// narrower question with a wider list — including, on a site with a
+		// private post type, who writes in it.
+		if ( array() === $types ) {
 			return array();
 		}
 
@@ -2311,7 +2399,7 @@ final class TreeBuilder {
 	 */
 	private function archives(): array {
 		$months = array();
-		$types  = $this->effective_post_types();
+		$types  = $this->archive_post_types();
 
 		foreach ( $types as $post_type ) {
 			foreach ( $this->fetch( $post_type ) as $post ) {

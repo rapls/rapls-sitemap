@@ -1929,7 +1929,14 @@ final class SettingsPage {
 	 * @return \WP_Taxonomy[]
 	 */
 	private static function available_taxonomies(): array {
-		$taxonomies = get_taxonomies( array( 'public' => true ), 'objects' );
+		// Viewable, not merely public — the same question TreeBuilder asks. A
+		// taxonomy offered here and refused there is a box that does nothing.
+		$taxonomies = array_filter(
+			get_taxonomies( array( 'public' => true ), 'objects' ),
+			static function ( $taxonomy ) {
+				return ! function_exists( 'is_taxonomy_viewable' ) || is_taxonomy_viewable( $taxonomy );
+			}
+		);
 
 		/**
 		 * Filters the selectable taxonomies.
@@ -1945,7 +1952,12 @@ final class SettingsPage {
 	 * @return \WP_Post_Type[]
 	 */
 	private static function available_post_types(): array {
-		$types = get_post_types( array( 'public' => true ), 'objects' );
+		$types = array_filter(
+			get_post_types( array( 'public' => true ), 'objects' ),
+			static function ( $type ) {
+				return ! function_exists( 'is_post_type_viewable' ) || is_post_type_viewable( $type );
+			}
+		);
 		unset( $types['attachment'] );
 
 		/**

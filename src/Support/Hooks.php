@@ -33,6 +33,17 @@ final class Hooks {
 	/** Filters the WP_Query args used to fetch entries for one post type. */
 	public const QUERY_ARGS = 'rapls_sitemap/query_args';
 
+	/**
+	 * The post types the author and date listings are derived from.
+	 *
+	 * Core's author and date archives query `post` and nothing else, so those
+	 * two listings are built from `post` however many types the sitemap itself
+	 * lists — a year derived from pages would link to a date archive with
+	 * nothing on it. A theme that widens those archives with `pre_get_posts`
+	 * widens this to match.
+	 */
+	public const ARCHIVE_TYPES = 'rapls_sitemap/archive_post_types';
+
 	/** Filters the assembled node tree before rendering. */
 	public const TREE = 'rapls_sitemap/tree';
 

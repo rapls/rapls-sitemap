@@ -139,6 +139,9 @@ function get_posts( $args ) {
 		);
 	}
 
+	// WP_Query tests these with an `elseif`, so naming IDs to include switches
+	// the exclusions off entirely. A stub that applied both would hide exactly
+	// the bug that costs — and did.
 	if ( ! empty( $args['post__in'] ) ) {
 		$posts = array_values(
 			array_filter(
@@ -148,9 +151,7 @@ function get_posts( $args ) {
 				}
 			)
 		);
-	}
-
-	if ( ! empty( $args['post__not_in'] ) ) {
+	} elseif ( ! empty( $args['post__not_in'] ) ) {
 		$posts = array_values(
 			array_filter(
 				$posts,
@@ -681,15 +682,19 @@ check( array( 'News' ) === titles( $roots ), 'terms_only lists categories and no
 check( array( 'Sub' ) === titles( $roots[0]->children ), 'terms_only still nests categories' );
 check( 0 === $GLOBALS['fixture_posts_fetched'], 'terms_only skips the post query entirely' );
 
-// The author listing answers for the post types it was given, and a private one
-// is not among them. Naming types and having none survive is not the same as
-// naming none: `has_published_posts => true` means "any post type at all".
+// The author listing is built from what an author archive actually contains,
+// which core answers with `post` — not from whatever this sitemap happens to
+// list. A site listing only its pages still has authors, and their archives
+// still show posts.
 $GLOBALS['fixture_last_user_args'] = null;
-$roots = ( new TreeBuilder( tree_settings( array( 'source' => 'authors', 'post_types' => array( 'internal' ) ) ) ) )->build();
-check( array() === $roots, 'the author listing says nothing about who writes in a private post type' );
+( new TreeBuilder( tree_settings( array( 'source' => 'authors', 'post_types' => array( 'page' ) ) ) ) )->build();
+check( array( 'post' ) === $GLOBALS['fixture_last_user_args']['has_published_posts'], 'the author listing asks about the archive, not about the sitemap' );
 
-( new TreeBuilder( tree_settings( array( 'source' => 'authors', 'post_types' => array( 'internal', 'post' ) ) ) ) )->build();
-check( array( 'post' ) === $GLOBALS['fixture_last_user_args']['has_published_posts'], 'and drops the private one from a mixed list' );
+// `exclude_types` still applies: naming a type there means "never list this",
+// and a listing derived from it is a listing of it. Nothing left is nobody to
+// list — `has_published_posts => true` would mean "any post type at all".
+$roots = ( new TreeBuilder( tree_settings( array( 'source' => 'authors', 'exclude_types' => array( 'post' ) ) ) ) )->build();
+check( array() === $roots, 'excluding the type the archive is made of leaves nobody to list' );
 
 // ...unless a publication window has been set. A window is a claim about what
 // the sitemap covers, and a category holding nothing from the year the page is
@@ -1129,6 +1134,22 @@ check( 'rand' === $args['orderby'] && ! isset( $args['order'] ), 'a random order
 /**
  * Does this node list end with the "and more" note?
  */
+/**
+ * Entries actually listed under one node, headings and notes aside.
+ */
+function count_listed( $node ) {
+	$n = 0;
+
+	foreach ( $node->children as $child ) {
+		if ( 'more' === $child->kind ) {
+			continue;
+		}
+		$n += 'term' === $child->kind ? count_listed( $child ) : 1;
+	}
+
+	return $n;
+}
+
 function has_note( array $nodes ) {
 	foreach ( $nodes as $node ) {
 		if ( 'more' === $node->kind ) {
@@ -1596,6 +1617,28 @@ check( 3 === $whole[0]->count, 'a heading counts what is under it', (string) $wh
 check( 1 === $cut[0]->count, 'and counts again once the budget has cut some of it away', (string) $cut[0]->count );
 check( count( $cut[0]->children ) === $cut[0]->count, 'so the number and the list still agree' );
 
+// A grandchild can be cut while the node above still has the same number of
+// children, and a comparison of direct children would miss it — the number
+// over them would go on counting what used to be there.
+$GLOBALS['rapls_max_nodes'] = 4;
+$deep = ( new TreeBuilder( grouped( array( 'show_count' => true, 'nest_terms' => true ) ) ) )->build();
+
+foreach ( $deep as $node ) {
+	if ( 'term' === $node->kind ) {
+		check( $node->count === count_listed( $node ), 'a heading counts again when the cut happened below it', $node->count . ' vs ' . count_listed( $node ) );
+		break;
+	}
+}
+
+// In terms_only the number means something else: how many entries the category
+// HOLDS, not how many are listed under it, because nothing is. Re-counting
+// there would replace a real number with zero.
+$GLOBALS['rapls_max_nodes'] = 2;
+$only = ( new TreeBuilder( grouped( array( 'term_mode' => 'terms_only', 'show_count' => true ) ) ) )->build();
+check( $only[0]->count > 0, 'a category-only listing keeps the count it was given', (string) $only[0]->count );
+
+$GLOBALS['rapls_max_nodes'] = null;
+
 $GLOBALS['rapls_max_nodes'] = null;
 
 
@@ -1677,6 +1720,24 @@ check( in_array( 'Grandchild', titles( $roots ), true ), 'while what hangs below
 
 list( $GLOBALS['fixture_meta'][2], $GLOBALS['fixture_meta'][3] ) = $was;
 
+// `post__in` and `post__not_in` cannot both be honoured — WP_Query tests them
+// with an elseif — so naming the branch's IDs would have switched the
+// exclusions off. The page excluded by ID would come back, and its children
+// would vanish in its place, because nest() cascades on the assumption that the
+// page itself is already gone.
+$roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 1, 'exclude_ids' => array( 2 ) ) ) ) )->build();
+check( array() === $roots, 'excluding a page inside a branch removes it and its descendants', implode( ', ', titles( $roots ) ) );
+
+$roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 1, 'exclude_self' => 2 ) ) ) )->build();
+check( ! in_array( 'Child', titles( $roots ), true ), 'and the sitemap\'s own page is left out of a branch too' );
+check( in_array( 'Grandchild', titles( $roots ), true ), 'while its children stay, because that exclusion does not cascade' );
+
+// Nothing left after the subtraction must not become "no restriction at all":
+// an empty post__in is dropped by WP_Query and the query answers with the lot.
+$GLOBALS['fixture_last_args'] = null;
+$roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 1, 'exclude_ids' => array( 2, 3 ) ) ) ) )->build();
+check( array() === $roots, 'a branch excluded down to nothing lists nothing' );
+
 // The branch has to be found before the cap can mean anything. Capping the
 // query first would ask for the first N pages of the site and then look for one
 // page's children among them — on any site where that branch sorts late, the
@@ -1713,14 +1774,8 @@ check( array( 'Aoi', 'Yuki' ) === titles( $roots ), 'the author listing uses the
 // nothing on it the reader may see.
 ( new TreeBuilder( tree_settings( array( 'source' => 'authors', 'post_types' => array( 'post', 'page' ) ) ) ) )->build();
 check(
-	array( 'post', 'page' ) === $GLOBALS['fixture_last_user_args']['has_published_posts'],
-	'authors are looked up against the listed post types'
-);
-
-( new TreeBuilder( tree_settings( array( 'source' => 'authors', 'post_types' => array( 'post', 'page' ), 'exclude_types' => array( 'page' ) ) ) ) )->build();
-check(
 	array( 'post' ) === $GLOBALS['fixture_last_user_args']['has_published_posts'],
-	'and an excluded type is taken out of that lookup too'
+	'authors are looked up against what their archive holds'
 );
 // The account WordPress was installed with is on the user list without being
 // anyone a reader should be sent to. Excluded in the query, not after it, so an
