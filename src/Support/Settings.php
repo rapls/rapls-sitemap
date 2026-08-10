@@ -691,8 +691,10 @@ final class Settings {
 	 *
 	 * Deliberately does not check that a slug names anything: a post type from
 	 * a plugin that is momentarily deactivated must survive a save, and the
-	 * builder skips what it cannot resolve anyway. Duplicates go — a section
-	 * listed twice is a list printed twice.
+	 * builder skips what it cannot resolve anyway.
+	 *
+	 * A slug named twice is kept once. Listing it twice would print the same
+	 * list twice, under the same heading, which nobody has ever meant.
 	 *
 	 * @param mixed $raw Array or separated string.
 	 * @return string[]

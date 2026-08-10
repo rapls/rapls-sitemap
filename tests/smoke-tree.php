@@ -319,9 +319,15 @@ $GLOBALS['fixture_menu_items'] = array(
 	fixture_menu_item( 101, 'Our history', 100, 'post_type', 'page', 2 ),
 	fixture_menu_item( 102, 'News', 0, 'taxonomy', 'category', 5 ),
 	fixture_menu_item( 103, 'Elsewhere', 0, 'custom', 'custom', 0 ),
+	fixture_menu_item( 106, 'Sub news', 0, 'taxonomy', 'category', 6 ),
 	fixture_menu_item( 104, 'Members only', 0, 'post_type', 'post', 13 ),
 	fixture_menu_item( 105, 'Adrift', 999, 'custom', 'custom', 0 ),
 );
+
+function get_ancestors( $object_id, $object_type, $resource_type = '' ) {
+	// Term 6 is filed under term 5; the rest are roots.
+	return 6 === (int) $object_id ? array( 5 ) : array();
+}
 
 function wp_get_nav_menu_object( $menu ) {
 	if ( '' === (string) $menu || 'missing' === $menu ) {
@@ -923,7 +929,7 @@ check( empty( $GLOBALS['fixture_last_term_args']['pad_counts'] ), 'and do not wh
 $menu = tree_settings( array( 'source' => 'menu', 'menu' => '7' ) );
 
 $roots = ( new TreeBuilder( $menu ) )->build();
-check( array( 'About us', 'News', 'Elsewhere', 'Members only', 'Adrift' ) === titles( $roots ), 'a menu is listed in its own order, with its own labels' );
+check( array( 'About us', 'News', 'Elsewhere', 'Sub news', 'Members only', 'Adrift' ) === titles( $roots ), 'a menu is listed in its own order, with its own labels' );
 check( array( 'Our history' ) === titles( $roots[0]->children ), 'and nested by menu_item_parent' );
 
 // The same rule the page tree follows: an item whose parent is not in the list
@@ -934,18 +940,35 @@ check( array() === ( new TreeBuilder( array_merge( $menu, array( 'menu' => 'miss
 check( array() === ( new TreeBuilder( array_merge( $menu, array( 'menu' => '' ) ) ) )->build(), 'and so does naming no menu at all' );
 
 // The exclusions that can be answered from what a menu item already carries.
+// exclude_ids means "not this branch" — it cascades here exactly as it does in
+// the page tree, or the promise holds everywhere except the listing a site is
+// most likely to hand-build.
 $roots = ( new TreeBuilder( array_merge( $menu, array( 'exclude_ids' => array( 1 ) ) ) ) )->build();
 check( ! in_array( 'About us', titles( $roots ), true ), 'an excluded page drops the item pointing at it' );
-check( in_array( 'Our history', titles( $roots ), true ), 'and its child surfaces rather than vanishing with it' );
+check( ! in_array( 'Our history', titles( $roots ), true ), 'and takes the items nested under it as well' );
+
+// The others do not cascade, for the same reason they do not in the page tree:
+// leaving the sitemap's own page out says nothing about what hangs below it.
+$roots = ( new TreeBuilder( array_merge( $menu, array( 'exclude_self' => 1 ) ) ) )->build();
+check( ! in_array( 'About us', titles( $roots ), true ), 'the page the sitemap is on is left out of the menu too' );
+check( in_array( 'Our history', titles( $roots ), true ), 'and its children surface rather than going with it' );
 
 $roots = ( new TreeBuilder( array_merge( $menu, array( 'exclude_self' => 2 ) ) ) )->build();
-check( array() === $roots[0]->children, 'the page the sitemap is on is left out of the menu too' );
+check( array() === $roots[0]->children, 'while the item for that page itself is gone' );
 
 $roots = ( new TreeBuilder( array_merge( $menu, array( 'exclude_types' => array( 'page' ) ) ) ) )->build();
-check( array( 'News', 'Elsewhere', 'Members only', 'Adrift' ) === titles( $roots ), 'an excluded post type takes its items with it' );
+check( array( 'News', 'Elsewhere', 'Sub news', 'Members only', 'Adrift' ) === titles( $roots ), 'an excluded post type takes its items with it' );
 
 $roots = ( new TreeBuilder( array_merge( $menu, array( 'exclude_terms' => array( 5 ) ) ) ) )->build();
 check( ! in_array( 'News', titles( $roots ), true ), 'and an excluded term takes the item pointing at that term' );
+
+// The term query says exclude_tree, so excluding a parent category takes its
+// children with it. An item naming one of those children goes the same way.
+$roots = ( new TreeBuilder( array_merge( $menu, array( 'exclude_terms' => array( 5 ) ) ) ) )->build();
+check( ! in_array( 'Sub news', titles( $roots ), true ), 'including an item naming a child of the excluded term' );
+
+$roots = ( new TreeBuilder( array_merge( $menu, array( 'exclude_terms' => array( 6 ) ) ) ) )->build();
+check( in_array( 'News', titles( $roots ), true ), 'while excluding the child leaves the parent alone' );
 
 // Item 104 points at post 13, which has a password. One query for the whole
 // menu, not one per item.
@@ -967,6 +990,13 @@ check( array( 'Elsewhere', 'Adrift' ) === titles( $roots ), 'a custom link survi
 
 $roots = ( new TreeBuilder( array_merge( $menu, array( 'max_entries' => 2 ) ) ) )->build();
 check( has_note( $roots ), 'a truncated menu says so' );
+
+// The cap counts what is listed, not what was fetched. Capping before the
+// exclusions would leave "the first 2 are listed" above however many of those
+// two survived — here, none of them.
+$roots = ( new TreeBuilder( array_merge( $menu, array( 'max_entries' => 2, 'exclude_ids' => array( 1 ) ) ) ) )->build();
+check( array( 'News', 'Elsewhere' ) === titles( array_slice( $roots, 0, 2 ) ), 'the cap is filled from the items that survived the exclusions' );
+check( 3 === count( $roots ), 'and the note sits below exactly the promised number', (string) count( $roots ) );
 
 $roots = ( new TreeBuilder( array_merge( $menu, array( 'depth' => 1 ) ) ) )->build();
 check( array() === $roots[0]->children, 'the depth limit applies to a menu as well' );

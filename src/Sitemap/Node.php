@@ -42,7 +42,19 @@ final class Node {
 	public $url;
 
 	/**
-	 * What produced this node: 'post', 'term', 'home'.
+	 * What produced this node, which is also its BEM modifier in the markup:
+	 *
+	 *   post           an entry — a post, a page, or a navigation menu item
+	 *   term           a category or other term
+	 *   section        a heading over a post type, a section, or a menu
+	 *   home           the front-page link
+	 *   author         a name in the author listing
+	 *   archive        a year in the date archives
+	 *   archive-month  a month under one
+	 *   more           the note saying a list stopped short
+	 *
+	 * The settings screen prints this list as a CSS class reference, and
+	 * `smoke-admin.php` checks the two agree.
 	 *
 	 * @var string
 	 */

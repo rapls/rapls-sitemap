@@ -154,13 +154,19 @@ final class TreeBuilder {
 			return array();
 		}
 
+		// The exclusions run BEFORE the cap, which is the opposite of the order
+		// they read in. `wp_get_nav_menu_items()` has already fetched the whole
+		// menu — there is no query to bound here — so capping first would count
+		// items towards the limit and then drop them, leaving a "first N shown"
+		// note above fewer than N. `fetch()` reaches the same end by asking for
+		// max + 1 and re-slicing, because there the query is the expensive part.
+		$items = $this->menu_items_kept( $items );
+
 		$max = $this->cap();
 		if ( $max > 0 && count( $items ) > $max ) {
 			$items                   = array_slice( $items, 0, $max );
 			$this->truncated['menu'] = true;
 		}
-
-		$items = $this->menu_items_kept( $items );
 
 		$nodes = array();
 		foreach ( $items as $item ) {
@@ -208,7 +214,6 @@ final class TreeBuilder {
 	private function menu_items_kept( array $items ): array {
 		$excluded_ids   = array_flip( $this->excluded_ids() );
 		$excluded_types = (array) $this->settings['exclude_types'];
-		$excluded_terms = array_flip( array_map( 'intval', (array) $this->settings['exclude_terms'] ) );
 
 		// One query each, and only when asked for. `$protected` is the set of
 		// linked posts WordPress has a password on; priming the meta cache turns
@@ -249,6 +254,14 @@ final class TreeBuilder {
 			$object_id = (int) $item->object_id;
 
 			if ( 'post_type' === $item->type ) {
+				// A menu item whose target was deleted out from under it. Core
+				// normally clears these, and this is not a substitute for that
+				// — but a row pointing at nothing cannot be excluded, counted
+				// or linked usefully either.
+				if ( $object_id <= 0 ) {
+					continue;
+				}
+
 				if ( isset( $excluded_ids[ $object_id ] ) || isset( $protected[ $object_id ] ) ) {
 					continue;
 				}
@@ -265,14 +278,105 @@ final class TreeBuilder {
 				}
 			}
 
-			if ( 'taxonomy' === $item->type && isset( $excluded_terms[ $object_id ] ) ) {
+			if ( 'taxonomy' === $item->type && $this->term_excluded( $object_id, (string) $item->object ) ) {
 				continue;
 			}
 
 			$kept[] = $item;
 		}
 
-		return $kept;
+		return $this->cascade_menu_exclusions( $kept, $items );
+	}
+
+	/**
+	 * Is this term excluded, itself or through an ancestor?
+	 *
+	 * The term query says `exclude_tree`, so excluding a parent category takes
+	 * its children with it. A menu item naming one of those children has to go
+	 * the same way, or the promise holds everywhere except the one listing a
+	 * site is most likely to hand-build.
+	 *
+	 * @param int    $term_id  Term the menu item points at.
+	 * @param string $taxonomy Its taxonomy.
+	 * @return bool
+	 */
+	private function term_excluded( int $term_id, string $taxonomy ): bool {
+		$excluded = array_map( 'intval', (array) $this->settings['exclude_terms'] );
+
+		if ( array() === $excluded || $term_id <= 0 ) {
+			return false;
+		}
+
+		if ( in_array( $term_id, $excluded, true ) ) {
+			return true;
+		}
+
+		if ( '' === $taxonomy || ! function_exists( 'get_ancestors' ) ) {
+			return false;
+		}
+
+		$ancestors = array_map( 'intval', (array) get_ancestors( $term_id, $taxonomy, 'taxonomy' ) );
+
+		return array() !== array_intersect( $ancestors, $excluded );
+	}
+
+	/**
+	 * Take the descendants of an ID-excluded menu item with it.
+	 *
+	 * Only `exclude_ids` cascades, exactly as it does in the page tree — naming
+	 * an ID means "not this branch". The others do not: leaving the sitemap's
+	 * own page out of the menu, or dropping one item because its target is
+	 * noindexed, says nothing about what hangs below it, and those children
+	 * surface at the root the way any item with a missing parent does.
+	 *
+	 * @param object[] $kept  Items that survived the per-item rules.
+	 * @param object[] $items Every item, so a dropped parent is still known.
+	 * @return object[]
+	 */
+	private function cascade_menu_exclusions( array $kept, array $items ): array {
+		$ids = array_map( 'intval', (array) $this->settings['exclude_ids'] );
+		if ( array() === $ids ) {
+			return $kept;
+		}
+
+		// The menu item IDs whose target was named, whether or not the item
+		// itself survived the loop above.
+		$cascading = array();
+		foreach ( $items as $item ) {
+			if ( 'post_type' === $item->type && in_array( (int) $item->object_id, $ids, true ) ) {
+				$cascading[ (int) $item->ID ] = true;
+			}
+		}
+
+		if ( array() === $cascading ) {
+			return $kept;
+		}
+
+		// One pass per level: an item joins once its parent has, so a
+		// grandchild goes with its grandparent.
+		do {
+			$added = false;
+
+			foreach ( $items as $item ) {
+				$id = (int) $item->ID;
+
+				if ( isset( $cascading[ $id ] ) || ! isset( $cascading[ (int) $item->menu_item_parent ] ) ) {
+					continue;
+				}
+
+				$cascading[ $id ] = true;
+				$added            = true;
+			}
+		} while ( $added );
+
+		return array_values(
+			array_filter(
+				$kept,
+				static function ( $item ) use ( $cascading ) {
+					return ! isset( $cascading[ (int) $item->ID ] );
+				}
+			)
+		);
 	}
 
 	/**
@@ -386,8 +490,10 @@ final class TreeBuilder {
 	/**
 	 * The heading a whole-source section is given.
 	 *
-	 * The menu's own name when there is one: a site with two menus in one
-	 * sitemap needs to tell them apart, and "Navigation menu" twice would not.
+	 * A menu gets its own name rather than the generic label — "グローバルナビ"
+	 * over that part of the sitemap says which menu it is, which the source name
+	 * cannot. There is one `menu` setting, so one placement lists one menu; the
+	 * label is still the menu's, because that is the honest heading for it.
 	 *
 	 * @param string $source One of Settings::SOURCES.
 	 * @return string

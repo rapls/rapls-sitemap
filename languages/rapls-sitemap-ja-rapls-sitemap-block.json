@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-08-10 02:03:58+0000",
+    "translation-revision-date": "2026-08-10 02:47:47+0000",
     "generator": "rapls-sitemap\/bin\/make-json.php",
     "domain": "messages",
     "locale_data": {
@@ -61,8 +61,8 @@
             "Comma separated slugs. Empty uses the site default.": [
                 "スラッグをカンマ区切りで指定します。空欄にするとサイト全体の設定を使います。"
             ],
-            "Comma separated, in order: post type slugs, taxonomy slugs, author, archive. Empty uses the saved setting.": [
-                "表示する順にコンマ区切りで指定します。投稿タイプのスラッグ、タクソノミーのスラッグ、author、archive が使えます。空欄なら保存済みの設定を使います。"
+            "Comma separated, in order: post type slugs, taxonomy slugs, author, archive, menu. Empty uses the saved setting.": [
+                "表示する順にコンマ区切りで指定します。投稿タイプのスラッグ、タクソノミーのスラッグ、author、archive、menu が使えます。空欄なら保存済みの設定を使います。"
             ],
             "Comment count": [
                 "コメント数"

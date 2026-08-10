@@ -21,7 +21,7 @@ msgstr ""
 
 #. translators: %d: menu item ID.
 #. translators: %d: post ID.
-#: src/Sitemap/TreeBuilder.php:170 src/Sitemap/TreeBuilder.php:1561
+#: src/Sitemap/TreeBuilder.php:176 src/Sitemap/TreeBuilder.php:1667
 msgid "(no title) #%d"
 msgstr ""
 
@@ -160,7 +160,7 @@ msgstr ""
 msgid "Applies to the post types and to the sections above. Only when more than one is listed — a single list needs no label to tell it apart."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1578 src/Sitemap/TreeBuilder.php:408
+#: src/Admin/SettingsPage.php:1578 src/Sitemap/TreeBuilder.php:514
 msgid "Archives"
 msgstr ""
 
@@ -172,7 +172,7 @@ msgstr ""
 msgid "Ascending (oldest, A to Z)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1426 src/Admin/SettingsPage.php:1577 src/Sitemap/TreeBuilder.php:397 assets/js/block.js:64
+#: src/Admin/SettingsPage.php:1426 src/Admin/SettingsPage.php:1577 src/Sitemap/TreeBuilder.php:503 assets/js/block.js:64
 msgid "Authors"
 msgstr ""
 
@@ -277,7 +277,7 @@ msgid "Comma separated slugs. Empty uses the site default."
 msgstr ""
 
 #: assets/js/block.js:191
-msgid "Comma separated, in order: post type slugs, taxonomy slugs, author, archive. Empty uses the saved setting."
+msgid "Comma separated, in order: post type slugs, taxonomy slugs, author, archive, menu. Empty uses the saved setting."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:433
@@ -398,7 +398,7 @@ msgid "Exclude post IDs"
 msgstr ""
 
 #. translators: PHP date format for a monthly archive heading. Japanese uses Y年n月.
-#: src/Sitemap/TreeBuilder.php:1526
+#: src/Sitemap/TreeBuilder.php:1632
 msgid "F Y"
 msgstr ""
 
@@ -599,7 +599,7 @@ msgstr ""
 msgid "Nature"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1581 src/Sitemap/TreeBuilder.php:405
+#: src/Admin/SettingsPage.php:1581 src/Sitemap/TreeBuilder.php:511
 msgid "Navigation menu"
 msgstr ""
 
@@ -680,7 +680,7 @@ msgid "On hover only"
 msgstr ""
 
 #. translators: %s: number of entries shown.
-#: src/Sitemap/TreeBuilder.php:556
+#: src/Sitemap/TreeBuilder.php:662
 msgid "Only the first %s entries are listed."
 msgstr ""
 
@@ -1086,7 +1086,7 @@ msgid "Windows ships no country flag glyphs, so these appear as two letters — 
 msgstr ""
 
 #. translators: PHP date format for a yearly archive heading. Japanese uses Y年.
-#: src/Sitemap/TreeBuilder.php:1514
+#: src/Sitemap/TreeBuilder.php:1620
 msgid "Y"
 msgstr ""
 

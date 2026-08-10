@@ -188,7 +188,7 @@
 						} ),
 						el( components.TextControl, {
 							label: __( 'Sections', 'rapls-sitemap' ),
-							help: __( 'Comma separated, in order: post type slugs, taxonomy slugs, author, archive. Empty uses the saved setting.', 'rapls-sitemap' ),
+							help: __( 'Comma separated, in order: post type slugs, taxonomy slugs, author, archive, menu. Empty uses the saved setting.', 'rapls-sitemap' ),
 							value: atts.sections,
 							onChange: function ( value ) {
 								set( { sections: value } );

@@ -28,7 +28,7 @@ msgstr "(%s)"
 
 #. translators: %d: menu item ID.
 #. translators: %d: post ID.
-#: src/Sitemap/TreeBuilder.php:170 src/Sitemap/TreeBuilder.php:1561
+#: src/Sitemap/TreeBuilder.php:176 src/Sitemap/TreeBuilder.php:1667
 msgid "(no title) #%d"
 msgstr "(タイトルなし) #%d"
 
@@ -167,7 +167,7 @@ msgstr "外観"
 msgid "Applies to the post types and to the sections above. Only when more than one is listed — a single list needs no label to tell it apart."
 msgstr "投稿タイプと、上の「1つにまとめるセクション」の両方に効きます。2つ以上並ぶときだけ付きます。一覧が1つだけなら、見分けるための見出しは不要なためです。"
 
-#: src/Admin/SettingsPage.php:1578 src/Sitemap/TreeBuilder.php:408
+#: src/Admin/SettingsPage.php:1578 src/Sitemap/TreeBuilder.php:514
 msgid "Archives"
 msgstr "年月アーカイブ"
 
@@ -180,7 +180,7 @@ msgid "Ascending (oldest, A to Z)"
 msgstr "昇順 (古い順、A→Z)"
 
 #: src/Admin/SettingsPage.php:1426 src/Admin/SettingsPage.php:1577
-#: src/Sitemap/TreeBuilder.php:397 assets/js/block.js:64
+#: src/Sitemap/TreeBuilder.php:503 assets/js/block.js:64
 msgid "Authors"
 msgstr "投稿者"
 
@@ -285,8 +285,8 @@ msgid "Comma separated slugs. Empty uses the site default."
 msgstr "スラッグをカンマ区切りで指定します。空欄にするとサイト全体の設定を使います。"
 
 #: assets/js/block.js:191
-msgid "Comma separated, in order: post type slugs, taxonomy slugs, author, archive. Empty uses the saved setting."
-msgstr "表示する順にコンマ区切りで指定します。投稿タイプのスラッグ、タクソノミーのスラッグ、author、archive が使えます。空欄なら保存済みの設定を使います。"
+msgid "Comma separated, in order: post type slugs, taxonomy slugs, author, archive, menu. Empty uses the saved setting."
+msgstr "表示する順にコンマ区切りで指定します。投稿タイプのスラッグ、タクソノミーのスラッグ、author、archive、menu が使えます。空欄なら保存済みの設定を使います。"
 
 #: src/Admin/SettingsPage.php:433
 msgid "Comma separated. Children of an excluded page are excluded too."
@@ -407,7 +407,7 @@ msgid "Exclude post IDs"
 msgstr "除外する投稿 ID"
 
 #. translators: PHP date format for a monthly archive heading. Japanese uses Y年n月.
-#: src/Sitemap/TreeBuilder.php:1526
+#: src/Sitemap/TreeBuilder.php:1632
 msgid "F Y"
 msgstr "Y年n月"
 
@@ -609,7 +609,7 @@ msgstr "年月アーカイブ"
 msgid "Nature"
 msgstr "自然"
 
-#: src/Admin/SettingsPage.php:1581 src/Sitemap/TreeBuilder.php:405
+#: src/Admin/SettingsPage.php:1581 src/Sitemap/TreeBuilder.php:511
 msgid "Navigation menu"
 msgstr "ナビゲーションメニュー"
 
@@ -690,7 +690,7 @@ msgid "On hover only"
 msgstr "ホバー時のみ"
 
 #. translators: %s: number of entries shown.
-#: src/Sitemap/TreeBuilder.php:556
+#: src/Sitemap/TreeBuilder.php:662
 msgid "Only the first %s entries are listed."
 msgstr "先頭の%s件のみ表示しています。"
 
@@ -1099,7 +1099,7 @@ msgid "Windows ships no country flag glyphs, so these appear as two letters — 
 msgstr "Windows は国旗の字形を持たないため、Windows の閲覧者には 🇯🇵 が JP のように2文字で表示されます。先頭の5つは通常の記号なので、どの環境でも表示されます。"
 
 #. translators: PHP date format for a yearly archive heading. Japanese uses Y年.
-#: src/Sitemap/TreeBuilder.php:1514
+#: src/Sitemap/TreeBuilder.php:1620
 msgid "Y"
 msgstr "Y年"
 
@@ -1130,6 +1130,9 @@ msgstr "独自の CSS"
 #: src/Admin/SettingsPage.php:350
 msgid "— Select —"
 msgstr "— 選択してください —"
+
+#~ msgid "Comma separated, in order: post type slugs, taxonomy slugs, author, archive. Empty uses the saved setting."
+#~ msgstr "表示する順にコンマ区切りで指定します。投稿タイプのスラッグ、タクソノミーのスラッグ、author、archive が使えます。空欄なら保存済みの設定を使います。"
 
 #~ msgid "Only when more than one post type is listed — a single list needs no label to tell it apart."
 #~ msgstr "表示する投稿タイプが2つ以上のときだけ付きます。1つだけなら区別する必要がないためです。"
