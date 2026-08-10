@@ -118,6 +118,7 @@ final class Block {
 			// Empty means inherit.
 			'source'          => 'source',
 			'sections'        => 'sections',
+			'menu'            => 'menu',
 			'postTypes'       => 'post_types',
 			'taxonomy'        => 'taxonomy',
 			'childOf'         => 'child_of',

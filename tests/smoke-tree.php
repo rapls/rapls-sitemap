@@ -94,16 +94,33 @@ function get_posts( $args ) {
 	$GLOBALS['fixture_posts_fetched'] = ( $GLOBALS['fixture_posts_fetched'] ?? 0 ) + 1;
 	$GLOBALS['fixture_last_args']     = $args;
 
-	$posts = 'page' === $args['post_type'] ? $GLOBALS['fixture_pages'] : $GLOBALS['fixture_posts'];
+	if ( 'any' === $args['post_type'] ) {
+		$posts = array_merge( $GLOBALS['fixture_pages'], $GLOBALS['fixture_posts'] );
+	} else {
+		$posts = 'page' === $args['post_type'] ? $GLOBALS['fixture_pages'] : $GLOBALS['fixture_posts'];
+	}
 
-	// WP_Query drops password-protected posts when has_password is false; the
-	// stub has to do the same or the exclusion test would prove nothing.
-	if ( isset( $args['has_password'] ) && false === $args['has_password'] ) {
+	// WP_Query drops password-protected posts when has_password is false, and
+	// keeps only those when it is true; the stub has to do the same or the
+	// exclusion tests would prove nothing.
+	if ( isset( $args['has_password'] ) ) {
+		$want  = (bool) $args['has_password'];
 		$posts = array_values(
 			array_filter(
 				$posts,
-				function ( $post ) {
-					return '' === $post->post_password;
+				function ( $post ) use ( $want ) {
+					return $want === ( '' !== $post->post_password );
+				}
+			)
+		);
+	}
+
+	if ( ! empty( $args['post__in'] ) ) {
+		$posts = array_values(
+			array_filter(
+				$posts,
+				function ( $post ) use ( $args ) {
+					return in_array( (int) $post->ID, array_map( 'intval', $args['post__in'] ), true );
 				}
 			)
 		);
@@ -118,6 +135,10 @@ function get_posts( $args ) {
 				}
 			)
 		);
+	}
+
+	if ( isset( $args['fields'] ) && 'ids' === $args['fields'] ) {
+		return array_map( function ( $post ) { return (int) $post->ID; }, $posts );
 	}
 
 	return $posts;
@@ -275,6 +296,52 @@ function get_objects_in_term( $term_ids, $taxonomy ) {
 
 function get_term_link( $term ) {
 	return 'https://example.test/category/' . $term->term_id;
+}
+
+/* --- navigation menu stubs ---------------------------------------------- */
+
+function fixture_menu_item( $id, $title, $parent, $type, $object, $object_id ) {
+	$item                    = new stdClass();
+	$item->ID                = $id;
+	$item->title             = $title;
+	$item->url               = 'https://example.test/item/' . $id;
+	$item->menu_item_parent  = $parent;
+	$item->type              = $type;
+	$item->object            = $object;
+	$item->object_id         = $object_id;
+	return $item;
+}
+
+// The labels differ from the post titles on purpose: a menu carries the wording
+// its editors chose, which is the reason for listing one at all.
+$GLOBALS['fixture_menu_items'] = array(
+	fixture_menu_item( 100, 'About us', 0, 'post_type', 'page', 1 ),
+	fixture_menu_item( 101, 'Our history', 100, 'post_type', 'page', 2 ),
+	fixture_menu_item( 102, 'News', 0, 'taxonomy', 'category', 5 ),
+	fixture_menu_item( 103, 'Elsewhere', 0, 'custom', 'custom', 0 ),
+	fixture_menu_item( 104, 'Members only', 0, 'post_type', 'post', 13 ),
+	fixture_menu_item( 105, 'Adrift', 999, 'custom', 'custom', 0 ),
+);
+
+function wp_get_nav_menu_object( $menu ) {
+	if ( '' === (string) $menu || 'missing' === $menu ) {
+		return false;
+	}
+
+	$object          = new stdClass();
+	$object->term_id = 7;
+	$object->name    = 'Main navigation';
+	return $object;
+}
+
+function wp_get_nav_menu_items( $menu, $args = array() ) {
+	$GLOBALS['fixture_last_menu_args'] = $args;
+	return $GLOBALS['fixture_menu_items'];
+}
+
+function update_meta_cache( $type, $ids ) {
+	$GLOBALS['fixture_meta_primed'] = $ids;
+	return true;
 }
 
 function post_type_exists( $type ) {
@@ -848,6 +915,68 @@ check( ! empty( $GLOBALS['fixture_last_term_args']['pad_counts'] ), 'nested coun
 $GLOBALS['fixture_last_term_args'] = null;
 ( new TreeBuilder( grouped( array( 'term_mode' => 'terms_only', 'show_count' => true, 'nest_terms' => false ) ) ) )->build();
 check( empty( $GLOBALS['fixture_last_term_args']['pad_counts'] ), 'and do not when nothing is nested' );
+
+/* --- the menu source ----------------------------------------------------- */
+
+// Nothing is derived here: the order is the menu's order and the labels are the
+// menu's labels, which are routinely shorter than the page titles behind them.
+$menu = tree_settings( array( 'source' => 'menu', 'menu' => '7' ) );
+
+$roots = ( new TreeBuilder( $menu ) )->build();
+check( array( 'About us', 'News', 'Elsewhere', 'Members only', 'Adrift' ) === titles( $roots ), 'a menu is listed in its own order, with its own labels' );
+check( array( 'Our history' ) === titles( $roots[0]->children ), 'and nested by menu_item_parent' );
+
+// The same rule the page tree follows: an item whose parent is not in the list
+// surfaces rather than disappearing.
+check( in_array( 'Adrift', titles( $roots ), true ), 'an item whose parent is missing surfaces at the root' );
+
+check( array() === ( new TreeBuilder( array_merge( $menu, array( 'menu' => 'missing' ) ) ) )->build(), 'a menu that does not exist lists nothing' );
+check( array() === ( new TreeBuilder( array_merge( $menu, array( 'menu' => '' ) ) ) )->build(), 'and so does naming no menu at all' );
+
+// The exclusions that can be answered from what a menu item already carries.
+$roots = ( new TreeBuilder( array_merge( $menu, array( 'exclude_ids' => array( 1 ) ) ) ) )->build();
+check( ! in_array( 'About us', titles( $roots ), true ), 'an excluded page drops the item pointing at it' );
+check( in_array( 'Our history', titles( $roots ), true ), 'and its child surfaces rather than vanishing with it' );
+
+$roots = ( new TreeBuilder( array_merge( $menu, array( 'exclude_self' => 2 ) ) ) )->build();
+check( array() === $roots[0]->children, 'the page the sitemap is on is left out of the menu too' );
+
+$roots = ( new TreeBuilder( array_merge( $menu, array( 'exclude_types' => array( 'page' ) ) ) ) )->build();
+check( array( 'News', 'Elsewhere', 'Members only', 'Adrift' ) === titles( $roots ), 'an excluded post type takes its items with it' );
+
+$roots = ( new TreeBuilder( array_merge( $menu, array( 'exclude_terms' => array( 5 ) ) ) ) )->build();
+check( ! in_array( 'News', titles( $roots ), true ), 'and an excluded term takes the item pointing at that term' );
+
+// Item 104 points at post 13, which has a password. One query for the whole
+// menu, not one per item.
+$roots = ( new TreeBuilder( array_merge( $menu, array( 'exclude_protected' => true ) ) ) )->build();
+check( ! in_array( 'Members only', titles( $roots ), true ), 'a password-protected target drops its item' );
+
+// Item 100 points at page 1, which Cocoon has marked noindex.
+$GLOBALS['fixture_meta_primed'] = null;
+$roots = ( new TreeBuilder( array_merge( $menu, array( 'exclude_noindex' => true ) ) ) )->build();
+check( ! in_array( 'About us', titles( $roots ), true ), 'and so does a noindexed one' );
+check( array( 1, 2, 13 ) === $GLOBALS['fixture_meta_primed'], 'the meta for every linked post is primed in one go' );
+
+// A custom link names a URL and nothing this plugin can identify, so no
+// exclusion can reach it. Said in the readme rather than left to be discovered.
+$roots = ( new TreeBuilder(
+	array_merge( $menu, array( 'exclude_ids' => array( 1, 2, 13 ), 'exclude_terms' => array( 5 ) ) )
+) )->build();
+check( array( 'Elsewhere', 'Adrift' ) === titles( $roots ), 'a custom link survives every exclusion' );
+
+$roots = ( new TreeBuilder( array_merge( $menu, array( 'max_entries' => 2 ) ) ) )->build();
+check( has_note( $roots ), 'a truncated menu says so' );
+
+$roots = ( new TreeBuilder( array_merge( $menu, array( 'depth' => 1 ) ) ) )->build();
+check( array() === $roots[0]->children, 'the depth limit applies to a menu as well' );
+
+// Two menus in one sitemap have to be told apart, so the section takes the
+// menu's own name rather than a generic label.
+$roots = ( new TreeBuilder(
+	array_merge( $menu, array( 'sections' => array( 'page', 'menu' ), 'section_headings' => true ) )
+) )->build();
+check( array( 'Pages', 'Main navigation' ) === titles( $roots ), 'a menu section is headed with the menu name' );
 
 /* --- sections: several listings in one placement ------------------------ */
 

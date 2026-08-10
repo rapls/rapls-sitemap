@@ -57,6 +57,13 @@ final class Cache {
 		add_action( 'user_register', array( $this, 'flush' ) );
 		add_action( 'deleted_user', array( $this, 'flush' ) );
 
+		// Menu lifecycle. Rearranging a menu writes nav_menu_item posts, so
+		// `save_post` catches most of it — but not a menu renamed or emptied
+		// from the Menus screen, which is exactly the edit somebody makes right
+		// before reloading the sitemap to check.
+		add_action( 'wp_update_nav_menu', array( $this, 'flush' ) );
+		add_action( 'wp_delete_nav_menu', array( $this, 'flush' ) );
+
 		// Settings changes alter the hash anyway, but flushing keeps the option
 		// table from accumulating a fresh orphan set on every save.
 		add_action( 'update_option_' . Settings::OPTION, array( $this, 'flush' ) );

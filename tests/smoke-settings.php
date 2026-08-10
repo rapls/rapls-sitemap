@@ -138,6 +138,8 @@ check( array( 3, 9 ) === Settings::to_id_list( array( '3', 9 ) ), 'an array is a
 
 check( 'archives' === Settings::sanitize( array( 'source' => 'archives' ) )['source'], 'a known source is kept' );
 check( 'content' === Settings::sanitize( array( 'source' => 'elsewhere' ) )['source'], 'an unknown source falls back to content' );
+check( 'menu' === Settings::sanitize( array( 'source' => 'menu' ) )['source'], 'a navigation menu is a source' );
+check( 'primary' === Settings::sanitize( array( 'menu' => ' primary ' ) )['menu'], 'and the menu it names is stored as given, trimmed' );
 check( 'post_tag' === Settings::sanitize( array( 'taxonomy' => 'post_tag' ) )['taxonomy'], 'a registered taxonomy is kept' );
 check( '' === Settings::sanitize( array( 'taxonomy' => 'imaginary' ) )['taxonomy'], 'an unregistered taxonomy resets to auto-detect' );
 check( '' === Settings::sanitize( array( 'taxonomy' => '' ) )['taxonomy'], 'an empty taxonomy stays empty — it means auto-detect' );
@@ -348,6 +350,14 @@ foreach ( array( 'authors', 'archives' ) as $source ) {
 	check( 0 === $out['child_of'], sprintf( 'the %s listing carries no branch, so it cannot split the cache', $source ) );
 	check( 0 === $out['exclude_self'], sprintf( 'and no current page either, for the same reason', $source ) );
 }
+
+// A menu links to pages, so leaving the sitemap's own page out of it means
+// something — but a menu has no post_parent hierarchy, so a branch does not.
+$out = Settings::for_request(
+	array_merge( Settings::defaults(), array( 'child_of' => 'current', 'source' => 'menu' ) )
+);
+check( 7 === $out['exclude_self'], 'a menu listing keeps the current page out of itself' );
+check( 0 === $out['child_of'], 'but carries no branch, having no hierarchy to take one from' );
 
 // But `source` does not decide what renders once sections are in play: each
 // section says for itself what it is built from, so a saved source of `authors`

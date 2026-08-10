@@ -63,6 +63,7 @@
 		{ value: 'content', label: __( 'Posts and pages', 'rapls-sitemap' ) },
 		{ value: 'authors', label: __( 'Authors', 'rapls-sitemap' ) },
 		{ value: 'archives', label: __( 'Monthly archives', 'rapls-sitemap' ) },
+		{ value: 'menu', label: __( 'A navigation menu', 'rapls-sitemap' ) },
 	];
 
 	var ORDERBY = [
@@ -175,6 +176,14 @@
 							value: atts.taxonomy,
 							onChange: function ( value ) {
 								set( { taxonomy: value } );
+							},
+						} ),
+						el( components.TextControl, {
+							label: __( 'Menu', 'rapls-sitemap' ),
+							help: __( 'The ID, slug or name of a navigation menu. Naming one selects it as the source.', 'rapls-sitemap' ),
+							value: atts.menu,
+							onChange: function ( value ) {
+								set( { menu: value } );
 							},
 						} ),
 						el( components.TextControl, {

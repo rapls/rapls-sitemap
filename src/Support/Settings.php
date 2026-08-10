@@ -107,11 +107,17 @@ final class Settings {
 	/**
 	 * What the tree is built from.
 	 *
-	 * `content` is the sitemap proper — posts and pages. The other two list the
-	 * archives that WordPress generates around that content, and exist so a
-	 * placement can reproduce the sections other sitemap plugins offer.
+	 * `content` is the sitemap proper — posts and pages. `authors` and
+	 * `archives` list what WordPress generates around that content, and exist so
+	 * a placement can reproduce the sections other sitemap plugins offer.
+	 *
+	 * `menu` is the odd one out and deliberately so: it lists a navigation menu
+	 * exactly as the site's editors arranged it, rather than deriving anything
+	 * from the content. That is the whole point — on a site with hundreds of
+	 * pages, "the routes we decided on" is a different and often better table of
+	 * contents than "everything we have published".
 	 */
-	public const SOURCES = array( 'content', 'authors', 'archives' );
+	public const SOURCES = array( 'content', 'authors', 'archives', 'menu' );
 
 	/**
 	 * Sections that name something other than a post type.
@@ -146,6 +152,7 @@ final class Settings {
 		),
 		'author'   => array( 'source' => 'authors' ),
 		'archive'  => array( 'source' => 'archives' ),
+		'menu'     => array( 'source' => 'menu' ),
 	);
 
 	/**
@@ -197,6 +204,11 @@ final class Settings {
 			'group_by_term'    => true,
 			// What to build the tree from; see SOURCES.
 			'source'           => 'content',
+			// Which navigation menu the `menu` source lists: a term ID, slug,
+			// or name — whatever `wp_get_nav_menu_object()` will take. Kept a
+			// string so all three survive a save; the settings screen posts the
+			// ID, but a shortcode is far more readable with a slug in it.
+			'menu'             => '',
 			// Several sections in one placement — post type slugs, taxonomy
 			// slugs, and the aliases in SECTIONS, in the order they should
 			// appear. Empty is the ordinary single-source sitemap, and `source`
@@ -426,6 +438,10 @@ final class Settings {
 			$clean['source'] = $input['source'];
 		}
 
+		if ( isset( $input['menu'] ) ) {
+			$clean['menu'] = sanitize_text_field( (string) $input['menu'] );
+		}
+
 		if ( isset( $input['taxonomy'] ) ) {
 			$taxonomy = sanitize_key( (string) $input['taxonomy'] );
 			// '' is meaningful (auto-detect), so only a real-but-unregistered
@@ -613,14 +629,20 @@ final class Settings {
 	 * @return array<string,mixed>
 	 */
 	public static function for_request( array $settings ): array {
-		// Whether anything content-shaped renders at all. `source` alone does
-		// not answer that: a composed sitemap ignores it, and each of its
-		// sections says for itself what it is built from — so a placement whose
-		// saved source is `authors` can still be listing pages.
-		$lists_content = array() !== self::to_section_list( $settings['sections'] )
-			|| 'content' === $settings['source'];
+		// Whether the listing can name the current page at all, and whether it
+		// has a page tree to take a branch out of. `source` alone answers
+		// neither: a composed sitemap ignores it, and each of its sections says
+		// for itself what it is built from — so a placement whose saved source
+		// is `authors` can still be listing pages.
+		$composed = array() !== self::to_section_list( $settings['sections'] );
 
-		if ( ! empty( $settings['exclude_current'] ) && $lists_content ) {
+		// A navigation menu links to pages, so leaving the sitemap's own page
+		// out of it means something. It has no `post_parent` hierarchy to walk,
+		// so `child_of` does not.
+		$names_pages   = $composed || in_array( $settings['source'], array( 'content', 'menu' ), true );
+		$lists_content = $composed || 'content' === $settings['source'];
+
+		if ( ! empty( $settings['exclude_current'] ) && $names_pages ) {
 			$settings['exclude_self'] = self::current_post_id();
 		}
 
@@ -633,11 +655,13 @@ final class Settings {
 
 		$settings['child_of'] = max( 0, (int) $settings['child_of'] );
 
-		// Neither of these can change an author or archive listing, and both are
-		// the current page's ID — so leaving them on one would give every page
-		// its own cache entry for a list that is the same on all of them.
+		// Both of these are the current page's ID, and a listing that cannot use
+		// one would only be split into a cache entry per page by carrying it.
 		if ( ! $lists_content ) {
-			$settings['child_of']     = 0;
+			$settings['child_of'] = 0;
+		}
+
+		if ( ! $names_pages ) {
 			$settings['exclude_self'] = 0;
 		}
 

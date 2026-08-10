@@ -343,6 +343,22 @@ final class SettingsPage {
 							<p class="description">
 								<?php echo esc_html__( 'The author and archive listings ignore everything below except the entry cap and the design — they are built from who published and when, not from the content settings.', 'rapls-sitemap' ); ?>
 							</p>
+							<p>
+								<label>
+									<?php echo esc_html__( 'Menu', 'rapls-sitemap' ); ?>
+									<select name="<?php echo esc_attr( $name . '[menu]' ); ?>">
+										<option value=""><?php echo esc_html__( '— Select —', 'rapls-sitemap' ); ?></option>
+										<?php foreach ( self::available_menus() as $menu ) : ?>
+											<option value="<?php echo esc_attr( (string) $menu->term_id ); ?>" <?php selected( (string) $settings['menu'], (string) $menu->term_id ); ?>>
+												<?php echo esc_html( $menu->name ); ?>
+											</option>
+										<?php endforeach; ?>
+									</select>
+								</label>
+							</p>
+							<p class="description">
+								<?php echo esc_html__( 'A menu is listed exactly as it was arranged, with its own labels — the order here is a decision somebody made, so it is not re-sorted. Only the exclusions, the depth limit and the entry cap apply to it.', 'rapls-sitemap' ); ?>
+							</p>
 						</td>
 					</tr>
 
@@ -1409,7 +1425,21 @@ final class SettingsPage {
 			'content'  => __( 'Posts and pages', 'rapls-sitemap' ),
 			'authors'  => __( 'Authors', 'rapls-sitemap' ),
 			'archives' => __( 'Monthly archives', 'rapls-sitemap' ),
+			'menu'     => __( 'A navigation menu', 'rapls-sitemap' ),
 		);
+	}
+
+	/**
+	 * Navigation menus offered on this screen.
+	 *
+	 * @return \WP_Term[]
+	 */
+	private static function available_menus(): array {
+		if ( ! function_exists( 'wp_get_nav_menus' ) ) {
+			return array();
+		}
+
+		return (array) wp_get_nav_menus();
 	}
 
 	/**
@@ -1546,6 +1576,10 @@ final class SettingsPage {
 
 		$sections['author']  = __( 'Authors', 'rapls-sitemap' );
 		$sections['archive'] = __( 'Archives', 'rapls-sitemap' );
+
+		if ( array() !== self::available_menus() ) {
+			$sections['menu'] = __( 'Navigation menu', 'rapls-sitemap' );
+		}
 
 		return $sections;
 	}

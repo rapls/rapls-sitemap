@@ -116,9 +116,163 @@ final class TreeBuilder {
 			case 'archives':
 				return $this->depth_limited( $this->archives(), $depth );
 
+			case 'menu':
+				return $this->depth_limited( $this->menu(), $depth );
+
 			default:
 				return $this->content( $depth );
 		}
+	}
+
+	/**
+	 * The `menu` source: one navigation menu, as its editors arranged it.
+	 *
+	 * Nothing is derived here. The order is the menu's order — `orderby` is not
+	 * consulted, because re-sorting a menu alphabetically throws away the only
+	 * thing that makes it worth listing — and the labels are the menu's labels,
+	 * which are frequently shorter than the page titles they point at. That is
+	 * the point of this source: on a site with hundreds of pages, "the routes we
+	 * decided on" is a different table of contents from "everything published",
+	 * and often the one a reader wants.
+	 *
+	 * Items are nested by `menu_item_parent`, and an item whose parent was
+	 * dropped surfaces at the root rather than disappearing — the same rule the
+	 * page tree follows.
+	 *
+	 * @return Node[]
+	 */
+	private function menu(): array {
+		$menu = wp_get_nav_menu_object( $this->settings['menu'] );
+		if ( ! $menu ) {
+			return array();
+		}
+
+		// `update_post_term_cache` primes the taxonomies of the menu items
+		// themselves, which nothing here reads.
+		$items = wp_get_nav_menu_items( $menu->term_id, array( 'update_post_term_cache' => false ) );
+		if ( ! is_array( $items ) || array() === $items ) {
+			return array();
+		}
+
+		$max = $this->cap();
+		if ( $max > 0 && count( $items ) > $max ) {
+			$items                   = array_slice( $items, 0, $max );
+			$this->truncated['menu'] = true;
+		}
+
+		$items = $this->menu_items_kept( $items );
+
+		$nodes = array();
+		foreach ( $items as $item ) {
+			$title = trim( (string) $item->title );
+			if ( '' === $title ) {
+				/* translators: %d: menu item ID. */
+				$title = sprintf( __( '(no title) #%d', 'rapls-sitemap' ), (int) $item->ID );
+			}
+
+			$nodes[ (int) $item->ID ] = new Node( (int) $item->ID, $title, (string) $item->url, 'post' );
+		}
+
+		$roots = array();
+		foreach ( $items as $item ) {
+			$id     = (int) $item->ID;
+			$parent = (int) $item->menu_item_parent;
+
+			if ( $parent > 0 && isset( $nodes[ $parent ] ) ) {
+				$nodes[ $parent ]->add( $nodes[ $id ] );
+				continue;
+			}
+
+			$roots[] = $nodes[ $id ];
+		}
+
+		return $this->note_if_truncated( $roots, 'menu' );
+	}
+
+	/**
+	 * Drop the menu items this sitemap's exclusions rule out.
+	 *
+	 * Only the exclusions that can be answered from what a menu item already
+	 * carries, plus two that are worth one extra query each and only when their
+	 * setting is on. A menu is a curated list — a few dozen rows, not a few
+	 * thousand — so the queries are bounded, but they are still queries and each
+	 * is issued once for the whole menu rather than once per item.
+	 *
+	 * A custom link cannot be excluded by any of this: it names a URL, not
+	 * anything this plugin can identify. Said in the readme rather than left for
+	 * a site owner to discover.
+	 *
+	 * @param object[] $items Menu items.
+	 * @return object[]
+	 */
+	private function menu_items_kept( array $items ): array {
+		$excluded_ids   = array_flip( $this->excluded_ids() );
+		$excluded_types = (array) $this->settings['exclude_types'];
+		$excluded_terms = array_flip( array_map( 'intval', (array) $this->settings['exclude_terms'] ) );
+
+		// One query each, and only when asked for. `$protected` is the set of
+		// linked posts WordPress has a password on; priming the meta cache turns
+		// the noindex check from one query per item into one for the lot.
+		$post_ids = array();
+		foreach ( $items as $item ) {
+			if ( 'post_type' === $item->type ) {
+				$post_ids[] = (int) $item->object_id;
+			}
+		}
+
+		$protected = array();
+		if ( ! empty( $this->settings['exclude_protected'] ) && array() !== $post_ids ) {
+			$protected = array_flip(
+				array_map(
+					'intval',
+					(array) get_posts(
+						array(
+							'post__in'    => $post_ids,
+							'post_type'   => 'any',
+							'post_status' => 'publish',
+							'has_password' => true,
+							'fields'      => 'ids',
+							'numberposts' => -1,
+						)
+					)
+				)
+			);
+		}
+
+		if ( ! empty( $this->settings['exclude_noindex'] ) && array() !== $post_ids && function_exists( 'update_meta_cache' ) ) {
+			update_meta_cache( 'post', $post_ids );
+		}
+
+		$kept = array();
+
+		foreach ( $items as $item ) {
+			$object_id = (int) $item->object_id;
+
+			if ( 'post_type' === $item->type ) {
+				if ( isset( $excluded_ids[ $object_id ] ) || isset( $protected[ $object_id ] ) ) {
+					continue;
+				}
+
+				if ( in_array( (string) $item->object, $excluded_types, true ) ) {
+					continue;
+				}
+
+				$post     = new \stdClass();
+				$post->ID = $object_id;
+
+				if ( ! empty( $this->settings['exclude_noindex'] ) && $this->is_noindex( $post ) ) {
+					continue;
+				}
+			}
+
+			if ( 'taxonomy' === $item->type && isset( $excluded_terms[ $object_id ] ) ) {
+				continue;
+			}
+
+			$kept[] = $item;
+		}
+
+		return $kept;
 	}
 
 	/**
@@ -209,9 +363,7 @@ final class TreeBuilder {
 
 			return array(
 				'settings' => $overrides,
-				'label'    => 'authors' === $overrides['source']
-					? __( 'Authors', 'rapls-sitemap' )
-					: __( 'Archives', 'rapls-sitemap' ),
+				'label'    => $this->source_label( (string) $overrides['source'] ),
 				'url'      => '',
 			);
 		}
@@ -229,6 +381,31 @@ final class TreeBuilder {
 		}
 
 		return null;
+	}
+
+	/**
+	 * The heading a whole-source section is given.
+	 *
+	 * The menu's own name when there is one: a site with two menus in one
+	 * sitemap needs to tell them apart, and "Navigation menu" twice would not.
+	 *
+	 * @param string $source One of Settings::SOURCES.
+	 * @return string
+	 */
+	private function source_label( string $source ): string {
+		if ( 'authors' === $source ) {
+			return __( 'Authors', 'rapls-sitemap' );
+		}
+
+		if ( 'menu' === $source ) {
+			$menu = wp_get_nav_menu_object( $this->settings['menu'] );
+
+			return ( $menu && '' !== trim( (string) $menu->name ) )
+				? (string) $menu->name
+				: __( 'Navigation menu', 'rapls-sitemap' );
+		}
+
+		return __( 'Archives', 'rapls-sitemap' );
 	}
 
 	/**

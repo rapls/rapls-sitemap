@@ -100,6 +100,22 @@ check( 'Y-m-d' === Shortcode::apply_atts( $base, array( 'date_format' => 'Y-m-d'
 check( 5 === Shortcode::apply_atts( $base, array( 'excerpt_length' => '5' ) )['excerpt_length'], 'and excerpt length is settable too' );
 check( false === Shortcode::apply_atts( $base, array( 'section_headings' => 'no' ) )['section_headings'], 'headings can be switched off per placement' );
 
+/* --- menu ----------------------------------------------------------------- */
+
+// Naming a menu is asking for that menu. Requiring source="menu" beside it
+// would be a second way to say one thing, and forgetting it would silently show
+// the ordinary sitemap.
+$out = Shortcode::apply_atts( $base, array( 'menu' => 'primary' ) );
+check( 'primary' === $out['menu'], 'a menu can be named by slug' );
+check( 'menu' === $out['source'], 'and naming one selects it as the source' );
+
+// Unless the placement said otherwise, in which case it meant what it said.
+$out = Shortcode::apply_atts( $base, array( 'menu' => 'primary', 'source' => 'authors' ) );
+check( 'authors' === $out['source'], 'an explicit source is not overridden' );
+check( 'primary' === $out['menu'], 'though the menu is still remembered' );
+
+check( $base['source'] === Shortcode::apply_atts( $base, array( 'menu' => '' ) )['source'], 'and an empty menu selects nothing' );
+
 /* --- sections ------------------------------------------------------------ */
 
 check(

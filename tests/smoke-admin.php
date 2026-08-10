@@ -62,6 +62,13 @@ function get_taxonomies( $args = array(), $output = 'names' ) {
 	);
 }
 
+function wp_get_nav_menus( $args = array() ) {
+	$menu          = new stdClass();
+	$menu->term_id = 7;
+	$menu->name    = 'Main navigation';
+	return array( $menu );
+}
+
 function add_options_page( $page, $menu, $cap, $slug, $callback ) {
 	$GLOBALS['rapls_admin_page'] = $slug;
 	return 'settings_page_' . $slug;
@@ -242,6 +249,13 @@ check(
 );
 check( false !== strpos( $html, 'name="rapls_sitemap_settings[sections][]" value="author"' ), 'the author listing is offered as a section' );
 check( false !== strpos( $html, 'name="rapls_sitemap_settings[sections_order][archive]"' ), 'and each box has its position field' );
+
+// A menu can be the whole sitemap or one of its sections, so it appears twice —
+// once in the source select, once as a section box. Both are only worth showing
+// when the site has a menu to point at.
+check( false !== strpos( $html, 'name="rapls_sitemap_settings[menu]"' ), 'the menu select is on the page' );
+check( false !== strpos( $html, 'value="7"' ), 'with the site\'s menus in it' );
+check( false !== strpos( $html, 'name="rapls_sitemap_settings[sections][]" value="menu"' ), 'and a menu section is offered too' );
 
 // Sections nest, so counting a closing pair proves nothing. What matters is
 // that the page's divs balance overall — an unclosed section would swallow

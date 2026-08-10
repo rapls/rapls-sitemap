@@ -117,6 +117,20 @@ final class Shortcode {
 			$settings['taxonomy'] = sanitize_key( (string) $atts['taxonomy'] );
 		}
 
+		// An ID, a slug or a name — all three are what wp_get_nav_menu_object()
+		// takes, and a shortcode reads far better with a slug in it than with
+		// the term ID the settings screen posts.
+		if ( isset( $atts['menu'] ) ) {
+			$settings['menu'] = sanitize_text_field( (string) $atts['menu'] );
+
+			// Naming a menu is asking for that menu. Making the author write
+			// source="menu" beside it would be a second way to say one thing,
+			// and forgetting it would silently show the ordinary sitemap.
+			if ( '' !== $settings['menu'] && ! isset( $atts['source'] ) ) {
+				$settings['source'] = 'menu';
+			}
+		}
+
 		foreach (
 			array(
 				'show_home',

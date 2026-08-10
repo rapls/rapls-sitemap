@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-08-10 01:20:35+0000",
+    "translation-revision-date": "2026-08-10 02:03:58+0000",
     "generator": "rapls-sitemap\/bin\/make-json.php",
     "domain": "messages",
     "locale_data": {
@@ -9,6 +9,9 @@
             ],
             "-1 uses the site default, 0 shows every level.": [
                 "-1でサイト全体の設定を使い、0ですべての階層を表示します。"
+            ],
+            "A navigation menu": [
+                "ナビゲーションメニュー"
             ],
             "A page ID, or current for the page this block is on. Empty lists the whole site.": [
                 "固定ページの ID、またはこのブロックを置いたページを指す current。空欄ならサイト全体を一覧にします。"
@@ -133,6 +136,9 @@
             "Maximum depth": [
                 "最大階層"
             ],
+            "Menu": [
+                "メニュー"
+            ],
             "Monthly archives": [
                 "年月アーカイブ"
             ],
@@ -210,6 +216,9 @@
             ],
             "Terminal": [
                 "ターミナル"
+            ],
+            "The ID, slug or name of a navigation menu. Naming one selects it as the source.": [
+                "ナビゲーションメニューの ID、スラッグ、または名前です。指定するとメニュー表示になります。"
             ],
             "Timeline": [
                 "タイムライン"

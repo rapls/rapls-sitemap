@@ -28,6 +28,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 * 複数のカテゴリーに属する投稿を、それぞれのカテゴリーに表示するかの切替
 * すべてのリンクに `rel="nofollow"` を付与するオプション
 * タグ一覧、投稿者一覧、年月アーカイブ一覧の出力
+* **ナビゲーションメニューをそのまま目次にする**指定。運用者が組んだ順序とラベルのまま出力します
 * 固定ページ・投稿・カテゴリー・投稿者・年月アーカイブを、1 か所の設置で順に並べる「セクション」指定。サイトマップページによくある形をショートコード 1 つで作れます
 * 投稿タイプごとの見出し（2種類以上を表示するときのみ）
 * 各項目への投稿日・抜粋の表示、カテゴリーごとの記事数の表示
@@ -70,13 +71,29 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 指定できる属性は次のとおりです。
 
-* 対象 — `post_types` / `source` / `sections` / `taxonomy` / `term_mode` / `child_of`
+* 対象 — `post_types` / `source` / `sections` / `menu` / `taxonomy` / `term_mode` / `child_of`
 * 絞り込み — `exclude_ids` / `exclude_terms` / `exclude_current` / `exclude_protected` / `exclude_noindex`
 * 件数 — `number` / `offset` / `per_category` / `depth`
 * 並び順 — `orderby` / `order`
 * 表示 — `design` / `list_type` / `link_headings` / `show_home` / `group_by_term` / `nest_terms` / `duplicate_in_terms` / `section_headings` / `show_date` / `date_format` / `show_excerpt` / `excerpt_length` / `show_count` / `nofollow`
 
 キャッシュとスタイル読み込みはサイト全体の設定のみで、配置ごとの指定はできません。
+
+= ナビゲーションメニューをそのまま目次にできますか =
+
+はい。「一覧の種類」で「ナビゲーションメニュー」を選び、メニューを指定してください。
+
+ショートコードではメニューの ID・スラッグ・名前のいずれかを指定できます。`menu` を指定した時点でメニュー表示になるので、`source` を併記する必要はありません。
+
+`[rapls_sitemap menu="global-nav"]`
+
+**メニューの並び順とラベルをそのまま使います。** 並べ替えは行いません。順序は運用者が決めたものであり、それを五十音順に並べ直すと、メニューを目次にする意味がなくなるためです。ラベルもメニュー側のもの（多くの場合ページタイトルより短い）を使います。
+
+数百ページある大規模サイトでは、「公開しているすべて」より「運用者が決めた導線」のほうが読者の役に立つことがあります。その場合の選択肢です。
+
+メニューに効くのは、除外設定・階層の深さ制限・件数上限だけです。ただし**カスタムリンクは除外できません**。URL だけを持つ項目で、プラグイン側から何を指しているか判別できないためです。
+
+「1つにまとめるセクション」の1つとしても選べます。その場合、見出しにはメニュー名が入ります。
 
 = 固定ページ、投稿、カテゴリーをまとめて 1 ページに出せますか =
 

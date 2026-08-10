@@ -23,6 +23,10 @@
 			"type": "string",
 			"default": ""
 		},
+		"menu": {
+			"type": "string",
+			"default": ""
+		},
 		"postTypes": {
 			"type": "string",
 			"default": ""
