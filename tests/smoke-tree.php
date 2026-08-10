@@ -21,6 +21,11 @@ function fixture_post( $id, $title, $parent = 0, $date = '2026-01-15 10:00:00', 
 	$post->post_parent   = $parent;
 	$post->post_date     = $date;
 	$post->post_password = $password;
+	// Empty, but present: a real WP_Post always carries these, and reading a
+	// property that does not exist is a warning the test would otherwise print
+	// on every run — which is how a warning that means something gets missed.
+	$post->post_excerpt = '';
+	$post->post_content = '';
 	return $post;
 }
 

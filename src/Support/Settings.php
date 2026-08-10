@@ -471,7 +471,8 @@ final class Settings {
 	 * too, because `<!--` is the historical way out of a style block.
 	 *
 	 * This is a containment measure, not a CSS parser. Anyone who can reach
-	 * this field already holds `manage_options`.
+	 * this field already holds `unfiltered_html` — see CSS_CAPABILITY, which is
+	 * deliberately not `manage_options`.
 	 *
 	 * @param string $css Raw CSS.
 	 * @return string
@@ -540,30 +541,40 @@ final class Settings {
 	/**
 	 * Fold request-time context into the settings.
 	 *
-	 * Only one thing needs this today: `exclude_current` has to become a real
-	 * entry in `exclude_ids` BEFORE the cache hashes the settings, or every page
-	 * would share one cache entry built with somebody else's exclusion.
+	 * Two things need this, and both for the same reason: they depend on which
+	 * page is rendering, and they have to be resolved BEFORE the cache hashes
+	 * the settings — otherwise every page shares one entry built from somebody
+	 * else's context.
+	 *
+	 * They are resolved independently. `exclude_current` and
+	 * `child_of="current"` are separate decisions: "do not list the page the
+	 * reader is on" and "list what is filed under it" are useful together and
+	 * useful apart, and gating one on the other made `child_of="current"` fall
+	 * back to the whole site the moment `exclude_current` was switched off.
 	 *
 	 * @param array<string,mixed> $settings Effective settings.
 	 * @return array<string,mixed>
 	 */
 	public static function for_request( array $settings ): array {
-		if ( empty( $settings['exclude_current'] ) ) {
-			return $settings;
+		if ( ! empty( $settings['exclude_current'] ) ) {
+			$settings['exclude_self'] = self::current_post_id();
 		}
-
-		$settings['exclude_self'] = self::current_post_id();
 
 		// `child_of="current"` is the form that makes this useful in a
 		// shortcode — "the pages under this one" without hard-coding an ID that
-		// changes between staging and live. Resolved here, before the cache
-		// hashes the settings, so two pages using the same shortcode do not
-		// share one entry.
+		// changes between staging and live.
 		if ( 'current' === $settings['child_of'] ) {
 			$settings['child_of'] = self::current_post_id();
 		}
 
 		$settings['child_of'] = max( 0, (int) $settings['child_of'] );
+
+		// Only the page tree has branches. Leaving a resolved ID on the author
+		// or archive listing would change nothing about the output and give
+		// every page its own cache entry for an identical list.
+		if ( 'content' !== $settings['source'] ) {
+			$settings['child_of'] = 0;
+		}
 
 		return $settings;
 	}

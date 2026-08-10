@@ -296,9 +296,29 @@ $GLOBALS['rapls_current_post'] = 0;
 $out                          = Settings::for_request( array_merge( Settings::defaults(), array( 'child_of' => 'current' ) ) );
 check( 0 === $out['child_of'], 'and off a singular page it scopes to nothing, which is the whole site' );
 
-// `exclude_current` is off in the defaults, so this proves the two resolve
-// independently — a page can be the root of the branch and still be listed.
-check( 0 === $out['exclude_self'], 'resolving child_of does not imply excluding the page' );
+// The two are separate decisions, and the gate that used to join them made
+// child_of="current" quietly list the whole site whenever a placement turned
+// exclude_current off — the one combination nothing tested.
+$GLOBALS['rapls_current_post'] = 7;
+$out                          = Settings::for_request(
+	array_merge( Settings::defaults(), array( 'child_of' => 'current', 'exclude_current' => false ) )
+);
+check( 7 === $out['child_of'], 'child_of="current" resolves even with exclude_current off' );
+check( 0 === $out['exclude_self'], 'and the page is still listed, which is what off means' );
+
+// The reverse pairing, so neither one can start depending on the other.
+$out = Settings::for_request( array_merge( Settings::defaults(), array( 'exclude_current' => true ) ) );
+check( 7 === $out['exclude_self'], 'and exclude_current resolves with no child_of in play' );
+
+// Only the page tree has branches. A resolved ID left on the other sources
+// would change nothing about the output and give every page its own cache
+// entry for an identical list.
+foreach ( array( 'authors', 'archives' ) as $source ) {
+	$out = Settings::for_request(
+		array_merge( Settings::defaults(), array( 'child_of' => 'current', 'source' => $source ) )
+	);
+	check( 0 === $out['child_of'], sprintf( 'the %s listing carries no branch, so it cannot split the cache', $source ) );
+}
 
 $GLOBALS['rapls_current_post'] = 7;
 check( 12 === Settings::for_request( array_merge( Settings::defaults(), array( 'child_of' => 12 ) ) )['child_of'], 'a literal ID is left alone' );

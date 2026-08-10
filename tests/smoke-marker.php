@@ -109,7 +109,12 @@ $GLOBALS['rapls_inline_styles'] = array();
 $GLOBALS['rapls_styles_reset']  = ( function () {
 	$reflection = new ReflectionClass( RaplsSitemap\Frontend\Styles::class );
 	$property   = $reflection->getProperty( 'css_attached' );
-	$property->setAccessible( true );
+
+	// Required on the 7.4 floor, a no-op since 8.1, and deprecated in 8.5 —
+	// so the test has to keep making the call and stop making it at once.
+	if ( PHP_VERSION_ID < 80100 ) {
+		$property->setAccessible( true );
+	}
 	$property->setValue( null, false );
 	return true;
 } )();

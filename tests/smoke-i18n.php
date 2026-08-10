@@ -22,27 +22,68 @@ $domain    = 'rapls-sitemap';
 
 /**
  * Minimal PO/POT reader: msgid => array( msgstr, refs ).
+ *
+ * Continuation lines are joined, and every `#:` line is read rather than the
+ * first. gettext writes both forms — a long string as `msgid ""` followed by
+ * quoted fragments, a long reference list wrapped over several comment lines —
+ * and any tool here that reads only the first line of either sees a smaller
+ * catalogue than the one on disk. That failure is silent in the direction that
+ * matters: entries vanish, so a coverage test passes by checking nothing.
+ * `bin/make-json.php` had exactly this bug on the reference lines.
  */
 function po_entries( $path ) {
+	return po_parse( (string) file_get_contents( $path ) );
+}
+
+/**
+ * The same, over PO text — so the reader itself can be tested on a fixture.
+ */
+function po_parse( $text ) {
 	$entries = array();
 
-	foreach ( preg_split( "/\n\n+/", trim( (string) file_get_contents( $path ) ) ) as $block ) {
-		if ( ! preg_match( '/^msgid "(.*)"$/m', $block, $id ) || '' === $id[1] ) {
+	foreach ( preg_split( "/\n\n+/", trim( $text ) ) as $block ) {
+		$id = po_value( $block, 'msgid' );
+		if ( null === $id || '' === $id ) {
 			continue;
 		}
 
-		preg_match( '/^msgstr "(.*)"$/m', $block, $str );
-		preg_match( '/^#: (.+)$/m', $block, $refs );
+		$refs = array();
+		if ( preg_match_all( '/^#: (.+)$/m', $block, $lines ) ) {
+			foreach ( $lines[1] as $line ) {
+				$refs = array_merge( $refs, preg_split( '/\s+/', trim( $line ) ) );
+			}
+		}
+
 		preg_match_all( '/^#\. (.+)$/m', $block, $notes );
 
-		$entries[ po_unescape( $id[1] ) ] = array(
-			'msgstr' => isset( $str[1] ) ? po_unescape( $str[1] ) : '',
-			'refs'   => isset( $refs[1] ) ? preg_split( '/\s+/', trim( $refs[1] ) ) : array(),
+		$entries[ $id ] = array(
+			'msgstr' => (string) po_value( $block, 'msgstr' ),
+			'refs'   => $refs,
 			'notes'  => implode( ' ', $notes[1] ),
 		);
 	}
 
 	return $entries;
+}
+
+/**
+ * One keyword's value from a PO block, with its continuation lines joined.
+ */
+function po_value( $block, $keyword ) {
+	if ( ! preg_match( '/^' . $keyword . ' "(.*)"$((?:\n".*")*)/m', $block, $m ) ) {
+		return null;
+	}
+
+	$value = $m[1];
+
+	foreach ( preg_split( '/\n/', trim( (string) ( $m[2] ?? '' ) ) ) as $line ) {
+		$line = trim( $line );
+		if ( '' !== $line ) {
+			$value .= substr( $line, 1, -1 );
+		}
+	}
+
+	return po_unescape( $value );
 }
 
 function po_unescape( $text ) {
@@ -67,6 +108,26 @@ $pot = po_entries( $pot_path );
 $po  = po_entries( $po_path );
 
 check( array() !== $pot, 'the POT has entries' );
+
+/* --- the reader survives a wrapped catalogue ---------------------------- */
+
+// Everything below counts entries, so a reader that skips the wrapped ones
+// reports full coverage of a smaller catalogue than the one on disk. The
+// catalogue is unwrapped today; nothing stops the next `msgmerge` from
+// wrapping it again.
+$wrapped = po_parse(
+	"#: src/A.php:1 src/B.php:2\n"
+	. "#: assets/js/block.js:3\n"
+	. "msgid \"\"\n\"A string long enough that gettext \"\n\"wraps it.\"\n"
+	. "msgstr \"\"\n\"折り返された訳文\"\n"
+);
+
+check( isset( $wrapped['A string long enough that gettext wraps it.'] ), 'a wrapped msgid is read as one string' );
+check( '折り返された訳文' === ( $wrapped['A string long enough that gettext wraps it.']['msgstr'] ?? '' ), 'and so is a wrapped msgstr' );
+check(
+	array( 'src/A.php:1', 'src/B.php:2', 'assets/js/block.js:3' ) === ( $wrapped['A string long enough that gettext wraps it.']['refs'] ?? array() ),
+	'a reference list wrapped over two comment lines is read whole'
+);
 
 /* --- coverage and staleness --------------------------------------------- */
 
