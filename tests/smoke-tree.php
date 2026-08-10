@@ -277,6 +277,30 @@ function get_term_link( $term ) {
 	return 'https://example.test/category/' . $term->term_id;
 }
 
+function post_type_exists( $type ) {
+	return in_array( $type, array( 'page', 'post' ), true );
+}
+
+function taxonomy_exists( $taxonomy ) {
+	return in_array( $taxonomy, array( 'category', 'post_tag' ), true );
+}
+
+function get_taxonomy( $taxonomy ) {
+	$objects = get_object_taxonomies( 'post', 'objects' );
+	if ( ! isset( $objects[ $taxonomy ] ) ) {
+		return false;
+	}
+
+	$object                 = $objects[ $taxonomy ];
+	$object->labels         = new stdClass();
+	$object->labels->name   = 'category' === $taxonomy ? 'Categories' : 'Tags';
+	// Both of the fixture's taxonomies live on `post` only. That the object
+	// type is flat is what lets a taxonomy be a section at all.
+	$object->object_type    = array( 'post' );
+
+	return $object;
+}
+
 function home_url( $path = '/' ) {
 	return 'https://example.test' . $path;
 }
@@ -820,6 +844,80 @@ check( ! empty( $GLOBALS['fixture_last_term_args']['pad_counts'] ), 'nested coun
 $GLOBALS['fixture_last_term_args'] = null;
 ( new TreeBuilder( grouped( array( 'term_mode' => 'terms_only', 'show_count' => true, 'nest_terms' => false ) ) ) )->build();
 check( empty( $GLOBALS['fixture_last_term_args']['pad_counts'] ), 'and do not when nothing is nested' );
+
+/* --- sections: several listings in one placement ------------------------ */
+
+// The shape a site migrating from WP Sitemap Page expects: pages, then posts,
+// then categories, then authors, then the archives, from one placement.
+$composed = tree_settings(
+	array(
+		'sections'         => array( 'page', 'post', 'category', 'author', 'archive' ),
+		'section_headings' => true,
+		'group_by_term'    => false,
+		// The archive section is built from the configured post types, like the
+		// archive source it is — so both of them have to be in play for it to
+		// cover both years.
+		'post_types'       => array( 'page', 'post' ),
+	)
+);
+
+$roots = ( new TreeBuilder( $composed ) )->build();
+
+check(
+	array( 'Pages', 'Posts', 'Categories', 'Authors', 'Archives' ) === titles( $roots ),
+	'every section is listed, in the order it was named'
+);
+check( 'section' === $roots[0]->kind, 'each one is a section heading' );
+check( array( 'Parent', 'Standalone', 'Orphan' ) === titles( $roots[0]->children ), 'the page section holds the page tree' );
+check( array( 'News' ) === titles( $roots[2]->children ), 'the category section lists terms rather than posts' );
+check( array( 'Sub' ) === titles( $roots[2]->children[0]->children ), 'and nests them, holding nothing but terms' );
+check( array( 'Aoi', 'Yuki' ) === titles( $roots[3]->children ), 'the author section is the author listing' );
+check( array( '2026', '2025' ) === titles( $roots[4]->children ), 'and the archive section is the date listing' );
+
+// `source` describes one listing, and a composed sitemap has several — so the
+// sections have to win, or a site that had picked "authors" would get five
+// author lists.
+$roots = ( new TreeBuilder( array_merge( $composed, array( 'source' => 'authors' ) ) ) )->build();
+check( array( 'Pages', 'Posts', 'Categories', 'Authors', 'Archives' ) === titles( $roots ), 'the sections win over the source setting' );
+
+// The front-page link belongs to the sitemap, not to its first section.
+$roots = ( new TreeBuilder( array_merge( $composed, array( 'show_home' => true ) ) ) )->build();
+check( 'home' === $roots[0]->kind, 'the home link is emitted once, above every section' );
+check( 1 === count( array_filter( $roots, static function ( $node ) { return 'home' === $node->kind; } ) ), 'and only once' );
+
+// Each section is built by a builder of its own, so everything the ordinary
+// sitemap does has to still happen inside one.
+$roots = ( new TreeBuilder( array_merge( $composed, array( 'sections' => array( 'page', 'post' ), 'depth' => 1 ) ) ) )->build();
+check( array() === $roots[0]->children[0]->children, 'the depth limit applies inside a section' );
+
+$roots = ( new TreeBuilder( array_merge( $composed, array( 'sections' => array( 'page', 'post' ), 'exclude_ids' => array( 1 ) ) ) ) )->build();
+check( ! in_array( 'Parent', titles( $roots[0]->children ), true ), 'and so do the exclusions' );
+
+$roots = ( new TreeBuilder( array_merge( $composed, array( 'sections' => array( 'page', 'post' ), 'max_entries' => 1 ) ) ) )->build();
+check( has_note( $roots[0]->children ), 'and a section that was truncated says so, inside that section' );
+
+// A section that produced nothing is not a heading over an empty list.
+$roots = ( new TreeBuilder( array_merge( $composed, array( 'sections' => array( 'page', 'post' ), 'exclude_types' => array( 'post' ) ) ) ) )->build();
+check( array( 'Parent', 'Standalone', 'Orphan' ) === titles( $roots ), 'an empty section is dropped, heading and all' );
+
+// One list needs no label to tell it apart from the others — the same rule the
+// post-type sections follow.
+$roots = ( new TreeBuilder( array_merge( $composed, array( 'sections' => array( 'page' ) ) ) ) )->build();
+check( array( 'Parent', 'Standalone', 'Orphan' ) === titles( $roots ), 'a single section needs no heading' );
+
+$roots = ( new TreeBuilder( array_merge( $composed, array( 'section_headings' => false ) ) ) )->build();
+check( 'section' !== $roots[0]->kind, 'and headings can be switched off as everywhere else' );
+
+// A slug that names nothing is skipped rather than rendered as a complaint: it
+// may well belong to a plugin that is being updated right now.
+$roots = ( new TreeBuilder( array_merge( $composed, array( 'sections' => array( 'page', 'nonsense', 'post' ) ) ) ) )->build();
+check( array( 'Pages', 'Posts' ) === titles( $roots ), 'an unresolvable section is skipped' );
+
+// A term listing is reached only through a post type with no hierarchy of its
+// own, so an excluded taxonomy must drop the section rather than fall through
+// to listing that post type's posts.
+$roots = ( new TreeBuilder( array_merge( $composed, array( 'sections' => array( 'page', 'category' ), 'exclude_tax' => array( 'category' ) ) ) ) )->build();
+check( array( 'Parent', 'Standalone', 'Orphan' ) === titles( $roots ), 'an excluded taxonomy cannot become a section of posts' );
 
 /* --- child_of: one branch of the page tree ------------------------------ */
 

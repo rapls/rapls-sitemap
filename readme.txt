@@ -28,6 +28,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 * 複数のカテゴリーに属する投稿を、それぞれのカテゴリーに表示するかの切替
 * すべてのリンクに `rel="nofollow"` を付与するオプション
 * タグ一覧、投稿者一覧、年月アーカイブ一覧の出力
+* 固定ページ・投稿・カテゴリー・投稿者・年月アーカイブを、1 か所の設置で順に並べる「セクション」指定。サイトマップページによくある形をショートコード 1 つで作れます
 * 投稿タイプごとの見出し（2種類以上を表示するときのみ）
 * 各項目への投稿日・抜粋の表示、カテゴリーごとの記事数の表示
 * 1リストあたりの件数上限と開始位置の指定。大規模サイトでのメモリ不足を防ぎます
@@ -69,13 +70,27 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 指定できる属性は次のとおりです。
 
-* 対象 — `post_types` / `source` / `taxonomy` / `term_mode` / `child_of`
+* 対象 — `post_types` / `source` / `sections` / `taxonomy` / `term_mode` / `child_of`
 * 絞り込み — `exclude_ids` / `exclude_terms` / `exclude_current` / `exclude_protected` / `exclude_noindex`
 * 件数 — `number` / `offset` / `per_category` / `depth`
 * 並び順 — `orderby` / `order`
 * 表示 — `design` / `list_type` / `link_headings` / `show_home` / `group_by_term` / `nest_terms` / `duplicate_in_terms` / `section_headings` / `show_date` / `date_format` / `show_excerpt` / `excerpt_length` / `show_count` / `nofollow`
 
 キャッシュとスタイル読み込みはサイト全体の設定のみで、配置ごとの指定はできません。
+
+= 固定ページ、投稿、カテゴリーをまとめて 1 ページに出せますか =
+
+はい。「1つにまとめるセクション」でチェックしたものが、チェックした順に、それぞれの見出しを付けて並びます。設置は 1 か所だけです。
+
+ショートコードでも指定できます。
+
+`[rapls_sitemap sections="page,post,category,author,archive"]`
+
+指定できるのは、投稿タイプのスラッグ、タクソノミーのスラッグ、`author`、`archive` です。並べた順がそのまま表示順になります。
+
+除外設定、件数上限、並び順、デザインなど他の設定は、すべてのセクションの中で有効です。件数上限は**セクションごと**に効きます。
+
+何もチェックしなければ、これまでどおり「一覧の種類」で選んだ 1 種類だけのサイトマップになります。
 
 = 特定の固定ページの下だけを一覧にできますか =
 

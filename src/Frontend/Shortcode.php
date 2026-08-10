@@ -102,6 +102,17 @@ final class Shortcode {
 			$settings['source'] = (string) $atts['source'];
 		}
 
+		// Several sections in one placement:
+		//
+		//   [rapls_sitemap sections="page,post,category,author,archive"]
+		//
+		// An empty value is how a placement says "one list, the ordinary way"
+		// on a site whose default composes several — so this is set even when
+		// the attribute is blank.
+		if ( isset( $atts['sections'] ) ) {
+			$settings['sections'] = Settings::to_section_list( $atts['sections'] );
+		}
+
 		if ( isset( $atts['taxonomy'] ) ) {
 			$settings['taxonomy'] = sanitize_key( (string) $atts['taxonomy'] );
 		}

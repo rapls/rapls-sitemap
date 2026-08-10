@@ -114,6 +114,41 @@ final class Settings {
 	public const SOURCES = array( 'content', 'authors', 'archives' );
 
 	/**
+	 * Sections that name something other than a post type.
+	 *
+	 * Each is a set of overrides onto the settings this plugin already has —
+	 * none of them is a fourth source. Two things read this: `sections`, which
+	 * composes several of them into one placement, and the `only` attribute of
+	 * `[wp_sitemap_page]`, whose vocabulary this is. Keeping one table means the
+	 * two cannot drift, and `tag` is the reason the `taxonomy` setting exists.
+	 *
+	 * Anything not listed here is a post type or taxonomy slug, resolved when
+	 * the tree is built rather than here — a slug belonging to a plugin that is
+	 * momentarily deactivated is still the setting the site means to have.
+	 */
+	public const SECTIONS = array(
+		'category' => array(
+			'source'        => 'content',
+			'post_types'    => array( 'post' ),
+			'group_by_term' => true,
+			'term_mode'     => 'terms_only',
+			'taxonomy'      => 'category',
+		),
+		'tag'      => array(
+			'source'        => 'content',
+			'post_types'    => array( 'post' ),
+			'group_by_term' => true,
+			'term_mode'     => 'terms_only',
+			'taxonomy'      => 'post_tag',
+			// Tags are flat; nesting them would be a no-op that still costs a
+			// pass over the tree.
+			'nest_terms'    => false,
+		),
+		'author'   => array( 'source' => 'authors' ),
+		'archive'  => array( 'source' => 'archives' ),
+	);
+
+	/**
 	 * Defaults. Every key present here is the complete schema — get() never
 	 * returns a key that is not in this list, so callers can index freely.
 	 *
@@ -162,6 +197,12 @@ final class Settings {
 			'group_by_term'    => true,
 			// What to build the tree from; see SOURCES.
 			'source'           => 'content',
+			// Several sections in one placement — post type slugs, taxonomy
+			// slugs, and the aliases in SECTIONS, in the order they should
+			// appear. Empty is the ordinary single-source sitemap, and `source`
+			// is ignored while this is not: a composed sitemap says what each of
+			// its own sections is built from.
+			'sections'         => array(),
 			// Taxonomy used for grouping. Empty picks the post type's first
 			// public hierarchical taxonomy, which is `category` for posts.
 			'taxonomy'         => '',
@@ -310,6 +351,17 @@ final class Settings {
 				: array();
 
 			$clean['post_types'] = self::sort_by_order( $types, $order );
+		}
+
+		if ( isset( $input['sections'] ) ) {
+			// Ordered the same way the post types are, by a companion field the
+			// screen posts alongside the boxes and storage never sees. The array
+			// order IS the section order.
+			$order = isset( $input['sections_order'] ) && is_array( $input['sections_order'] )
+				? $input['sections_order']
+				: array();
+
+			$clean['sections'] = self::sort_by_order( self::to_section_list( $input['sections'] ), $order );
 		}
 
 		if ( isset( $input['depth'] ) ) {
@@ -595,6 +647,33 @@ final class Settings {
 		}
 
 		return 0;
+	}
+
+	/**
+	 * Read a section list from an array or a comma/space separated string.
+	 *
+	 * Deliberately does not check that a slug names anything: a post type from
+	 * a plugin that is momentarily deactivated must survive a save, and the
+	 * builder skips what it cannot resolve anyway. Duplicates go — a section
+	 * listed twice is a list printed twice.
+	 *
+	 * @param mixed $raw Array or separated string.
+	 * @return string[]
+	 */
+	public static function to_section_list( $raw ): array {
+		if ( ! is_array( $raw ) ) {
+			$raw = preg_split( '/[\s,]+/', (string) $raw ) ?: array();
+		}
+
+		$sections = array();
+		foreach ( $raw as $value ) {
+			$slug = sanitize_key( (string) $value );
+			if ( '' !== $slug ) {
+				$sections[ $slug ] = $slug;
+			}
+		}
+
+		return array_values( $sections );
 	}
 
 	/**

@@ -100,6 +100,21 @@ check( 'Y-m-d' === Shortcode::apply_atts( $base, array( 'date_format' => 'Y-m-d'
 check( 5 === Shortcode::apply_atts( $base, array( 'excerpt_length' => '5' ) )['excerpt_length'], 'and excerpt length is settable too' );
 check( false === Shortcode::apply_atts( $base, array( 'section_headings' => 'no' ) )['section_headings'], 'headings can be switched off per placement' );
 
+/* --- sections ------------------------------------------------------------ */
+
+check(
+	array( 'page', 'post', 'category', 'author' ) === Shortcode::apply_atts( $base, array( 'sections' => 'page, post,category author' ) )['sections'],
+	'a section list is read in the loose format both migration sources use'
+);
+check(
+	array( 'page', 'post' ) === Shortcode::apply_atts( $base, array( 'sections' => 'page,post,page' ) )['sections'],
+	'and a section named twice is listed once'
+);
+
+// A placement on a site whose default composes several sections has to be able
+// to say "just the one list", which an omitted attribute cannot mean.
+check( array() === Shortcode::apply_atts( $base, array( 'sections' => '' ) )['sections'], 'an empty list is an instruction, not an omission' );
+
 /* --- child_of ------------------------------------------------------------ */
 
 check( 12 === Shortcode::apply_atts( $base, array( 'child_of' => '12' ) )['child_of'], 'a branch root can be named by ID' );

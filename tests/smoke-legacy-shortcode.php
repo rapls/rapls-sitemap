@@ -73,6 +73,20 @@ check( 'authors' === LegacyShortcode::apply_atts( $base, array( 'only' => ' AUTH
 check( $base === LegacyShortcode::apply_atts( $base, array( 'only' => 'nonsense' ) ), 'an unknown section falls back to the full sitemap rather than erroring' );
 check( $base === LegacyShortcode::apply_atts( $base, array( 'only' => '' ) ), 'an empty value falls back too' );
 
+/* --- only= against a site that composes sections ------------------------ */
+
+// `only` names one section. On a site whose saved sitemap is several sections
+// in a row, honouring the attribute means the composition has to stop — every
+// section would otherwise still be listed, and `only` would do nothing.
+$composed = array_merge( $base, array( 'sections' => array( 'page', 'post', 'author' ) ) );
+
+check( array() === LegacyShortcode::apply_atts( $composed, array( 'only' => 'author' ) )['sections'], 'only="author" stops the composition' );
+check( array() === LegacyShortcode::apply_atts( $composed, array( 'only' => 'page' ) )['sections'], 'and so does a post type slug' );
+
+// The fallback has to survive it, though: a value this plugin does not know is
+// the case the site default exists for.
+check( $composed === LegacyShortcode::apply_atts( $composed, array( 'only' => 'nonsense' ) ), 'an unknown section leaves the composition alone' );
+
 /* --- the registration guards -------------------------------------------- */
 
 $legacy = new LegacyShortcode( new Cache() );

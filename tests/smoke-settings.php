@@ -161,6 +161,34 @@ $clean = Settings::sanitize(
 );
 check( array( 'page', 'post', 'product' ) === $clean['post_types'], 'a tie keeps the incoming order, and an unranked type sorts last' );
 
+/* --- sections ------------------------------------------------------------ */
+
+check( array() === Settings::defaults()['sections'], 'a sitemap is one list until told otherwise' );
+
+$clean = Settings::sanitize(
+	array(
+		'sections'       => array( 'page', 'post', 'author' ),
+		'sections_order' => array( 'author' => 0, 'page' => 1, 'post' => 2 ),
+	)
+);
+check( array( 'author', 'page', 'post' ) === $clean['sections'], 'the sections are ordered by their companion field' );
+check( ! array_key_exists( 'sections_order', $clean ), 'which is never stored either' );
+
+// Unlike the post types, a section slug is NOT checked against what is
+// registered: a section naming a post type from a plugin that is momentarily
+// deactivated is still the setting the site means to have, and the builder
+// skips what it cannot resolve at render time anyway.
+check(
+	array( 'product', 'product_cat' ) === Settings::sanitize( array( 'sections' => array( 'product', 'product_cat' ) ) )['sections'],
+	'a slug nothing has registered yet survives a save'
+);
+check( array() === Settings::sanitize( array( 'sections' => array( '', '  ' ) ) )['sections'], 'and unticking every box stores an empty list' );
+
+check(
+	array( 'page', 'post', 'author' ) === Settings::to_section_list( 'page, post  author,,page' ),
+	'the list parser takes the loose format and drops duplicates'
+);
+
 /* --- ordering ------------------------------------------------------------ */
 
 check( 'title' === Settings::sanitize( array( 'orderby' => 'title' ) )['orderby'], 'a known ordering is kept' );

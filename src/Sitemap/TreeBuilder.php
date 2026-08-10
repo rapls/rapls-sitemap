@@ -18,6 +18,7 @@
 namespace RaplsSitemap\Sitemap;
 
 use RaplsSitemap\Support\Hooks;
+use RaplsSitemap\Support\Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -67,20 +68,13 @@ final class TreeBuilder {
 			);
 		}
 
-		$depth = (int) $this->settings['depth'];
+		$depth    = (int) $this->settings['depth'];
+		$sections = Settings::to_section_list( $this->settings['sections'] );
 
-		switch ( (string) $this->settings['source'] ) {
-			case 'authors':
-				$roots = array_merge( $roots, $this->depth_limited( $this->authors(), $depth ) );
-				break;
-
-			case 'archives':
-				$roots = array_merge( $roots, $this->depth_limited( $this->archives(), $depth ) );
-				break;
-
-			default:
-				$roots = array_merge( $roots, $this->content( $depth ) );
-		}
+		$roots = array_merge(
+			$roots,
+			array() === $sections ? $this->from_source( $depth ) : $this->composed( $sections, $depth )
+		);
 
 		/**
 		 * Filters the assembled tree before rendering.
@@ -101,6 +95,202 @@ final class TreeBuilder {
 		return array_values( array_filter( $filtered, static function ( $node ) {
 			return $node instanceof Node;
 		} ) );
+	}
+
+	/**
+	 * The nodes one source contributes, with no front-page link and no filter.
+	 *
+	 * Split out of build() so a composed sitemap can call it once per section
+	 * without firing Hooks::TREE for each one — the filter documents itself as
+	 * seeing the assembled tree, and a site that appends a node to it would
+	 * otherwise get that node once per section.
+	 *
+	 * @param int $depth Maximum depth, 0 for unlimited.
+	 * @return Node[]
+	 */
+	private function from_source( int $depth ): array {
+		switch ( (string) $this->settings['source'] ) {
+			case 'authors':
+				return $this->depth_limited( $this->authors(), $depth );
+
+			case 'archives':
+				return $this->depth_limited( $this->archives(), $depth );
+
+			default:
+				return $this->content( $depth );
+		}
+	}
+
+	/**
+	 * Several sections in one placement.
+	 *
+	 * The shape a site migrating from WP Sitemap Page expects: pages, then
+	 * posts, then categories, then authors, then the date archives, all from one
+	 * shortcode. Each section is built by a builder of its own carrying the same
+	 * settings with that section's overrides on top, so every behaviour the
+	 * single-source sitemap has — exclusions, caps, ordering, grouping, the
+	 * truncation note — applies inside each section without being written twice.
+	 *
+	 * `show_home` is switched off for those sub-builders: the front-page link
+	 * belongs to the sitemap, not to its first section.
+	 *
+	 * @param string[] $sections Section slugs, in output order.
+	 * @param int      $depth    Maximum depth, 0 for unlimited.
+	 * @return Node[]
+	 */
+	private function composed( array $sections, int $depth ): array {
+		$built = array();
+
+		foreach ( $sections as $slug ) {
+			$section = $this->section( $slug );
+			if ( null === $section ) {
+				continue;
+			}
+
+			$builder = new self(
+				array_merge(
+					$this->settings,
+					$section['settings'],
+					// Without this the sub-builder would compose the same
+					// sections again, each of those would compose them again,
+					// and the recursion would only stop at the memory limit.
+					array( 'sections' => array(), 'show_home' => false )
+				)
+			);
+
+			$nodes = $builder->from_source( $depth );
+			if ( array() === $nodes ) {
+				continue;
+			}
+
+			$section['nodes'] = $nodes;
+			$built[]          = $section;
+		}
+
+		// Same rule as the post-type sections: one list needs no label to tell
+		// it apart from the others.
+		if ( empty( $this->settings['section_headings'] ) || count( $built ) < 2 ) {
+			return array_merge( array(), ...array_column( $built, 'nodes' ) );
+		}
+
+		$roots = array();
+		foreach ( $built as $section ) {
+			$heading = new Node( 0, $section['label'], $section['url'], 'section' );
+
+			foreach ( $section['nodes'] as $node ) {
+				$heading->add( $node );
+			}
+
+			$roots[] = $heading;
+		}
+
+		return $roots;
+	}
+
+	/**
+	 * Resolve one section slug into its overrides, heading label, and link.
+	 *
+	 * Three kinds, in the order a slug is tried: an alias from
+	 * Settings::SECTIONS, a post type, a taxonomy. Anything that resolves to
+	 * none of them is skipped rather than reported — a slug can name a post type
+	 * a plugin registers, and a sitemap that prints a complaint to every visitor
+	 * because that plugin is being updated is worse than one section short.
+	 *
+	 * @param string $slug Section slug.
+	 * @return array{settings:array,label:string,url:string}|null
+	 */
+	private function section( string $slug ) {
+		if ( isset( Settings::SECTIONS[ $slug ] ) ) {
+			$overrides = Settings::SECTIONS[ $slug ];
+
+			if ( isset( $overrides['taxonomy'] ) ) {
+				return $this->taxonomy_section( (string) $overrides['taxonomy'], $overrides );
+			}
+
+			return array(
+				'settings' => $overrides,
+				'label'    => 'authors' === $overrides['source']
+					? __( 'Authors', 'rapls-sitemap' )
+					: __( 'Archives', 'rapls-sitemap' ),
+				'url'      => '',
+			);
+		}
+
+		if ( post_type_exists( $slug ) ) {
+			return array(
+				'settings' => array( 'source' => 'content', 'post_types' => array( $slug ) ),
+				'label'    => $this->post_type_label( $slug ),
+				'url'      => $this->post_type_url( $slug ),
+			);
+		}
+
+		if ( taxonomy_exists( $slug ) ) {
+			return $this->taxonomy_section( $slug, array() );
+		}
+
+		return null;
+	}
+
+	/**
+	 * A section that lists a taxonomy's terms rather than any posts.
+	 *
+	 * The post type matters even though no post is listed: `build_post_type()`
+	 * only reaches the term listing for a post type with no hierarchy of its
+	 * own, since a hierarchical type nests by parent instead. Handing it a
+	 * taxonomy attached only to pages would quietly list the pages. So the
+	 * section takes the first flat post type the taxonomy is attached to, and
+	 * declines to exist when there is none.
+	 *
+	 * @param string $taxonomy  Taxonomy slug.
+	 * @param array  $overrides Settings overrides already decided for it.
+	 * @return array{settings:array,label:string,url:string}|null
+	 */
+	private function taxonomy_section( string $taxonomy, array $overrides ) {
+		$object = get_taxonomy( $taxonomy );
+		if ( ! $object ) {
+			return null;
+		}
+
+		// An excluded taxonomy cannot be a section: primary_taxonomy() would
+		// refuse it, grouping would switch itself off, and the section would
+		// silently become a list of posts.
+		if ( in_array( $taxonomy, (array) $this->settings['exclude_tax'], true ) ) {
+			return null;
+		}
+
+		$types = array_values(
+			array_filter(
+				(array) $object->object_type,
+				static function ( $type ) {
+					return post_type_exists( $type ) && ! is_post_type_hierarchical( $type );
+				}
+			)
+		);
+
+		if ( array() === $types ) {
+			return null;
+		}
+
+		$label = ! empty( $object->labels->name ) ? (string) $object->labels->name : $taxonomy;
+
+		return array(
+			'settings' => array_merge(
+				array(
+					'source'        => 'content',
+					// One, not all of them: the term listing ignores the post
+					// type, so a second would print the same terms again.
+					'post_types'    => array( $types[0] ),
+					'group_by_term' => true,
+					'term_mode'     => 'terms_only',
+					'taxonomy'      => $taxonomy,
+					'nest_terms'    => ! empty( $object->hierarchical ) && ! empty( $this->settings['nest_terms'] ),
+				),
+				$overrides
+			),
+			'label'    => $label,
+			// A taxonomy has no single archive to link a heading to.
+			'url'      => '',
+		);
 	}
 
 	/**

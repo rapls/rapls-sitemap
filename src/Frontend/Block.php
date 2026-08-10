@@ -117,6 +117,7 @@ final class Block {
 		$map = array(
 			// Empty means inherit.
 			'source'          => 'source',
+			'sections'        => 'sections',
 			'postTypes'       => 'post_types',
 			'taxonomy'        => 'taxonomy',
 			'childOf'         => 'child_of',

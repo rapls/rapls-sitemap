@@ -347,6 +347,19 @@ final class SettingsPage {
 					</tr>
 
 					<tr>
+						<th scope="row"><?php echo esc_html__( 'Sections in one sitemap', 'rapls-sitemap' ); ?></th>
+						<td>
+							<?php $this->section_checkboxes( $name, $settings ); ?>
+							<p class="description">
+								<?php echo esc_html__( 'Tick nothing for an ordinary sitemap built from the setting above. Tick two or more and one placement lists each of them in turn, under its own heading — which is the shape most sitemap pages have.', 'rapls-sitemap' ); ?>
+							</p>
+							<p class="description">
+								<?php echo esc_html__( 'The number sets the output order — the lowest is listed first. Everything below applies inside every section.', 'rapls-sitemap' ); ?>
+							</p>
+						</td>
+					</tr>
+
+					<tr>
 						<th scope="row"><?php echo esc_html__( 'Content to include', 'rapls-sitemap' ); ?></th>
 						<td>
 							<?php $this->post_type_checkboxes( $name, $settings ); ?>
@@ -1443,6 +1456,73 @@ final class SettingsPage {
 				esc_html( $post_type->labels->singular_name )
 			);
 		}
+	}
+
+	/**
+	 * Render the section checkbox list.
+	 *
+	 * Same control as the post types — a position spinner beside each box —
+	 * because it answers the same question, "which list comes first".
+	 *
+	 * @param string              $name     Option name.
+	 * @param array<string,mixed> $settings Effective settings.
+	 */
+	private function section_checkboxes( string $name, array $settings ): void {
+		$selected = array_values( (array) $settings['sections'] );
+
+		// Unticking every box must submit an empty list rather than omit the
+		// key, or sanitize() would fall back to the defaults.
+		printf(
+			'<input type="hidden" name="%s" value="" />',
+			esc_attr( $name . '[sections][]' )
+		);
+
+		foreach ( self::available_sections() as $slug => $label ) {
+			$position = array_search( $slug, $selected, true );
+			$position = false === $position ? count( $selected ) : $position;
+
+			printf(
+				'<label style="display:block;margin-bottom:0.25em">'
+					. '<input type="number" min="0" max="99" step="1" style="width:4em" name="%1$s" value="%2$s" /> '
+					. '<input type="checkbox" name="%3$s" value="%4$s" %5$s /> %6$s</label>',
+				esc_attr( $name . '[sections_order][' . $slug . ']' ),
+				esc_attr( (string) $position ),
+				esc_attr( $name . '[sections][]' ),
+				esc_attr( $slug ),
+				checked( in_array( $slug, $selected, true ), true, false ),
+				esc_html( $label )
+			);
+		}
+	}
+
+	/**
+	 * Sections offered on this screen, as slug => label.
+	 *
+	 * The post types first, then the taxonomies, then the two listings that are
+	 * built from the content rather than being content — which is the order a
+	 * sitemap page usually wants, so the default positions need no thought.
+	 *
+	 * `category` and `post_tag` are reached as taxonomies here rather than
+	 * through their SECTIONS aliases; the aliases exist for `[wp_sitemap_page]`,
+	 * whose vocabulary they are, and both routes build the same section.
+	 *
+	 * @return array<string,string>
+	 */
+	private static function available_sections(): array {
+		$sections = array();
+
+		foreach ( self::available_post_types() as $post_type ) {
+			$sections[ $post_type->name ] = $post_type->labels->name;
+		}
+
+		foreach ( self::available_taxonomies() as $taxonomy ) {
+			$sections[ $taxonomy->name ] = $taxonomy->labels->name;
+		}
+
+		$sections['author']  = __( 'Authors', 'rapls-sitemap' );
+		$sections['archive'] = __( 'Archives', 'rapls-sitemap' );
+
+		return $sections;
 	}
 
 	/**

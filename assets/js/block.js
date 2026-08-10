@@ -178,6 +178,14 @@
 							},
 						} ),
 						el( components.TextControl, {
+							label: __( 'Sections', 'rapls-sitemap' ),
+							help: __( 'Comma separated, in order: post type slugs, taxonomy slugs, author, archive. Empty uses the saved setting.', 'rapls-sitemap' ),
+							value: atts.sections,
+							onChange: function ( value ) {
+								set( { sections: value } );
+							},
+						} ),
+						el( components.TextControl, {
 							label: __( 'Limit to one branch', 'rapls-sitemap' ),
 							help: __( 'A page ID, or current for the page this block is on. Empty lists the whole site.', 'rapls-sitemap' ),
 							value: atts.childOf,

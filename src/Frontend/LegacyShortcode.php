@@ -43,34 +43,6 @@ final class LegacyShortcode {
 	private const PRIORITY = 20;
 
 	/**
-	 * Values of `only` that name something other than a post type.
-	 *
-	 * Each maps onto settings this plugin already has; `tag` is why the
-	 * `taxonomy` setting exists.
-	 */
-	private const SECTIONS = array(
-		'category' => array(
-			'source'        => 'content',
-			'post_types'    => array( 'post' ),
-			'group_by_term' => true,
-			'term_mode'     => 'terms_only',
-			'taxonomy'      => 'category',
-		),
-		'tag'      => array(
-			'source'        => 'content',
-			'post_types'    => array( 'post' ),
-			'group_by_term' => true,
-			'term_mode'     => 'terms_only',
-			'taxonomy'      => 'post_tag',
-			// Tags are flat; nesting them would be a no-op that still costs a
-			// pass over the tree.
-			'nest_terms'    => false,
-		),
-		'author'   => array( 'source' => 'authors' ),
-		'archive'  => array( 'source' => 'archives' ),
-	);
-
-	/**
 	 * Renderer/cache facade.
 	 *
 	 * @var Cache
@@ -154,12 +126,17 @@ final class LegacyShortcode {
 
 		$only = strtolower( trim( (string) $atts['only'] ) );
 
-		if ( isset( self::SECTIONS[ $only ] ) ) {
-			return array_merge( $settings, self::SECTIONS[ $only ] );
+		// `only` names ONE section, so a site whose default composes several
+		// has to stop composing them here — but only once the value has been
+		// recognised. An unrecognised one falls through to the site default,
+		// composition and all, which is the whole point of that fallback.
+		if ( isset( Settings::SECTIONS[ $only ] ) ) {
+			return array_merge( $settings, array( 'sections' => array() ), Settings::SECTIONS[ $only ] );
 		}
 
 		// Anything else is a post type slug — `page`, `post`, or a custom one.
 		if ( post_type_exists( $only ) ) {
+			$settings['sections']   = array();
 			$settings['source']     = 'content';
 			$settings['post_types'] = array( $only );
 		}
