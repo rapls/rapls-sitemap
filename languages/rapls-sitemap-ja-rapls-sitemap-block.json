@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-08-10 04:04:03+0000",
+    "translation-revision-date": "2026-08-10 04:08:16+0000",
     "generator": "rapls-sitemap\/bin\/make-json.php",
     "domain": "messages",
     "locale_data": {
@@ -235,6 +235,12 @@
             "Published date": [
                 "公開日"
             ],
+            "Published on or after": [
+                "公開日がこの日以降"
+            ],
+            "Published on or before": [
+                "公開日がこの日以前"
+            ],
             "Put a heading above each list": [
                 "一覧ごとに見出しを付ける"
             ],
@@ -300,6 +306,9 @@
             ],
             "Whatever suits each list": [
                 "リストごとに最適な順序"
+            ],
+            "YYYY-MM-DD, YYYY-MM or YYYY. Empty means no limit.": [
+                "YYYY-MM-DD、YYYY-MM、YYYY のいずれかです。空欄なら指定なしです。"
             ],
             "": {
                 "domain": "messages",

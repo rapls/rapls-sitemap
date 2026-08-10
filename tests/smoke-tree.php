@@ -1242,6 +1242,32 @@ check( array( 'Pages', 'Tags' ) === titles( $roots ), 'an excluded post type doe
 $roots = ( new TreeBuilder( array_merge( $composed, array( 'sections' => array( 'page', 'category' ), 'exclude_tax' => array( 'category' ) ) ) ) )->build();
 check( array( 'Parent', 'Standalone', 'Orphan' ) === titles( $roots ), 'an excluded taxonomy cannot become a section of posts' );
 
+/* --- the publication window --------------------------------------------- */
+
+// A school or a council listing one year at a time. Both ends are inclusive,
+// and either may stand alone.
+$GLOBALS['fixture_last_args'] = null;
+( new TreeBuilder( tree_settings( array( 'date_after' => '2026-01-01', 'date_before' => '2026-12-31' ) ) ) )->build();
+$dates = $GLOBALS['fixture_last_args']['date_query'][0];
+check( '2026-01-01' === $dates['after'], 'the window reaches the query' );
+check( '2026-12-31' === $dates['before'], 'from both ends' );
+check( true === $dates['inclusive'], 'and includes the days it names' );
+
+$GLOBALS['fixture_last_args'] = null;
+( new TreeBuilder( tree_settings( array( 'date_after' => '2026' ) ) ) )->build();
+$dates = $GLOBALS['fixture_last_args']['date_query'][0];
+check( ! isset( $dates['before'] ), 'one end alone is a window too' );
+
+$GLOBALS['fixture_last_args'] = null;
+( new TreeBuilder( tree_settings() ) )->build();
+check( ! isset( $GLOBALS['fixture_last_args']['date_query'] ), 'and no window at all asks for none' );
+
+// The archive listing is built from this same query, so it narrows for free —
+// a year with nothing inside the window is not a year this sitemap has.
+$GLOBALS['fixture_last_args'] = null;
+( new TreeBuilder( tree_settings( array( 'source' => 'archives', 'post_types' => array( 'post' ), 'date_after' => '2026-01-01' ) ) ) )->build();
+check( isset( $GLOBALS['fixture_last_args']['date_query'] ), 'the archive listing inherits the window' );
+
 /* --- child_of: one branch of the page tree ------------------------------ */
 
 $roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 1 ) ) ) )->build();

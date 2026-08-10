@@ -104,6 +104,13 @@ check( 'Y-m-d' === Shortcode::apply_atts( $base, array( 'date_format' => 'Y-m-d'
 check( 5 === Shortcode::apply_atts( $base, array( 'excerpt_length' => '5' ) )['excerpt_length'], 'and excerpt length is settable too' );
 check( false === Shortcode::apply_atts( $base, array( 'section_headings' => 'no' ) )['section_headings'], 'headings can be switched off per placement' );
 
+/* --- the publication window ------------------------------------------------ */
+
+$out = Shortcode::apply_atts( $base, array( 'date_after' => '2026-04-01', 'date_before' => '2027-03-31' ) );
+check( '2026-04-01' === $out['date_after'], 'a placement can list one year' );
+check( '2027-03-31' === $out['date_before'], 'from both ends' );
+check( '' === Shortcode::apply_atts( $base, array( 'date_after' => 'last april' ) )['date_after'], 'and a date it cannot read is no bound at all' );
+
 /* --- menu ----------------------------------------------------------------- */
 
 // Naming a menu is asking for that menu. Requiring source="menu" beside it

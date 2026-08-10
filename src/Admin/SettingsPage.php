@@ -501,6 +501,27 @@ final class SettingsPage {
 					</tr>
 
 					<tr>
+						<th scope="row"><?php echo esc_html__( 'Published between', 'rapls-sitemap' ); ?></th>
+						<td>
+							<input type="text" class="regular-text" style="width:9em"
+								name="<?php echo esc_attr( $name . '[date_after]' ); ?>"
+								value="<?php echo esc_attr( (string) $settings['date_after'] ); ?>"
+								placeholder="2026-04-01" />
+							<span aria-hidden="true">–</span>
+							<input type="text" class="regular-text" style="width:9em"
+								name="<?php echo esc_attr( $name . '[date_before]' ); ?>"
+								value="<?php echo esc_attr( (string) $settings['date_before'] ); ?>"
+								placeholder="2027-03-31" />
+							<p class="description">
+								<?php echo esc_html__( 'Both ends are included, and either can stand on its own. Leave both empty to list everything. A school or a council listing one year at a time is what this is for.', 'rapls-sitemap' ); ?>
+							</p>
+							<p class="description">
+								<?php echo esc_html__( 'YYYY-MM-DD, YYYY-MM or YYYY. Anything else is read as no limit rather than as a date nobody meant — a typo widens the listing instead of emptying it.', 'rapls-sitemap' ); ?>
+							</p>
+						</td>
+					</tr>
+
+					<tr>
 						<th scope="row">
 							<label for="rapls-sitemap-exclude-users"><?php echo esc_html__( 'Exclude user IDs', 'rapls-sitemap' ); ?></label>
 						</th>

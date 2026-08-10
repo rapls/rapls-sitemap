@@ -305,6 +305,37 @@ final class TreeBuilder {
 	}
 
 	/**
+	 * The publication window, if there is one.
+	 *
+	 * Inclusive at both ends, and either end may stand alone. The archive
+	 * listing is derived from this same query, so it narrows to the window for
+	 * free — a year with nothing inside the window simply is not a year this
+	 * sitemap has.
+	 *
+	 * @return array<string,mixed>
+	 */
+	private function date_query(): array {
+		$after  = Settings::to_date( $this->settings['date_after'] );
+		$before = Settings::to_date( $this->settings['date_before'] );
+
+		if ( '' === $after && '' === $before ) {
+			return array();
+		}
+
+		$query = array( 'inclusive' => true );
+
+		if ( '' !== $after ) {
+			$query['after'] = $after;
+		}
+
+		if ( '' !== $before ) {
+			$query['before'] = $before;
+		}
+
+		return $query;
+	}
+
+	/**
 	 * Where a menu item points, or nowhere at all.
 	 *
 	 * `#` is how a menu holds open a dropdown whose parent is not itself a
@@ -865,6 +896,11 @@ final class TreeBuilder {
 		$exclude = $this->excluded_ids();
 		if ( array() !== $exclude ) {
 			$args['post__not_in'] = $exclude;
+		}
+
+		$dates = $this->date_query();
+		if ( array() !== $dates ) {
+			$args['date_query'] = array( $dates );
 		}
 
 		$exclude_terms = (array) $this->settings['exclude_terms'];

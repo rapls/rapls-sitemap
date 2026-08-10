@@ -129,6 +129,8 @@ final class Block {
 			'excludeIds'      => 'exclude_ids',
 			'excludeTerms'    => 'exclude_terms',
 			'excludeUsers'    => 'exclude_users',
+			'dateAfter'       => 'date_after',
+			'dateBefore'      => 'date_before',
 			'excludeCurrent'  => 'exclude_current',
 			'excludeProtected' => 'exclude_protected',
 			'excludeNoindex'  => 'exclude_noindex',

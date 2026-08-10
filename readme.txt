@@ -25,6 +25,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 * 階層の深さ制限、除外記事 ID、除外カテゴリー ID。どちらも親を除外すれば、その下の子も一緒に外れます
 * 投稿タイプ・タクソノミー単位での除外指定
 * 投稿者一覧の絞り込み。特定のユーザー ID を除外し、権限グループ（ロール）で限定できます
+* 公開日による期間の指定。年度別のサイトマップが作れます
 * サイトマップを置いたページ自身、パスワード保護された項目、SEO プラグインで noindex に設定された項目の除外
 * 複数のカテゴリーに属する投稿を、それぞれのカテゴリーに表示するかの切替
 * すべてのリンクに `rel="nofollow"` を付与するオプション
@@ -78,7 +79,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 指定できる属性は次のとおりです。
 
 * 対象 — `post_types` / `source` / `sections` / `menu` / `taxonomy` / `term_mode` / `child_of`
-* 絞り込み — `exclude_ids` / `exclude_terms` / `exclude_users` / `exclude_current` / `exclude_protected` / `exclude_noindex`
+* 絞り込み — `exclude_ids` / `exclude_terms` / `exclude_users` / `exclude_current` / `exclude_protected` / `exclude_noindex` / `date_after` / `date_before`
 * 件数 — `number` / `offset` / `per_category` / `depth`
 * 並び順 — `orderby` / `order` / `term_orderby` / `term_order`
 * 表示 — `design` / `list_type` / `link_headings` / `show_home` / `group_by_term` / `nest_terms` / `duplicate_in_terms` / `section_headings` / `show_date` / `date_format` / `show_excerpt` / `excerpt_length` / `show_count` / `nofollow`
@@ -128,6 +129,16 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 投稿者一覧と年月アーカイブ一覧だけは別で、件数上限とデザインのほかは参照しません。誰がいつ公開したかから組み立てるためで、これは単独で表示したときと同じ挙動です。
 
 何もチェックしなければ、これまでどおり「一覧の種類」で選んだ 1 種類だけのサイトマップになります。
+
+= 年度ごとのサイトマップを作れますか =
+
+「公開期間」に開始日と終了日を指定してください。**両端とも含みます**し、どちらか一方だけの指定もできます。
+
+`[rapls_sitemap date_after="2026-04-01" date_before="2027-03-31"]`
+
+書式は `YYYY-MM-DD`、`YYYY-MM`、`YYYY` のいずれかです。**それ以外の書き方は「指定なし」として扱います。** WordPress は「先週の火曜日」のような表記も解釈できますが、解釈のされ方でサイトマップの中身が変わるより、読めないものは無視するほうが安全だと判断しています。入力を間違えた場合、一覧が空になるのではなく広くなります。
+
+年月アーカイブ一覧も同じクエリから作るため、期間の指定が自動的に効きます。期間内に記事のない年は、そもそも一覧に出ません。
 
 = 投稿者一覧に載せたくない人がいます =
 

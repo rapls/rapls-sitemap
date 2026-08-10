@@ -254,6 +254,22 @@
 								set( { excludeUsers: value } );
 							},
 						} ),
+						el( components.TextControl, {
+							label: __( 'Published on or after', 'rapls-sitemap' ),
+							help: __( 'YYYY-MM-DD, YYYY-MM or YYYY. Empty means no limit.', 'rapls-sitemap' ),
+							value: atts.dateAfter,
+							onChange: function ( value ) {
+								set( { dateAfter: value } );
+							},
+						} ),
+						el( components.TextControl, {
+							label: __( 'Published on or before', 'rapls-sitemap' ),
+							help: __( 'YYYY-MM-DD, YYYY-MM or YYYY. Empty means no limit.', 'rapls-sitemap' ),
+							value: atts.dateBefore,
+							onChange: function ( value ) {
+								set( { dateBefore: value } );
+							},
+						} ),
 						select( __( 'Leave out this page', 'rapls-sitemap' ), 'excludeCurrent', INHERIT_BOOL ),
 						select( __( 'Leave out password-protected entries', 'rapls-sitemap' ), 'excludeProtected', INHERIT_BOOL ),
 						select( __( 'Leave out noindexed entries', 'rapls-sitemap' ), 'excludeNoindex', INHERIT_BOOL )

@@ -225,6 +225,13 @@ final class Settings {
 			// string so all three survive a save; the settings screen posts the
 			// ID, but a shortcode is far more readable with a slug in it.
 			'menu'             => '',
+			// Only list entries published within these bounds. Both are
+			// inclusive, both are `YYYY-MM-DD` (or `YYYY-MM`, or `YYYY`), and
+			// either may stand alone — "since April" is a range with one end.
+			// A school or a council listing one school year at a time is the
+			// case this exists for.
+			'date_after'       => '',
+			'date_before'      => '',
 			// User IDs never listed in the author listing. A site's own admin
 			// account, or the agency that built it, is on the user list without
 			// being someone a reader should be sent to.
@@ -482,6 +489,12 @@ final class Settings {
 			$clean['source'] = $input['source'];
 		}
 
+		foreach ( array( 'date_after', 'date_before' ) as $key ) {
+			if ( isset( $input[ $key ] ) ) {
+				$clean[ $key ] = self::to_date( $input[ $key ] );
+			}
+		}
+
 		if ( isset( $input['term_orderby'] ) && in_array( $input['term_orderby'], self::TERM_ORDERBY, true ) ) {
 			$clean['term_orderby'] = (string) $input['term_orderby'];
 		}
@@ -736,6 +749,25 @@ final class Settings {
 		}
 
 		return 0;
+	}
+
+	/**
+	 * A date bound, or nothing.
+	 *
+	 * `YYYY`, `YYYY-MM` and `YYYY-MM-DD` only. WP_Date_Query would take
+	 * anything `strtotime()` understands, including "last tuesday", and a
+	 * sitemap whose contents depend on how a phrase was parsed is worse than
+	 * one that ignores what it cannot read. A value that is not one of these
+	 * three shapes is no bound at all, which is what the field being empty
+	 * means, so a typo widens the listing rather than emptying it.
+	 *
+	 * @param mixed $raw Raw value.
+	 * @return string
+	 */
+	public static function to_date( $raw ): string {
+		$value = trim( (string) $raw );
+
+		return preg_match( '/^\d{4}(-\d{2}(-\d{2})?)?$/', $value ) ? $value : '';
 	}
 
 	/**

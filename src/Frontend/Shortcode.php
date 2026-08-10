@@ -202,6 +202,12 @@ final class Shortcode {
 			$settings['child_of'] = 'current' === strtolower( $child_of ) ? 'current' : max( 0, (int) $child_of );
 		}
 
+		foreach ( array( 'date_after', 'date_before' ) as $bound ) {
+			if ( isset( $atts[ $bound ] ) ) {
+				$settings[ $bound ] = Settings::to_date( $atts[ $bound ] );
+			}
+		}
+
 		foreach ( array( 'exclude_ids', 'exclude_terms', 'exclude_users' ) as $list ) {
 			if ( isset( $atts[ $list ] ) ) {
 				$settings[ $list ] = Settings::to_id_list( $atts[ $list ] );

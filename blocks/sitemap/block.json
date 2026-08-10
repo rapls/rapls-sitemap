@@ -51,6 +51,14 @@
 			"type": "string",
 			"default": ""
 		},
+		"dateAfter": {
+			"type": "string",
+			"default": ""
+		},
+		"dateBefore": {
+			"type": "string",
+			"default": ""
+		},
 		"excludeCurrent": {
 			"type": "string",
 			"default": ""

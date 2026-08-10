@@ -167,6 +167,25 @@ $clean = Settings::sanitize(
 );
 check( array( 'page', 'post', 'product' ) === $clean['post_types'], 'a tie keeps the incoming order, and an unranked type sorts last' );
 
+/* --- the publication window ---------------------------------------------- */
+
+check( '' === Settings::defaults()['date_after'], 'a sitemap lists everything until told otherwise' );
+
+foreach ( array( '2026', '2026-04', '2026-04-01' ) as $shape ) {
+	check( $shape === Settings::to_date( $shape ), sprintf( '"%s" is a date bound', $shape ) );
+}
+
+// WP_Date_Query would take anything strtotime() understands, "last tuesday"
+// included. A sitemap whose contents depend on how a phrase was parsed is worse
+// than one that ignores what it cannot read — and reading a typo as no bound
+// widens the listing rather than emptying it.
+foreach ( array( 'last tuesday', '2026-4-1', '01/04/2026', 'yesterday', '' ) as $nonsense ) {
+	check( '' === Settings::to_date( $nonsense ), sprintf( '"%s" is not', $nonsense ) );
+}
+
+check( '2026-04-01' === Settings::sanitize( array( 'date_after' => ' 2026-04-01 ' ) )['date_after'], 'the bound is trimmed on save' );
+check( '' === Settings::sanitize( array( 'date_before' => 'soon' ) )['date_before'], 'and an unreadable one is stored as no bound' );
+
 /* --- sections ------------------------------------------------------------ */
 
 check( array() === Settings::defaults()['sections'], 'a sitemap is one list until told otherwise' );
