@@ -371,6 +371,29 @@ final class SettingsPage {
 
 					<tr>
 						<th scope="row">
+							<label for="rapls-sitemap-child-of"><?php echo esc_html__( 'Limit to one branch', 'rapls-sitemap' ); ?></label>
+						</th>
+						<td>
+							<input type="number" min="0" step="1" id="rapls-sitemap-child-of"
+								name="<?php echo esc_attr( $name . '[child_of]' ); ?>"
+								value="<?php echo esc_attr( (string) $settings['child_of'] ); ?>" />
+							<p class="description">
+								<?php echo esc_html__( 'A page ID. Only the pages filed under it are listed, and the page itself is not. 0 lists the whole site. Post types with no hierarchy are left out entirely, since a page branch is not a scope they have.', 'rapls-sitemap' ); ?>
+							</p>
+							<p class="description">
+								<?php
+								printf(
+									/* translators: %s: an example shortcode. */
+									esc_html__( 'In a shortcode this also takes %s, which is how a section landing page lists its own children without naming an ID that differs between staging and live.', 'rapls-sitemap' ),
+									'<code>child_of="current"</code>'
+								);
+								?>
+							</p>
+						</td>
+					</tr>
+
+					<tr>
+						<th scope="row">
 							<label for="rapls-sitemap-exclude-ids"><?php echo esc_html__( 'Exclude post IDs', 'rapls-sitemap' ); ?></label>
 						</th>
 						<td>

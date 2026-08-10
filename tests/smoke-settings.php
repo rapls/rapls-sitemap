@@ -283,4 +283,25 @@ $GLOBALS['rapls_current_post'] = 7;
 $off                          = array_merge( $base, array( 'exclude_current' => false ) );
 check( 0 === Settings::for_request( $off )['exclude_self'], 'the setting can be turned off' );
 
+/* --- request context: child_of="current" -------------------------------- */
+
+// This is the whole reason `child_of` is resolved here rather than where the
+// shortcode is parsed: the answer differs per page, and the cache key is taken
+// from the settings after this runs.
+$GLOBALS['rapls_current_post'] = 7;
+$out                          = Settings::for_request( array_merge( Settings::defaults(), array( 'child_of' => 'current' ) ) );
+check( 7 === $out['child_of'], 'child_of="current" becomes the current page' );
+
+$GLOBALS['rapls_current_post'] = 0;
+$out                          = Settings::for_request( array_merge( Settings::defaults(), array( 'child_of' => 'current' ) ) );
+check( 0 === $out['child_of'], 'and off a singular page it scopes to nothing, which is the whole site' );
+
+// `exclude_current` is off in the defaults, so this proves the two resolve
+// independently — a page can be the root of the branch and still be listed.
+check( 0 === $out['exclude_self'], 'resolving child_of does not imply excluding the page' );
+
+$GLOBALS['rapls_current_post'] = 7;
+check( 12 === Settings::for_request( array_merge( Settings::defaults(), array( 'child_of' => 12 ) ) )['child_of'], 'a literal ID is left alone' );
+check( 0 === Settings::for_request( array_merge( Settings::defaults(), array( 'child_of' => -5 ) ) )['child_of'], 'and a negative one cannot become a query for post -5' );
+
 summary();

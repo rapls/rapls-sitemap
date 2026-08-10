@@ -816,6 +816,37 @@ $GLOBALS['fixture_last_term_args'] = null;
 ( new TreeBuilder( grouped( array( 'term_mode' => 'terms_only', 'show_count' => true, 'nest_terms' => false ) ) ) )->build();
 check( empty( $GLOBALS['fixture_last_term_args']['pad_counts'] ), 'and do not when nothing is nested' );
 
+/* --- child_of: one branch of the page tree ------------------------------ */
+
+$roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 1 ) ) ) )->build();
+check( array( 'Child' ) === titles( $roots ), 'child_of lists what is filed under one page' );
+check( array( 'Grandchild' ) === titles( $roots[0]->children ), 'and keeps the nesting below it' );
+
+// WordPress means "descendants of" by child_of, and the reader is usually
+// standing on the page in question.
+check( ! in_array( 'Parent', titles( $roots ), true ), 'the branch root is not listed as part of its own branch' );
+
+$roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 2 ) ) ) )->build();
+check( array( 'Grandchild' ) === titles( $roots ), 'a mid-tree page works the same way' );
+
+$roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 4 ) ) ) )->build();
+check( array() === titles( $roots ), 'a page with nothing under it lists nothing' );
+
+// Page 5 hangs off page 99, which no query in this fixture returns. Working
+// from the `post_parent` links rather than from the fetched roots is what makes
+// this land — and it is not academic, because `exclude_current` takes the
+// branch root out of the result set on the very page this is most useful on.
+$roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 99 ) ) ) )->build();
+check( array( 'Orphan' ) === titles( $roots ), 'the branch root need not be in the result set itself' );
+
+$roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 0 ) ) ) )->build();
+check( array( 'Parent', 'Standalone', 'Orphan' ) === titles( $roots ), 'and 0 is the whole site, as before' );
+
+// A flat post type has no page branch to sit inside, so mixing every blog post
+// in beside "the pages under this one" would be a different sitemap.
+$roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 1, 'post_types' => array( 'page', 'post' ) ) ) ) )->build();
+check( array( 'Child' ) === titles( $roots ), 'a post type with no hierarchy contributes nothing to a branch listing' );
+
 /* --- authors ------------------------------------------------------------ */
 
 $roots = ( new TreeBuilder( tree_settings( array( 'source' => 'authors' ) ) ) )->build();

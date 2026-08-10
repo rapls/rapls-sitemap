@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-08-10 00:11:32+0000",
+    "translation-revision-date": "2026-08-10 00:32:37+0000",
     "generator": "rapls-sitemap\/bin\/make-json.php",
     "domain": "messages",
     "locale_data": {
@@ -9,6 +9,9 @@
             ],
             "-1 uses the site default, 0 shows every level.": [
                 "-1でサイト全体の設定を使い、0ですべての階層を表示します。"
+            ],
+            "A page ID, or current for the page this block is on. Empty lists the whole site.": [
+                "固定ページの ID、またはこのブロックを置いたページを指す current。空欄ならサイト全体を一覧にします。"
             ],
             "A taxonomy slug such as post_tag. Empty picks one automatically.": [
                 "post_tag のようなタクソノミーのスラッグを指定します。空欄の場合は自動で選ばれます。"
@@ -111,6 +114,9 @@
             ],
             "Last modified": [
                 "更新日"
+            ],
+            "Limit to one branch": [
+                "一覧にする範囲"
             ],
             "Link section and category headings to their archives": [
                 "セクションとカテゴリーの見出しをアーカイブにリンクする"

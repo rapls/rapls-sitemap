@@ -126,6 +126,11 @@ final class Settings {
 			'post_types'       => array( 'page', 'post' ),
 			// Maximum nesting depth; 0 means unlimited.
 			'depth'            => 0,
+			// Limit the listing to what sits under one page. 0 is the whole
+			// site. The page itself is not listed — WordPress means
+			// "descendants of" by child_of, and a heading for the page you are
+			// already on is noise.
+			'child_of'         => 0,
 			// Post/page IDs to omit, along with their descendants.
 			'exclude_ids'      => array(),
 			// The page the sitemap is rendering on, resolved by for_request().
@@ -395,7 +400,7 @@ final class Settings {
 			$clean['cache_ttl'] = max( 0, (int) $input['cache_ttl'] );
 		}
 
-		foreach ( array( 'max_entries', 'offset', 'max_per_term' ) as $key ) {
+		foreach ( array( 'max_entries', 'offset', 'max_per_term', 'child_of' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = max( 0, (int) $input[ $key ] );
 			}
@@ -548,6 +553,17 @@ final class Settings {
 		}
 
 		$settings['exclude_self'] = self::current_post_id();
+
+		// `child_of="current"` is the form that makes this useful in a
+		// shortcode — "the pages under this one" without hard-coding an ID that
+		// changes between staging and live. Resolved here, before the cache
+		// hashes the settings, so two pages using the same shortcode do not
+		// share one entry.
+		if ( 'current' === $settings['child_of'] ) {
+			$settings['child_of'] = self::current_post_id();
+		}
+
+		$settings['child_of'] = max( 0, (int) $settings['child_of'] );
 
 		return $settings;
 	}

@@ -31,9 +31,16 @@ function parse_po( $path ) {
 	$blocks  = preg_split( "/\n\n+/", trim( file_get_contents( $path ) ) );
 
 	foreach ( $blocks as $block ) {
+		// Every `#:` line, not just the first: gettext wraps a long reference
+		// list over several of them, and the JS reference is as likely to land
+		// on the second line as the first. Reading one line meant a string
+		// shared with PHP dropped out of the payload the moment an unrelated
+		// edit pushed the reference list past the wrap width.
 		$refs = array();
-		if ( preg_match( '/^#: (.+)$/m', $block, $m ) ) {
-			$refs = preg_split( '/\s+/', trim( $m[1] ) );
+		if ( preg_match_all( '/^#: (.+)$/m', $block, $m ) ) {
+			foreach ( $m[1] as $line ) {
+				$refs = array_merge( $refs, preg_split( '/\s+/', trim( $line ) ) );
+			}
 		}
 
 		$msgid  = collect( $block, 'msgid' );

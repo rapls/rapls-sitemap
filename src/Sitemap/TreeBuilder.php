@@ -237,6 +237,13 @@ final class TreeBuilder {
 	 * @return Node[]
 	 */
 	private function build_post_type( string $post_type ): array {
+		// A page subtree is the scope, so a flat post type has nothing to
+		// contribute to it. Listing every blog post beside "the pages under
+		// this one" would be a different sitemap wearing the same settings.
+		if ( (int) $this->settings['child_of'] > 0 && ! is_post_type_hierarchical( $post_type ) ) {
+			return array();
+		}
+
 		// An explicit exclusion wins over the inclusion list, so a post type a
 		// plugin registers later can be kept out for good rather than only
 		// until somebody re-saves the settings screen.
@@ -260,7 +267,7 @@ final class TreeBuilder {
 		}
 
 		if ( is_post_type_hierarchical( $post_type ) ) {
-			return $this->nest( $posts );
+			return $this->nest( $this->descendants_of( $posts, (int) $this->settings['child_of'] ) );
 		}
 
 		if ( $grouping ) {
@@ -453,6 +460,58 @@ final class TreeBuilder {
 		}
 
 		return array_values( array_unique( $ids ) );
+	}
+
+	/**
+	 * Narrow a post list to what sits under one page.
+	 *
+	 * Worked out from the `post_parent` links already in hand rather than with
+	 * another query, and the root does not have to be among them — only its ID
+	 * is needed. That matters, because the most useful form of this is
+	 * `child_of="current"` on a page that `exclude_current` has just taken out
+	 * of its own listing.
+	 *
+	 * The root is never included. WordPress means "descendants of" by
+	 * `child_of`, and a heading for the page the reader is already on says
+	 * nothing.
+	 *
+	 * @param \WP_Post[] $posts Flat post list.
+	 * @param int        $root  Page to descend from; 0 for the whole site.
+	 * @return \WP_Post[]
+	 */
+	private function descendants_of( array $posts, int $root ): array {
+		if ( $root <= 0 ) {
+			return $posts;
+		}
+
+		$inside = array( $root => true );
+
+		// One pass per level of nesting: a page joins once its parent has.
+		do {
+			$added = false;
+
+			foreach ( $posts as $post ) {
+				$id = (int) $post->ID;
+
+				if ( isset( $inside[ $id ] ) || ! isset( $inside[ (int) $post->post_parent ] ) ) {
+					continue;
+				}
+
+				$inside[ $id ] = true;
+				$added         = true;
+			}
+		} while ( $added );
+
+		unset( $inside[ $root ] );
+
+		return array_values(
+			array_filter(
+				$posts,
+				static function ( $post ) use ( $inside ) {
+					return isset( $inside[ (int) $post->ID ] );
+				}
+			)
+		);
 	}
 
 	/**

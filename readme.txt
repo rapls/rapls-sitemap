@@ -69,13 +69,25 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 指定できる属性は次のとおりです。
 
-* 対象 — `post_types` / `source` / `taxonomy` / `term_mode`
+* 対象 — `post_types` / `source` / `taxonomy` / `term_mode` / `child_of`
 * 絞り込み — `exclude_ids` / `exclude_terms` / `exclude_current` / `exclude_protected` / `exclude_noindex`
 * 件数 — `number` / `offset` / `per_category` / `depth`
 * 並び順 — `orderby` / `order`
 * 表示 — `design` / `list_type` / `link_headings` / `show_home` / `group_by_term` / `nest_terms` / `duplicate_in_terms` / `section_headings` / `show_date` / `date_format` / `show_excerpt` / `excerpt_length` / `show_count` / `nofollow`
 
 キャッシュとスタイル読み込みはサイト全体の設定のみで、配置ごとの指定はできません。
+
+= 特定の固定ページの下だけを一覧にできますか =
+
+はい。「一覧にする範囲」に親となる固定ページの ID を指定すると、その下にぶら下がるページだけが並びます。指定したページ自身は並びません。
+
+ショートコードでは ID の代わりに `current` を指定できます。
+
+`[rapls_sitemap child_of="current"]`
+
+これを各セクションのトップページに貼っておけば、どのページでも「そのページの下にあるページ」の目次になります。ID を書き分ける必要も、ステージング環境と本番環境で ID がずれる心配もありません。
+
+階層を持たない投稿タイプ（通常の投稿など）は、範囲を指定している間は一覧に出ません。「この固定ページの下」という範囲を投稿は持たないためです。
 
 = 除外した固定ページの子ページはどうなりますか =
 

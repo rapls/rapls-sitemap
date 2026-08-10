@@ -119,6 +119,7 @@ final class Block {
 			'source'          => 'source',
 			'postTypes'       => 'post_types',
 			'taxonomy'        => 'taxonomy',
+			'childOf'         => 'child_of',
 			'termMode'        => 'term_mode',
 			'orderby'         => 'orderby',
 			'order'           => 'order',

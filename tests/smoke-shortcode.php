@@ -100,6 +100,17 @@ check( 'Y-m-d' === Shortcode::apply_atts( $base, array( 'date_format' => 'Y-m-d'
 check( 5 === Shortcode::apply_atts( $base, array( 'excerpt_length' => '5' ) )['excerpt_length'], 'and excerpt length is settable too' );
 check( false === Shortcode::apply_atts( $base, array( 'section_headings' => 'no' ) )['section_headings'], 'headings can be switched off per placement' );
 
+/* --- child_of ------------------------------------------------------------ */
+
+check( 12 === Shortcode::apply_atts( $base, array( 'child_of' => '12' ) )['child_of'], 'a branch root can be named by ID' );
+check( 0 === Shortcode::apply_atts( $base, array( 'child_of' => '-3' ) )['child_of'], 'and a negative one reads as unset' );
+
+// Left as the literal string on purpose: which page this is cannot be known
+// here, and resolving it later is what keeps two pages from sharing one cache
+// entry. Settings::for_request() finishes the job.
+check( 'current' === Shortcode::apply_atts( $base, array( 'child_of' => 'Current' ) )['child_of'], 'child_of="current" survives folding, in any case' );
+check( 0 === Shortcode::apply_atts( $base, array( 'child_of' => 'nonsense' ) )['child_of'], 'and anything else is not a page ID' );
+
 /* --- caching is global, never per placement ----------------------------- */
 
 $out = Shortcode::apply_atts( $base, array( 'cache_ttl' => '0', 'load_styles' => '0' ) );

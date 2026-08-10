@@ -177,6 +177,14 @@
 								set( { taxonomy: value } );
 							},
 						} ),
+						el( components.TextControl, {
+							label: __( 'Limit to one branch', 'rapls-sitemap' ),
+							help: __( 'A page ID, or current for the page this block is on. Empty lists the whole site.', 'rapls-sitemap' ),
+							value: atts.childOf,
+							onChange: function ( value ) {
+								set( { childOf: value } );
+							},
+						} ),
 						select( __( 'Category display', 'rapls-sitemap' ), 'termMode', TERM_MODES ),
 						toggle( __( 'Show the home link', 'rapls-sitemap' ), 'showHome' ),
 						toggle( __( 'Group posts by category', 'rapls-sitemap' ), 'groupByTerm' ),

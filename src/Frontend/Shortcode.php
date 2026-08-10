@@ -159,6 +159,15 @@ final class Shortcode {
 			$settings['date_format'] = sanitize_text_field( (string) $atts['date_format'] );
 		}
 
+		// `current` stays a string until Settings::for_request() resolves it —
+		// this runs too early to know which page is being rendered, and hashing
+		// the settings before that would give every page one shared cache entry.
+		if ( isset( $atts['child_of'] ) ) {
+			$child_of = trim( (string) $atts['child_of'] );
+
+			$settings['child_of'] = 'current' === strtolower( $child_of ) ? 'current' : max( 0, (int) $child_of );
+		}
+
 		foreach ( array( 'exclude_ids', 'exclude_terms' ) as $list ) {
 			if ( isset( $atts[ $list ] ) ) {
 				$settings[ $list ] = Settings::to_id_list( $atts[ $list ] );

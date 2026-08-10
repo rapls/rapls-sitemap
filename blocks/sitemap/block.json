@@ -27,6 +27,10 @@
 			"type": "string",
 			"default": ""
 		},
+		"childOf": {
+			"type": "string",
+			"default": ""
+		},
 		"termMode": {
 			"type": "string",
 			"default": ""
