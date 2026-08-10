@@ -137,6 +137,7 @@ final class Block {
 			'showExcerpt'     => 'show_excerpt',
 			'showCount'       => 'show_count',
 			'nofollow'        => 'nofollow',
+			'menuHeadings'    => 'menu_headings',
 		);
 
 		$atts = array();

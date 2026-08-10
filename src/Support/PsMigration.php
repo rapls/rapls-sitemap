@@ -85,7 +85,8 @@ final class PsMigration {
 	 *   ex_cat_ids     -> exclude_terms
 	 *   ex_post_ids    -> exclude_ids
 	 *   prepared_style -> design, where there is a counterpart
-	 *   use_cache      -> cache_ttl, off meaning 0
+	 *   use_cache      -> cache_ttl: off means 0, on means the default lifetime
+	 *                     but only where caching is currently off
 	 *   post_id        -> nothing, and nothing is needed: it named the page the
 	 *                     sitemap was placed on so that page could be kept out
 	 *                     of its own list, which `exclude_current` does here
@@ -112,9 +113,12 @@ final class PsMigration {
 		}
 
 		if ( isset( $old['disp_posts'] ) ) {
-			// Its "divide" put a "show the posts in this category" link where
-			// the posts would have been. There is no such link here, so the
-			// nearest reading is the category listing on its own.
+			// A reading, not a reproduction. Its "divide" listed the categories
+			// and put a "show the posts in this category" link beside each one,
+			// which walked the reader to a filtered view of that same page.
+			// There is no such view here, so the nearest thing is the category
+			// listing on its own — said in the readme rather than left to be
+			// discovered.
 			$settings['group_by_term'] = true;
 			$settings['term_mode']     = 'divide' === (string) $old['disp_posts'] ? 'terms_only' : 'posts';
 		}
@@ -132,8 +136,16 @@ final class PsMigration {
 			$settings['design'] = self::DESIGNS[ $style ];
 		}
 
-		if ( isset( $old['use_cache'] ) && '' === (string) $old['use_cache'] ) {
-			$settings['cache_ttl'] = 0;
+		if ( isset( $old['use_cache'] ) ) {
+			if ( '' === (string) $old['use_cache'] ) {
+				$settings['cache_ttl'] = 0;
+			} elseif ( (int) $settings['cache_ttl'] <= 0 ) {
+				// It had caching on and this does not, so switch it on — at the
+				// default lifetime, since its cache had none to carry over. Only
+				// when this is off, or importing would overwrite a lifetime
+				// somebody chose here with a number that came from nowhere.
+				$settings['cache_ttl'] = (int) Settings::defaults()['cache_ttl'];
+			}
 		}
 
 		return $settings;

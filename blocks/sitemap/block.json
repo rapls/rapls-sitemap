@@ -106,6 +106,10 @@
 		"nofollow": {
 			"type": "boolean",
 			"default": false
+		},
+		"menuHeadings": {
+			"type": "boolean",
+			"default": true
 		}
 	},
 	"editorScript": "rapls-sitemap-block"

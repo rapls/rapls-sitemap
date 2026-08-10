@@ -341,11 +341,29 @@ class Rapls_Fake_Wpdb {
 
 	public function get_col( $sql ) {
 		$GLOBALS['fixture_aioseo_queries']++;
+		$GLOBALS['fixture_aioseo_sql'] = $sql;
 		return $GLOBALS['fixture_aioseo_rows'];
+	}
+
+	public function suppress_errors( $suppress = true ) {
+		return false;
 	}
 }
 
 $GLOBALS['wpdb'] = new Rapls_Fake_Wpdb();
+
+/**
+ * Empty the per-request memo, so a test can watch the query happen.
+ */
+function rapls_forget_aioseo() {
+	$property = ( new ReflectionClass( RaplsSitemap\Sitemap\TreeBuilder::class ) )->getProperty( 'aioseo_noindex' );
+
+	if ( PHP_VERSION_ID < 80100 ) {
+		$property->setAccessible( true );
+	}
+
+	$property->setValue( null, array() );
+}
 
 function get_ancestors( $object_id, $object_type, $resource_type = '' ) {
 	// Term 6 is filed under term 5; the rest are roots.
@@ -763,12 +781,31 @@ $GLOBALS['fixture_meta'][10] = array();
 
 // All in One SEO keeps none of this in post meta — one row per post in a table
 // of its own, read once for the whole render rather than once per entry.
+// The verdict is remembered for the request, so a composed sitemap does not
+// repeat the query once per section. Earlier assertions in this file have
+// already asked about these posts, so the memo is cleared to test the query.
+rapls_forget_aioseo();
+
 $GLOBALS['fixture_aioseo_rows'] = array( 10 );
 $GLOBALS['fixture_aioseo_queries'] = 0;
 check( ! in_array( 'Newest', titles( ( new TreeBuilder( $noindex ) )->build() ), true ), 'an All in One SEO noindex entry is dropped' );
 check( 1 === $GLOBALS['fixture_aioseo_queries'], 'and its table is read once, not once per entry', (string) $GLOBALS['fixture_aioseo_queries'] );
 
+// Asked again for the same posts, from a builder of its own — which is what
+// every section of a composed sitemap is.
+( new TreeBuilder( $noindex ) )->build();
+check( 1 === $GLOBALS['fixture_aioseo_queries'], 'and not again for posts already asked about', (string) $GLOBALS['fixture_aioseo_queries'] );
+
+// Only what it was asked about: a shop with fifty thousand noindexed products
+// is not a reason to build a fifty-thousand-entry array to list some pages.
+check( false !== strpos( (string) $GLOBALS['fixture_aioseo_sql'], 'post_id IN (' ), 'the query names the posts it is asking about' );
+
 $GLOBALS['fixture_aioseo_rows'] = array();
+
+// ...and forgotten again, or every assertion after this one would inherit the
+// verdict this block just recorded. That the memo outlives one builder is the
+// point of it; that it outlives one test is this file's problem to clean up.
+rapls_forget_aioseo();
 
 /* --- a cap reached before the noindex pass still reports itself ---------- */
 

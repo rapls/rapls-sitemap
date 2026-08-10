@@ -28,7 +28,7 @@ msgstr "(%s)"
 
 #. translators: %d: menu item ID.
 #. translators: %d: post ID.
-#: src/Sitemap/TreeBuilder.php:183 src/Sitemap/TreeBuilder.php:1810
+#: src/Sitemap/TreeBuilder.php:188 src/Sitemap/TreeBuilder.php:1849
 msgid "(no title) #%d"
 msgstr "(タイトルなし) #%d"
 
@@ -171,7 +171,7 @@ msgstr "外観"
 msgid "Applies to the post types and to the sections above. Only when more than one is listed — a single list needs no label to tell it apart."
 msgstr "投稿タイプと、上の「1つにまとめるセクション」の両方に効きます。2つ以上並ぶときだけ付きます。一覧が1つだけなら、見分けるための見出しは不要なためです。"
 
-#: src/Admin/SettingsPage.php:1743 src/Sitemap/TreeBuilder.php:550
+#: src/Admin/SettingsPage.php:1743 src/Sitemap/TreeBuilder.php:559
 msgid "Archives"
 msgstr "年月アーカイブ"
 
@@ -184,7 +184,7 @@ msgid "Ascending (oldest, A to Z)"
 msgstr "昇順 (古い順、A→Z)"
 
 #: src/Admin/SettingsPage.php:1535 src/Admin/SettingsPage.php:1742
-#: src/Sitemap/TreeBuilder.php:543 assets/js/block.js:64
+#: src/Sitemap/TreeBuilder.php:552 assets/js/block.js:64
 msgid "Authors"
 msgstr "投稿者"
 
@@ -415,7 +415,7 @@ msgid "Exclude user IDs"
 msgstr "除外するユーザー ID"
 
 #. translators: PHP date format for a monthly archive heading. Japanese uses Y年n月.
-#: src/Sitemap/TreeBuilder.php:1775
+#: src/Sitemap/TreeBuilder.php:1814
 msgid "F Y"
 msgstr "Y年n月"
 
@@ -629,7 +629,7 @@ msgstr "年月アーカイブ"
 msgid "Nature"
 msgstr "自然"
 
-#: src/Sitemap/TreeBuilder.php:567
+#: src/Sitemap/TreeBuilder.php:576
 msgid "Navigation menu"
 msgstr "ナビゲーションメニュー"
 
@@ -710,7 +710,7 @@ msgid "On hover only"
 msgstr "ホバー時のみ"
 
 #. translators: %s: number of entries shown.
-#: src/Sitemap/TreeBuilder.php:715
+#: src/Sitemap/TreeBuilder.php:724
 msgid "Only the first %s entries are listed."
 msgstr "先頭の%s件のみ表示しています。"
 
@@ -806,7 +806,7 @@ msgstr "カテゴリーごとに投稿を表示"
 msgid "Posts with the field empty or missing are grouped together at one end of the list rather than dropped."
 msgstr "フィールドが空、または未設定の投稿は、除外されるのではなく一覧の端にまとめて並びます。"
 
-#: src/Admin/SettingsPage.php:411
+#: src/Admin/SettingsPage.php:411 assets/js/block.js:242
 msgid "Print items with no destination as headings"
 msgstr "リンク先のない項目を見出しとして表示する"
 
@@ -1147,13 +1147,13 @@ msgid "Windows ships no country flag glyphs, so these appear as two letters — 
 msgstr "Windows は国旗の字形を持たないため、Windows の閲覧者には 🇯🇵 が JP のように2文字で表示されます。先頭の5つは通常の記号なので、どの環境でも表示されます。"
 
 #. translators: PHP date format for a yearly archive heading. Japanese uses Y年.
-#: src/Sitemap/TreeBuilder.php:1763
+#: src/Sitemap/TreeBuilder.php:1802
 msgid "Y"
 msgstr "Y年"
 
 #: src/Admin/SettingsPage.php:622
-msgid "Yoast SEO, Rank Math, and the Cocoon theme are read directly. WordPress records nothing about noindex itself, so anything else needs the rapls_sitemap/is_noindex filter. Reading the setting costs one extra query per render."
-msgstr "Yoast SEO、Rank Math、Cocoon テーマは直接読み取ります。WordPress 自体は noindex の情報を保存していないため、それ以外では rapls_sitemap/is_noindex フィルターが必要です。この設定を有効にすると、描画のたびにクエリが1つ増えます。"
+msgid "Yoast SEO, Rank Math, SEO SIMPLE PACK, SEOPress, The SEO Framework, All in One SEO and the Cocoon theme are read directly. WordPress records nothing about noindex itself, so anything else needs the rapls_sitemap/is_noindex filter. Reading the setting costs one extra query per render, and a second one where All in One SEO is active — it keeps this in a table of its own rather than in post meta."
+msgstr "Yoast SEO、Rank Math、SEO SIMPLE PACK、SEOPress、The SEO Framework、All in One SEO、Cocoon テーマは直接読み取ります。WordPress 本体は noindex の情報を持たないため、それ以外は rapls_sitemap/is_noindex フィルターが必要です。この設定を有効にすると描画のたびにクエリが 1 つ増え、All in One SEO が有効なサイトではさらに 1 つ増えます。専用のテーブルに保存しているためです。"
 
 #: src/Admin/SettingsPage.php:259 src/Admin/SettingsPage.php:286
 msgid "You do not have permission to change these settings."
@@ -1178,6 +1178,9 @@ msgstr "独自の CSS"
 #: src/Admin/SettingsPage.php:395
 msgid "— Select —"
 msgstr "— 選択してください —"
+
+#~ msgid "Yoast SEO, Rank Math, and the Cocoon theme are read directly. WordPress records nothing about noindex itself, so anything else needs the rapls_sitemap/is_noindex filter. Reading the setting costs one extra query per render."
+#~ msgstr "Yoast SEO、Rank Math、Cocoon テーマは直接読み取ります。WordPress 自体は noindex の情報を保存していないため、それ以外では rapls_sitemap/is_noindex フィルターが必要です。この設定を有効にすると、描画のたびにクエリが1つ増えます。"
 
 #~ msgid "Comma separated, in order: post type slugs, taxonomy slugs, author, archive. Empty uses the saved setting."
 #~ msgstr "表示する順にコンマ区切りで指定します。投稿タイプのスラッグ、タクソノミーのスラッグ、author、archive が使えます。空欄なら保存済みの設定を使います。"

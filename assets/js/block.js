@@ -238,7 +238,8 @@
 						toggle( __( 'Published date', 'rapls-sitemap' ), 'showDate' ),
 						toggle( __( 'Excerpt', 'rapls-sitemap' ), 'showExcerpt' ),
 						toggle( __( 'Entry count beside each category', 'rapls-sitemap' ), 'showCount' ),
-						toggle( __( 'Add rel="nofollow" to every link', 'rapls-sitemap' ), 'nofollow' )
+						toggle( __( 'Add rel="nofollow" to every link', 'rapls-sitemap' ), 'nofollow' ),
+						toggle( __( 'Print items with no destination as headings', 'rapls-sitemap' ), 'menuHeadings' )
 					)
 				),
 				el( ServerSideRender, {

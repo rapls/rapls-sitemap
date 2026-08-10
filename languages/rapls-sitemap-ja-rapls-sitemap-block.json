@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-08-10 03:34:19+0000",
+    "translation-revision-date": "2026-08-10 03:56:21+0000",
     "generator": "rapls-sitemap\/bin\/make-json.php",
     "domain": "messages",
     "locale_data": {
@@ -183,6 +183,9 @@
             ],
             "Posts under each category": [
                 "カテゴリーごとに投稿を表示"
+            ],
+            "Print items with no destination as headings": [
+                "リンク先のない項目を見出しとして表示する"
             ],
             "Published date": [
                 "公開日"

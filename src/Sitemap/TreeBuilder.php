@@ -44,11 +44,16 @@ final class TreeBuilder {
 	private $truncated = array();
 
 	/**
-	 * All in One SEO's noindexed post IDs, or null before they are read.
+	 * All in One SEO's verdict on the posts asked about so far.
 	 *
-	 * @var array<int,bool>|null
+	 * Static, so a composed sitemap does not repeat the query once per section
+	 * — every section of one render asks about different posts, and the answer
+	 * for a post cannot change while that render is in flight. It lives for the
+	 * request, which is exactly as long as a render does.
+	 *
+	 * @var array<int,bool>
 	 */
-	private $aioseo_noindex = null;
+	private static $aioseo_noindex = array();
 
 	/**
 	 * @param array<string,mixed> $settings Settings from Settings::get().
@@ -251,8 +256,12 @@ final class TreeBuilder {
 			);
 		}
 
-		if ( ! empty( $this->settings['exclude_noindex'] ) && array() !== $post_ids && function_exists( 'update_meta_cache' ) ) {
-			update_meta_cache( 'post', $post_ids );
+		if ( ! empty( $this->settings['exclude_noindex'] ) && array() !== $post_ids ) {
+			if ( function_exists( 'update_meta_cache' ) ) {
+				update_meta_cache( 'post', $post_ids );
+			}
+
+			$this->prime_aioseo( $post_ids );
 		}
 
 		$kept = array();
@@ -906,6 +915,10 @@ final class TreeBuilder {
 		// noindex in different shapes, and a meta_query would also drop every
 		// post with no meta row at all, which is most of them.
 		if ( $noindex ) {
+			$this->prime_aioseo( array_map( static function ( $post ) {
+				return (int) $post->ID;
+			}, $posts ) );
+
 			$posts = array_values(
 				array_filter(
 					$posts,
@@ -1525,7 +1538,10 @@ final class TreeBuilder {
 			return $this->filter_noindex( true, $id );
 		}
 
-		if ( isset( $this->aioseo_noindex()[ $id ] ) ) {
+		// Answered from what prime_aioseo() was told to ask about. Both callers
+		// prime before they check, so a miss here means AIOSEO is not active
+		// rather than that the post was never asked about.
+		if ( ! empty( self::$aioseo_noindex[ $id ] ) ) {
 			return $this->filter_noindex( true, $id );
 		}
 
@@ -1533,49 +1549,72 @@ final class TreeBuilder {
 	}
 
 	/**
-	 * The posts All in One SEO has marked noindex, keyed by ID.
+	 * Ask All in One SEO about a set of posts, once.
 	 *
 	 * AIOSEO is the one that keeps none of this in post meta: it has a table of
 	 * its own, one row per post. Read per post that would be a query per entry —
-	 * the thing a sitemap must never do — so the whole set is fetched once and
-	 * remembered. It is bounded by how many posts somebody has explicitly
-	 * marked, not by how many posts exist, which on every real site is a short
-	 * list.
+	 * the thing a sitemap must never do — so both callers hand over the whole
+	 * list they are about to check and this answers for all of them at once.
 	 *
-	 * `robots_default` is the row's "use the site setting" flag; only a row that
-	 * has turned it off and set `robots_noindex` is an answer about this post.
+	 * Bounded by what was asked about rather than by how many posts the site has
+	 * marked: a shop with fifty thousand noindexed product pages is not a reason
+	 * to build a fifty-thousand-entry array to render a page listing.
 	 *
-	 * @return array<int,bool>
+	 * `robots_default` is the row's "use the site setting" flag, so only a row
+	 * that has turned it off and set `robots_noindex` is an answer about this
+	 * post — that is AIOSEO's own rule, read from its Post model.
+	 *
+	 * @param int[] $ids Post IDs about to be checked.
 	 */
-	private function aioseo_noindex(): array {
-		if ( null !== $this->aioseo_noindex ) {
-			return $this->aioseo_noindex;
-		}
-
-		$this->aioseo_noindex = array();
-
+	private function prime_aioseo( array $ids ): void {
 		// The plugin's own bootstrap function. Present only while it is active,
 		// which is also the only time its table can be relied on to exist.
 		if ( ! function_exists( 'aioseo' ) ) {
-			return $this->aioseo_noindex;
+			return;
+		}
+
+		$ids = array_values(
+			array_filter(
+				array_map( 'intval', $ids ),
+				static function ( $id ) {
+					return $id > 0 && ! isset( self::$aioseo_noindex[ $id ] );
+				}
+			)
+		);
+
+		if ( array() === $ids ) {
+			return;
+		}
+
+		// Answered up front, so an ID the query says nothing about is a "no"
+		// rather than a second query.
+		foreach ( $ids as $id ) {
+			self::$aioseo_noindex[ $id ] = false;
 		}
 
 		global $wpdb;
 
 		if ( ! isset( $wpdb ) || ! is_object( $wpdb ) ) {
-			return $this->aioseo_noindex;
+			return;
 		}
+
+		// Its table can be missing for a moment during the plugin's own upgrade,
+		// and a sitemap is not the place to print a database error about it.
+		$suppress = method_exists( $wpdb, 'suppress_errors' ) ? $wpdb->suppress_errors( true ) : null;
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$ids = $wpdb->get_col(
-			"SELECT post_id FROM {$wpdb->prefix}aioseo_posts WHERE robots_default = 0 AND robots_noindex = 1"
+		$rows = $wpdb->get_col(
+			"SELECT post_id FROM {$wpdb->prefix}aioseo_posts"
+			. ' WHERE robots_default = 0 AND robots_noindex = 1 AND post_id IN (' . implode( ',', $ids ) . ')'
 		);
 
-		foreach ( (array) $ids as $id ) {
-			$this->aioseo_noindex[ (int) $id ] = true;
+		if ( null !== $suppress ) {
+			$wpdb->suppress_errors( $suppress );
 		}
 
-		return $this->aioseo_noindex;
+		foreach ( (array) $rows as $id ) {
+			self::$aioseo_noindex[ (int) $id ] = true;
+		}
 	}
 
 	/**

@@ -333,6 +333,14 @@ check( array( 12, 34 ) === $mapped['exclude_ids'], 'and the excluded posts' );
 check( 'marker' === $mapped['design'], 'a preset with a counterpart here is matched' );
 check( 0 === $mapped['cache_ttl'], 'and caching switched off there is switched off here' );
 
+// The other direction too, and only where caching is currently off — importing
+// must not overwrite a lifetime somebody chose here with one from nowhere.
+$cached = PsMigration::to_settings( array( 'use_cache' => '1' ), array_merge( Settings::defaults(), array( 'cache_ttl' => 0 ) ) );
+check( Settings::defaults()['cache_ttl'] === $cached['cache_ttl'], 'caching switched on there is switched on here' );
+
+$kept = PsMigration::to_settings( array( 'use_cache' => '1' ), array_merge( Settings::defaults(), array( 'cache_ttl' => 900 ) ) );
+check( 900 === $kept['cache_ttl'], 'and a lifetime already set here is left alone' );
+
 // `post_id` named the page the sitemap sat on, so that page could be kept out
 // of its own list. `exclude_current` does that without being told which page.
 check( ! in_array( 7, $mapped['exclude_ids'], true ), 'the page it was placed on is not imported as an exclusion' );

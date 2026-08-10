@@ -619,7 +619,7 @@ final class SettingsPage {
 								<?php echo esc_html__( 'Entries an SEO plugin has marked noindex', 'rapls-sitemap' ); ?>
 							</label>
 							<p class="description">
-								<?php echo esc_html__( 'Yoast SEO, Rank Math, and the Cocoon theme are read directly. WordPress records nothing about noindex itself, so anything else needs the rapls_sitemap/is_noindex filter. Reading the setting costs one extra query per render.', 'rapls-sitemap' ); ?>
+								<?php echo esc_html__( 'Yoast SEO, Rank Math, SEO SIMPLE PACK, SEOPress, The SEO Framework, All in One SEO and the Cocoon theme are read directly. WordPress records nothing about noindex itself, so anything else needs the rapls_sitemap/is_noindex filter. Reading the setting costs one extra query per render, and a second one where All in One SEO is active — it keeps this in a table of its own rather than in post meta.', 'rapls-sitemap' ); ?>
 							</p>
 
 							<?php $this->exclusion_checkboxes( $name, $settings ); ?>

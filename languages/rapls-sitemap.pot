@@ -21,7 +21,7 @@ msgstr ""
 
 #. translators: %d: menu item ID.
 #. translators: %d: post ID.
-#: src/Sitemap/TreeBuilder.php:183 src/Sitemap/TreeBuilder.php:1810
+#: src/Sitemap/TreeBuilder.php:188 src/Sitemap/TreeBuilder.php:1849
 msgid "(no title) #%d"
 msgstr ""
 
@@ -164,7 +164,7 @@ msgstr ""
 msgid "Applies to the post types and to the sections above. Only when more than one is listed — a single list needs no label to tell it apart."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1743 src/Sitemap/TreeBuilder.php:550
+#: src/Admin/SettingsPage.php:1743 src/Sitemap/TreeBuilder.php:559
 msgid "Archives"
 msgstr ""
 
@@ -176,7 +176,7 @@ msgstr ""
 msgid "Ascending (oldest, A to Z)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1535 src/Admin/SettingsPage.php:1742 src/Sitemap/TreeBuilder.php:543 assets/js/block.js:64
+#: src/Admin/SettingsPage.php:1535 src/Admin/SettingsPage.php:1742 src/Sitemap/TreeBuilder.php:552 assets/js/block.js:64
 msgid "Authors"
 msgstr ""
 
@@ -406,7 +406,7 @@ msgid "Exclude user IDs"
 msgstr ""
 
 #. translators: PHP date format for a monthly archive heading. Japanese uses Y年n月.
-#: src/Sitemap/TreeBuilder.php:1775
+#: src/Sitemap/TreeBuilder.php:1814
 msgid "F Y"
 msgstr ""
 
@@ -619,7 +619,7 @@ msgstr ""
 msgid "Nature"
 msgstr ""
 
-#: src/Sitemap/TreeBuilder.php:567
+#: src/Sitemap/TreeBuilder.php:576
 msgid "Navigation menu"
 msgstr ""
 
@@ -700,7 +700,7 @@ msgid "On hover only"
 msgstr ""
 
 #. translators: %s: number of entries shown.
-#: src/Sitemap/TreeBuilder.php:715
+#: src/Sitemap/TreeBuilder.php:724
 msgid "Only the first %s entries are listed."
 msgstr ""
 
@@ -796,7 +796,7 @@ msgstr ""
 msgid "Posts with the field empty or missing are grouped together at one end of the list rather than dropped."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:411
+#: src/Admin/SettingsPage.php:411 assets/js/block.js:242
 msgid "Print items with no destination as headings"
 msgstr ""
 
@@ -1134,12 +1134,12 @@ msgid "Windows ships no country flag glyphs, so these appear as two letters — 
 msgstr ""
 
 #. translators: PHP date format for a yearly archive heading. Japanese uses Y年.
-#: src/Sitemap/TreeBuilder.php:1763
+#: src/Sitemap/TreeBuilder.php:1802
 msgid "Y"
 msgstr ""
 
 #: src/Admin/SettingsPage.php:622
-msgid "Yoast SEO, Rank Math, and the Cocoon theme are read directly. WordPress records nothing about noindex itself, so anything else needs the rapls_sitemap/is_noindex filter. Reading the setting costs one extra query per render."
+msgid "Yoast SEO, Rank Math, SEO SIMPLE PACK, SEOPress, The SEO Framework, All in One SEO and the Cocoon theme are read directly. WordPress records nothing about noindex itself, so anything else needs the rapls_sitemap/is_noindex filter. Reading the setting costs one extra query per render, and a second one where All in One SEO is active — it keeps this in a table of its own rather than in post meta."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:259 src/Admin/SettingsPage.php:286
