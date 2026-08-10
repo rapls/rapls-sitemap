@@ -139,6 +139,11 @@ check( false !== strpos( $columns, 'column-count:3' ), 'a column count reaches t
 check( false !== strpos( $columns, 'column-gap:2.5rem' ), 'and brings a gap with it — two columns of links touching read as one column of nonsense' );
 check( false !== strpos( $columns, 'break-inside:avoid' ), 'and stops a category being split down the middle of the page' );
 
+// Four presets lay the top-level list out as a grid or a flex row, and CSS
+// multi-column has no effect on either. A token that was set and visibly did
+// nothing would be worse than one that overrules the preset.
+check( false !== strpos( $columns, 'display:block' ), 'and takes the list back from a preset that made it a grid' );
+
 $gapped = Design::style_block( Design::sanitize( array( 'columns' => '2', 'column_gap' => '4rem' ) ) );
 check( false !== strpos( $gapped, 'column-gap:4rem' ), 'a gap of its own wins over the default' );
 

@@ -442,6 +442,13 @@ final class Design {
 		return self::rule(
 			$list,
 			array(
+				// `display` comes with the count for one reason: four presets
+				// lay the top-level list out as a grid or a flex row, and CSS
+				// multi-column has no effect on either. A token that was set and
+				// visibly did nothing would be worse than one that overrules the
+				// preset — the tokens exist to sit on top of the designs, and a
+				// column count is not an opinion the design gets to veto.
+				'display'      => 'block',
 				'column-count' => $columns,
 				'column-gap'   => '' !== $gap ? $gap : '2.5rem',
 			)

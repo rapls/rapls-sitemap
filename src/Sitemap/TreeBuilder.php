@@ -305,6 +305,48 @@ final class TreeBuilder {
 	}
 
 	/**
+	 * The terms holding at least one entry inside the publication window.
+	 *
+	 * Null when there is no window, which is the signal to list every term —
+	 * the ordinary case, and the one where a category listing costs no post
+	 * query at all.
+	 *
+	 * An ancestor of a matching term is kept too, or a category whose only
+	 * matching entries are filed under its children would take them down with
+	 * it. That is the same rule the term listing already follows for emptiness.
+	 *
+	 * @param string $post_type Post type the entries belong to.
+	 * @param string $taxonomy  Taxonomy being listed.
+	 * @return array<int,bool>|null
+	 */
+	private function terms_in_window( string $post_type, string $taxonomy ) {
+		if ( array() === $this->date_query() ) {
+			return null;
+		}
+
+		$keep = array();
+
+		foreach ( $this->fetch( $post_type ) as $post ) {
+			$terms = get_the_terms( $post, $taxonomy );
+
+			if ( ! is_array( $terms ) ) {
+				continue;
+			}
+
+			foreach ( $terms as $term ) {
+				$id          = (int) $term->term_id;
+				$keep[ $id ] = true;
+
+				foreach ( (array) get_ancestors( $id, $taxonomy, 'taxonomy' ) as $ancestor ) {
+					$keep[ (int) $ancestor ] = true;
+				}
+			}
+		}
+
+		return $keep;
+	}
+
+	/**
 	 * The publication window, if there is one.
 	 *
 	 * Inclusive at both ends, and either end may stand alone. The archive
@@ -830,9 +872,13 @@ final class TreeBuilder {
 			&& ! is_post_type_hierarchical( $post_type );
 		$terms_only = $grouping && 'terms_only' === $this->settings['term_mode'];
 
-		// A category-only listing needs no posts at all — skip the query.
+		// A category-only listing needs no posts at all — skip the query, unless
+		// a publication window has been set. A window is a claim about what the
+		// sitemap covers, and a category holding nothing from the school year
+		// the page is about does not belong on it. Then the posts have to be
+		// asked for after all, to find out which categories they are in.
 		if ( $terms_only ) {
-			return $this->term_tree( $taxonomy );
+			return $this->term_tree( $taxonomy, $this->terms_in_window( $post_type, $taxonomy ) );
 		}
 
 		$posts = $this->fetch( $post_type );
@@ -1324,10 +1370,25 @@ final class TreeBuilder {
 	 * @param string $taxonomy Taxonomy slug.
 	 * @return Node[]
 	 */
-	private function term_tree( string $taxonomy ): array {
+	private function term_tree( string $taxonomy, ?array $only = null ): array {
 		$terms = $this->fetch_terms( $taxonomy );
 		if ( array() === $terms ) {
 			return array();
+		}
+
+		if ( null !== $only ) {
+			$terms = array_values(
+				array_filter(
+					$terms,
+					static function ( $term ) use ( $only ) {
+						return isset( $only[ (int) $term->term_id ] );
+					}
+				)
+			);
+
+			if ( array() === $terms ) {
+				return array();
+			}
 		}
 
 		$show_count = ! empty( $this->settings['show_count'] );

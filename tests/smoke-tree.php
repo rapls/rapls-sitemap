@@ -115,6 +115,30 @@ function get_posts( $args ) {
 		);
 	}
 
+	// A window is a claim about what the sitemap covers, so the stub has to
+	// honour it or the assertions about it would prove nothing.
+	if ( isset( $args['date_query'][0] ) ) {
+		$window = $args['date_query'][0];
+		$posts  = array_values(
+			array_filter(
+				$posts,
+				function ( $post ) use ( $window ) {
+					$date = substr( $post->post_date, 0, 10 );
+
+					if ( isset( $window['after'] ) && $date < str_pad( $window['after'], 10, '-01' ) ) {
+						return false;
+					}
+
+					if ( isset( $window['before'] ) && substr( $date, 0, strlen( $window['before'] ) ) > $window['before'] ) {
+						return false;
+					}
+
+					return true;
+				}
+			)
+		);
+	}
+
 	if ( ! empty( $args['post__in'] ) ) {
 		$posts = array_values(
 			array_filter(
@@ -282,6 +306,23 @@ function get_terms( $args ) {
 	}
 
 	return $out;
+}
+
+function get_the_terms( $post, $taxonomy ) {
+	$id  = is_object( $post ) ? (int) $post->ID : (int) $post;
+	$out = array();
+
+	foreach ( $GLOBALS['fixture_term_members'] as $term_id => $members ) {
+		if ( in_array( $id, $members, true ) ) {
+			foreach ( $GLOBALS['fixture_terms'] as $term ) {
+				if ( (int) $term->term_id === (int) $term_id ) {
+					$out[] = $term;
+				}
+			}
+		}
+	}
+
+	return array() === $out ? false : $out;
 }
 
 function get_objects_in_term( $term_ids, $taxonomy ) {
@@ -573,6 +614,25 @@ $roots                            = ( new TreeBuilder( grouped( array( 'term_mod
 check( array( 'News' ) === titles( $roots ), 'terms_only lists categories and no posts' );
 check( array( 'Sub' ) === titles( $roots[0]->children ), 'terms_only still nests categories' );
 check( 0 === $GLOBALS['fixture_posts_fetched'], 'terms_only skips the post query entirely' );
+
+// ...unless a publication window has been set. A window is a claim about what
+// the sitemap covers, and a category holding nothing from the year the page is
+// about does not belong on it — which cannot be known without asking for the
+// posts after all.
+$GLOBALS['fixture_posts_fetched'] = 0;
+$windowed = grouped( array( 'term_mode' => 'terms_only', 'date_after' => '2026-01-01', 'date_before' => '2026-12-31' ) );
+$roots    = ( new TreeBuilder( $windowed ) )->build();
+
+check( 1 === $GLOBALS['fixture_posts_fetched'], 'a window makes the category listing ask for the posts', (string) $GLOBALS['fixture_posts_fetched'] );
+check( array( 'News' ) === titles( $roots ), 'and only the categories with something inside it are listed' );
+check( array() === $roots[0]->children, 'a child category whose entries are all outside the window goes too' );
+
+// The other direction: the child is inside and the parent holds nothing of its
+// own, which must not take the child down with it.
+$windowed = grouped( array( 'term_mode' => 'terms_only', 'date_after' => '2025-01-01', 'date_before' => '2025-12-31' ) );
+$roots    = ( new TreeBuilder( $windowed ) )->build();
+check( array( 'News' ) === titles( $roots ), 'an ancestor of a matching category is kept' );
+check( array( 'Sub' ) === titles( $roots[0]->children ), 'so that the matching one has somewhere to sit' );
 check( ! in_array( 'Empty', titles( $roots ), true ), 'an empty category is dropped from the category list' );
 
 /* --- excluding a parent category takes its children with it ------------- */

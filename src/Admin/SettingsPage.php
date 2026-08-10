@@ -877,6 +877,9 @@ final class SettingsPage {
 					<p class="description">
 						<?php echo esc_html__( 'A category order is often a decision rather than an alphabet — departments, regions, product lines. "The order set by hand" needs a plugin that provides one; without it WordPress falls back to the category ID.', 'rapls-sitemap' ); ?>
 					</p>
+					<p class="description">
+						<?php echo esc_html__( '"Number of entries" is the count WordPress keeps for each category. Where exclusions or the noindex filter remove entries, it can differ from the number shown beside the category, which counts what was actually listed.', 'rapls-sitemap' ); ?>
+					</p>
 				</td>
 			</tr>
 

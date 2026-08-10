@@ -183,6 +183,16 @@ foreach ( array( 'last tuesday', '2026-4-1', '01/04/2026', 'yesterday', '' ) as 
 	check( '' === Settings::to_date( $nonsense ), sprintf( '"%s" is not', $nonsense ) );
 }
 
+// The shape is not the date. WP_Date_Query documents that it lets an impossible
+// range through rather than refusing it, so a fat finger would produce an empty
+// sitemap — checked here instead, where "not a date" still means "no bound".
+foreach ( array( '2026-13', '2026-00', '2026-02-31', '2026-04-31', '0000-01-01' ) as $impossible ) {
+	check( '' === Settings::to_date( $impossible ), sprintf( '"%s" is a shape, not a date', $impossible ) );
+}
+
+check( '2028-02-29' === Settings::to_date( '2028-02-29' ), 'while a leap day that exists is kept' );
+check( '' === Settings::to_date( '2027-02-29' ), 'and one that does not is not' );
+
 check( '2026-04-01' === Settings::sanitize( array( 'date_after' => ' 2026-04-01 ' ) )['date_after'], 'the bound is trimmed on save' );
 check( '' === Settings::sanitize( array( 'date_before' => 'soon' ) )['date_before'], 'and an unreadable one is stored as no bound' );
 

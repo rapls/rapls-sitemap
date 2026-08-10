@@ -767,7 +767,19 @@ final class Settings {
 	public static function to_date( $raw ): string {
 		$value = trim( (string) $raw );
 
-		return preg_match( '/^\d{4}(-\d{2}(-\d{2})?)?$/', $value ) ? $value : '';
+		if ( ! preg_match( '/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/', $value, $parts ) ) {
+			return '';
+		}
+
+		// The shape is not the date. `2026-13` and `2026-02-31` both match the
+		// pattern and neither exists; WP_Date_Query documents that it lets an
+		// impossible range through rather than refusing it, so an empty sitemap
+		// is what a fat finger would produce. Checked here instead, where "not a
+		// date" can still mean "no bound".
+		$month = isset( $parts[2] ) ? (int) $parts[2] : 1;
+		$day   = isset( $parts[3] ) ? (int) $parts[3] : 1;
+
+		return checkdate( $month, $day, (int) $parts[1] ) ? $value : '';
 	}
 
 	/**

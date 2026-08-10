@@ -45,13 +45,13 @@ It is a maintained replacement for **PS Auto Sitemap** (closed in 2022) and **WP
 * Exclude posts, categories or users by ID. Excluding a parent takes its children with it.
 * Exclude whole post types or taxonomies.
 * Leave out the sitemap's own page, password-protected entries, and entries an SEO plugin has marked noindex.
-* Limit by publication date, for a sitemap of one school year or one financial year.
+* Limit by publication date, for a sitemap of one school year or one financial year. A category listing narrows with it, so a category holding nothing from that year is not listed either.
 * Entry caps: per list, per category, and a starting offset.
 
 = Ordering =
 
 * Entries by date, title, ID, menu order, last modified, comment count, at random, or by a custom field — which is how you get a true kana order for Japanese titles.
-* Category headings by name, entry count, slug, ID, or the order set by hand with a term-ordering plugin.
+* Category headings by name, entry count, slug, ID, or the order set by hand with a term-ordering plugin. Entry-count ordering uses the count WordPress keeps, which can differ from the number shown beside a category once exclusions have been applied.
 
 = Design =
 
@@ -96,7 +96,9 @@ Learn more: [Plugin details](https://raplsworks.com/plugins/rapls-sitemap/) | [S
 1. Activate this plugin and deactivate the old one.
 2. Open **Settings → Rapls Sitemap → Migration** and switch on the option matching the plugin you came from.
 3. If you came from PS Auto Sitemap, use **Import from PS Auto Sitemap** at the foot of the screen to read its stored settings in.
-4. Check the page, then adjust anything the import could only approximate — the design is matched to the nearest preset, not reproduced.
+4. Check the page, then adjust anything the import could only approximate.
+
+Two things are read across rather than reproduced. The design is matched to the nearest preset, not recreated — these are original stylesheets. And PS Auto Sitemap's "divide" mode, which listed categories with a "show the posts in this category" link beside each one, becomes the category-only listing: there is no equivalent per-category drill-down here.
 
 == Frequently Asked Questions ==
 
@@ -126,7 +128,7 @@ Yes. Give **Limit to one branch** a page ID, or use `child_of="current"` in a sh
 
 = Can I make a sitemap for one year? =
 
-Yes. Set a publication window with `date_after` and `date_before`. Both ends are inclusive and either can stand alone. The date archive listing narrows with it, so a year with nothing inside the window is not listed at all.
+Yes. Set a publication window with `date_after` and `date_before`. Both ends are inclusive and either can stand alone, and the format is `YYYY`, `YYYY-MM` or `YYYY-MM-DD` — anything else, including a date that does not exist, is read as no limit rather than as a date nobody meant. The archive and category listings narrow with it, so a year or a category holding nothing inside the window is not listed at all.
 
 = Will it cope with a large site? =
 
