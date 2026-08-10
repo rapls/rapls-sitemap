@@ -8,6 +8,9 @@
 /.distignore
 /.claude
 CLAUDE.md
+# GitHub's front page. WordPress.org reads readme.txt and flags any other
+# markdown in the plugin root.
+README.md
 
 /docs
 /tests

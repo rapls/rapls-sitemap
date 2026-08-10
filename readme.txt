@@ -1,297 +1,179 @@
-=== Rapls Sitemap ===
+=== Rapls Sitemap – HTML Sitemap Page for Pages, Posts, Categories, Authors & Menus ===
+
 Contributors: rapls
 Donate link: https://buymeacoffee.com/rapls
-Tags: sitemap, html sitemap, table of contents, サイトマップ, 目次
+Tags: html sitemap, sitemap, table of contents, site map page, navigation
 Requires at least: 6.0
 Tested up to: 7.0
-Requires PHP: 7.4
 Stable tag: 0.1.0
+Requires PHP: 7.4
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-サイト全体の目次（HTMLサイトマップ）を、ショートコードかブロックで一行設置。PS Auto Sitemap の後継として設計されています。
+An HTML sitemap page for readers: pages, posts, categories, authors, archives and navigation menus, from one shortcode or block.
 
 == Description ==
 
-固定ページと投稿の一覧を、階層とカテゴリーの構造を保ったまま 1 ページにまとめて表示します。読者向けの「サイトの目次」であり、検索エンジン向けの XML サイトマップではありません（XML は WordPress 本体が `wp-sitemap.xml` として出力します）。
+**Rapls Sitemap builds the "table of contents" page your visitors use to find things** — your pages in their real hierarchy, your posts under their categories, and as much or as little else as you choose. Drop in the `[rapls_sitemap]` shortcode or the Sitemap block and the page builds itself, and keeps building itself as the site grows.
 
-= 主な機能 =
+This is a *human-facing* sitemap. It is not the XML sitemap search engines read — WordPress produces that itself at `wp-sitemap.xml`, and this plugin deliberately stays out of its way.
 
-* ショートコード `[rapls_sitemap]` とブロック「サイトマップ」の両対応
-* 固定ページは親子階層のまま、投稿はカテゴリー別に整理。子カテゴリーも入れ子で表示
-* ホームページの表示切替とラベル変更
-* 投稿リスト / 固定ページリストの表示切替と**表示順**の指定
-* 「記事も表示」「カテゴリーのみ」の切替
-* 階層の深さ制限、除外記事 ID、除外カテゴリー ID。どちらも親を除外すれば、その下の子も一緒に外れます
-* 投稿タイプ・タクソノミー単位での除外指定
-* 投稿者一覧の絞り込み。特定のユーザー ID を除外し、権限グループ（ロール）で限定できます
-* 公開日による期間の指定。年度別のサイトマップが作れます
-* サイトマップを置いたページ自身、パスワード保護された項目、SEO プラグインで noindex に設定された項目の除外
-* 複数のカテゴリーに属する投稿を、それぞれのカテゴリーに表示するかの切替
-* すべてのリンクに `rel="nofollow"` を付与するオプション
-* タグ一覧、投稿者一覧、年月アーカイブ一覧の出力
-* **ナビゲーションメニューをそのまま目次にする**指定。運用者が組んだ順序とラベルのまま出力します。複数のメニューを 1 ページに並べることもできます
-* 固定ページ・投稿・カテゴリー・投稿者・年月アーカイブを、1 か所の設置で順に並べる「セクション」指定。サイトマップページによくある形をショートコード 1 つで作れます
-* 投稿タイプごとの見出し（2種類以上を表示するときのみ）
-* 各項目への投稿日・抜粋の表示、カテゴリーごとの記事数の表示
-* 1リストあたりの件数上限。投稿・ターム・投稿者の 3 つのクエリすべてに効き、大規模サイトでのメモリ不足を防ぎます。開始位置の指定は投稿の一覧に効きます
-* カテゴリーごとの表示件数上限。1つのカテゴリーが長くなりすぎて他が読めなくなるのを防ぎます
-* セクション・カテゴリーの見出しをリンクにしない設定。中身の薄いアーカイブや noindex アーカイブ向け
-* `ul` / `ol` の切替
-* 並び順の指定。新しい順、古い順、タイトル順、ID 順、ページの並び順、更新日順、コメント数順、ランダム、カスタムフィールド順
-* カテゴリー見出しの並び順を、名前・記事数・スラッグ・ID・**手動の並び順**から指定
-* デザインプリセット 27 種＋スタイルなし。画像を一切使わない CSS のみの実装で、ダークテーマでもそのまま使えます
-* 文字の大きさ、行間、リンクの色、下線の有無、字下げ幅を個別に指定
-* 段組み（カラム数と段間）の指定。どのデザインの上にも重ねられます
-* 箇条書きの記号を、黒丸・白丸・四角・絵文字・アイコンクラス (Font Awesome 等) から選択。最上位と下の階層で別々に指定できます
-* 最上位と下の階層で、文字の大きさ・色・太さを別々に指定
-* 追加 CSS の記述欄。見出しを h2〜h6 の本当の見出し要素として出力する設定（スクリーンリーダー対応）
-* すべての設定をワンクリックで初期値に戻すボタン
-* レンダリング結果をキャッシュし、投稿・カテゴリーの更新時に自動で破棄
+It is a maintained replacement for **PS Auto Sitemap** (closed in 2022) and **WP Sitemap Page**, written from scratch. Both plugins' documented interfaces are reproduced so an existing sitemap page keeps working without editing its content, and PS Auto Sitemap's stored settings can be read in with one button.
 
-= 他プラグインからの移行 =
+= Why site owners pick Rapls Sitemap =
 
-サイトマップページの本文を書き換えずに乗り換えられます。他プラグインのコードは一切流用していません。
+* **One placement, the whole page.** Pages, posts, categories, authors and date archives can be listed one after another, each under its own heading, from a single shortcode — the shape most sitemap pages actually have.
+* **Your navigation, as your team arranged it.** List a WordPress menu in the menu's own order with the menu's own labels. On a site with hundreds of pages, "the routes we decided on" is often a better table of contents than "everything we have published".
+* **Nothing is hidden quietly.** Where a list stops short of the content, it says so in the output. Caps, exclusions and truncation are always visible to the reader.
+* **28 designs, no images.** Every preset is pure CSS with no sprites and no icon font, so they inherit your theme's colours and survive a dark background.
+* **Built for large sites.** One query per post type, a configurable entry cap on all three queries, and a render cache that clears itself when content changes.
+* **No front-end credit link. Ever.** The plugin never prints a link to its author on your site.
 
-移行用の互換機能は 2 つあり、**どちらも初期状態ではオフです**。「設定」→「Rapls Sitemap」→「移行」で、移行元に合うものをオンにしてください。他プラグインの記法に勝手に反応しないための初期値です。
+= What it lists =
 
-**WP Sitemap Page から** — オンにすると `[wp_sitemap_page]` を認識します。`only="page"` `only="post"` `only="category"` `only="tag"` `only="author"` `only="archive"`、およびカスタム投稿タイプの指定にも対応しています。WP Sitemap Page 本体が有効な間はショートコードを登録しないため、両方が有効でも競合しません。
+* **Pages** in their parent/child hierarchy, to any depth you choose.
+* **Posts**, optionally grouped under their categories, with child categories nested.
+* **Categories, tags and custom taxonomies**, with or without the entries under them.
+* **Authors**, filtered by user ID and by role.
+* **Date archives**, by year and month.
+* **Navigation menus**, in the menu's order, with `#` placeholder items printed as headings rather than links that go nowhere.
+* **Custom post types and custom taxonomies**, alongside or instead of the built-in ones.
 
-**PS Auto Sitemap から** — オンにすると本文中の `<!-- SITEMAP CONTENT REPLACE POINT -->` を認識します。旧プラグインの「サイトマップを表示する記事」の ID 指定は不要です。そのページ自身は自動で一覧から除外されます。
+= Choosing what appears =
 
-**設定はボタン一つで読み込めます。** PS Auto Sitemap の設定はプラグインを削除しても残るため、以前使っていたサイトなら設定画面に「PS Auto Sitemap から読み込む」が現れます。表示するリストとその順序、階層の深さ、除外カテゴリー・除外記事、キャッシュの有無、そしてデザインの近いものが入ります。読み込んでも旧設定はそのまま残るので、何度でもやり直せます。
+* Depth limit, and a "list only what is under this page" scope that a shortcode can resolve to the current page.
+* Exclude posts, categories or users by ID. Excluding a parent takes its children with it.
+* Exclude whole post types or taxonomies.
+* Leave out the sitemap's own page, password-protected entries, and entries an SEO plugin has marked noindex.
+* Limit by publication date, for a sitemap of one school year or one financial year.
+* Entry caps: per list, per category, and a starting offset.
 
-旧プラグインの「カテゴリーと記事の表示」で「分割」を選んでいた場合は、「カテゴリーのみ」として読み込みます。旧プラグインはカテゴリーの横に「このカテゴリーの記事を見る」リンクを出していましたが、本プラグインに同じ動きはないため、最も近い設定への読み替えです。
+= Ordering =
+
+* Entries by date, title, ID, menu order, last modified, comment count, at random, or by a custom field — which is how you get a true kana order for Japanese titles.
+* Category headings by name, entry count, slug, ID, or the order set by hand with a term-ordering plugin.
+
+= Design =
+
+* 27 CSS presets plus "no styling at all" for themes that would rather do it themselves.
+* Font size, line height, indent, link colour, underline behaviour and column count, layered on top of whichever preset is chosen.
+* Bullets as discs, circles, squares, emoji, or an icon class such as Font Awesome — set separately for top-level and nested items.
+* Section and category labels can be emitted as real `h2`–`h6` headings, which is what screen-reader users navigate by.
+* An Additional CSS box, gated on the `unfiltered_html` capability rather than on access to the settings screen.
+
+= Migrating from PS Auto Sitemap or WP Sitemap Page =
+
+You can switch without editing the content of your sitemap page. None of either plugin's code is used here — only their documented interfaces.
+
+Both compatibility options are **off by default**, because answering to another plugin's markup unasked is a surprise:
+
+* **From WP Sitemap Page** — recognises `[wp_sitemap_page]` and its `only` values, including custom post types. The shortcode is not claimed while WP Sitemap Page itself is active, so the two cannot fight over it.
+* **From PS Auto Sitemap** — recognises the `<!-- SITEMAP CONTENT REPLACE POINT -->` comment left in page content. That plugin's own "which page holds the sitemap" setting is not needed: the page is kept out of its own listing automatically.
+
+**PS Auto Sitemap's settings can be read in with one button.** Its options survive its deletion, so a site that ran it years ago still holds the answers its owner already gave: which lists to show and in what order, the depth, the excluded categories and posts, whether caching was on, and the nearest design. The old settings are read, never written, so the import can be repeated.
+
+= noindex integrations =
+
+Entries marked noindex can be left out. These are read with no configuration: **Yoast SEO, Rank Math, SEO SIMPLE PACK, SEOPress, The SEO Framework, All in One SEO**, and the **Cocoon** theme (including its fallback to the Simplicity key it inherited).
+
+Every one of those was read from the plugin itself rather than guessed. Anything else can be added with the `rapls_sitemap/is_noindex` filter — this plugin does not read meta keys on a hunch, because a wrong guess hides a page nobody asked to hide.
+
+= Multilingual =
+
+WPML and Polylang work with no configuration. Both narrow the post and term queries to the current language, and this plugin does not switch those filters off. The render cache keys on the locale, so one language is never served another's sitemap.
+
+Learn more: [Plugin details](https://raplsworks.com/plugins/rapls-sitemap/) | [Source code (GitHub)](https://github.com/rapls/rapls-sitemap)
 
 == Installation ==
 
-1. プラグインを有効化します。
-2. 「設定」→「Rapls Sitemap」で表示内容を選びます。
-3. サイトマップを置きたい固定ページに `[rapls_sitemap]` を貼るか、「サイトマップ」ブロックを追加します。
+1. Upload the `rapls-sitemap` folder to `/wp-content/plugins/`, or install it from the Plugins screen.
+2. Activate it from the Plugins menu.
+3. Go to **Settings → Rapls Sitemap** and choose what to list.
+4. Put `[rapls_sitemap]` on the page that should hold the sitemap, or add the **Sitemap** block.
+
+= Migrating from another sitemap plugin =
+
+1. Activate this plugin and deactivate the old one.
+2. Open **Settings → Rapls Sitemap → Migration** and switch on the option matching the plugin you came from.
+3. If you came from PS Auto Sitemap, use **Import from PS Auto Sitemap** at the foot of the screen to read its stored settings in.
+4. Check the page, then adjust anything the import could only approximate — the design is matched to the nearest preset, not reproduced.
 
 == Frequently Asked Questions ==
 
-= 特定の配置だけ設定を変えられますか =
+= Is this the XML sitemap for search engines? =
 
-はい。ショートコード属性が設定画面の値を上書きします。
+No. This builds the HTML page your visitors read. WordPress produces the XML sitemap itself at `wp-sitemap.xml`, and this plugin does not touch it.
 
-`[rapls_sitemap post_types="page" depth="2" show_home="0"]`
+= Can one placement show pages, posts, categories and authors together? =
 
-指定できる属性は次のとおりです。
+Yes, and that is what most sitemap pages want. Tick the sections you need and they appear in order, each under its own heading. In a shortcode:
 
-* 対象 — `post_types` / `source` / `sections` / `menu` / `taxonomy` / `term_mode` / `child_of`
-* 絞り込み — `exclude_ids` / `exclude_terms` / `exclude_users` / `exclude_current` / `exclude_protected` / `exclude_noindex` / `date_after` / `date_before`
-* 件数 — `number` / `offset` / `per_category` / `depth`
-* 並び順 — `orderby` / `order` / `term_orderby` / `term_order`
-* 表示 — `design` / `list_type` / `link_headings` / `show_home` / `group_by_term` / `nest_terms` / `duplicate_in_terms` / `section_headings` / `show_date` / `date_format` / `show_excerpt` / `excerpt_length` / `show_count` / `nofollow`
+`[rapls_sitemap sections="page,post,category,author,archive"]`
 
-キャッシュとスタイル読み込みはサイト全体の設定のみで、配置ごとの指定はできません。
+= Can I list a navigation menu instead? =
 
-ブロックでも同じ内容をサイドバーから指定できます。除外の 3 つのスイッチ（このページ・パスワード保護・noindex）は、オン／オフに加えて「サイト全体の設定を使う」を選べます。チェックボックスにすると、ブロックを置くたびにその既定値が押し付けられてしまうためです。
-
-= ナビゲーションメニューをそのまま目次にできますか =
-
-はい。「一覧の種類」で「ナビゲーションメニュー」を選び、メニューを指定してください。
-
-ショートコードではメニューの ID・スラッグ・名前のいずれかを指定できます。`menu` を指定した時点でメニュー表示になるので、`source` を併記する必要はありません。
+Yes. Choose **A navigation menu** as the source, or name one in a shortcode:
 
 `[rapls_sitemap menu="global-nav"]`
 
-**メニューの並び順とラベルをそのまま使います。** 並べ替えは行いません。順序は運用者が決めたものであり、それを五十音順に並べ直すと、メニューを目次にする意味がなくなるためです。ラベルもメニュー側のもの（多くの場合ページタイトルより短い）を使います。
+The menu is listed in its own order with its own labels — it is not re-sorted, because that order is a decision somebody made. Menu items linking to `#`, the placeholders that hold open a dropdown, are printed as plain headings rather than as links that go nowhere.
 
-数百ページある大規模サイトでは、「公開しているすべて」より「運用者が決めた導線」のほうが読者の役に立つことがあります。その場合の選択肢です。
+Several menus can appear in one sitemap with `sections="menu:global-nav,menu:footer-nav"`.
 
-メニューに効くのは、除外設定・階層の深さ制限・件数上限だけです。
+= Can I list only the pages under one page? =
 
-除外の効き方は本文の一覧と同じです。**除外記事 ID** を指定すると、その項目の下にぶら下がる項目も一緒に消えます（「この枝はいらない」という指定のため）。**除外カテゴリー ID** も、親カテゴリーを指定すれば子カテゴリーを指す項目まで消えます。一方、サイトマップを置いたページ自身の除外・パスワード保護・noindex による除外は連鎖しません。その項目だけが消え、下にぶら下がっていた項目は一段上がって表示されます。
+Yes. Give **Limit to one branch** a page ID, or use `child_of="current"` in a shortcode, which resolves to whichever page it is placed on. A section landing page can then list its own children without naming an ID that differs between staging and production.
 
-件数上限は、除外したあとの件数に対して効きます。上限より少ない数しか並ばない、ということは起きません。
+= Can I make a sitemap for one year? =
 
-ただし**カスタムリンクはどの除外でも消せません**。URL だけを持つ項目で、プラグイン側から何を指しているか判別できないためです。
+Yes. Set a publication window with `date_after` and `date_before`. Both ends are inclusive and either can stand alone. The date archive listing narrows with it, so a year with nothing inside the window is not listed at all.
 
-**リンク先のない項目は見出しになります。** メニューでドロップダウンを開くためだけに置かれた `#` の項目は、目次の中ではどこにも行かないリンクです。初期状態ではリンクにせず、ラベルだけを表示します。「リンク先のない項目を見出しとして表示」のチェックを外すと、`#` のままリンクします。
+= Will it cope with a large site? =
 
-「1つにまとめるセクション」の1つとしても選べます。見出しにはメニュー名が入るので、複数のメニューを並べても区別できます。
+Yes, within a cap you set. A sitemap asks for everything at once, so the entry cap exists to stop that query exhausting memory; it applies to the post, term and user queries alike and defaults to 2000. **A list that stops short always says so in the output** — a silently short sitemap would be worse than a slow one.
 
-= 固定ページ、投稿、カテゴリーをまとめて 1 ページに出せますか =
+= Are the settings per placement, or site-wide? =
 
-はい。「1つにまとめるセクション」でチェックしたものが、チェックした順に、それぞれの見出しを付けて並びます。設置は 1 か所だけです。
+Most of them are both. The settings screen sets the site default, and a shortcode attribute or a block setting overrides it for one placement. Caching and stylesheet loading are site-wide only.
 
-ショートコードでも指定できます。
+= What is the number beside a category? =
 
-`[rapls_sitemap sections="page,post,category,menu,author,archive"]`
+The number of entries actually listed under it, not the number the category holds. Exclusions, the noindex filter and the entry caps all change what is shown, and a category labelled "12" with eight entries under it is worse than no number at all. In category-only mode there is nothing listed, so the count is the category's own — including its children where they are nested.
 
-指定できるのは、投稿タイプのスラッグ、タクソノミーのスラッグ、`author`、`archive`、`menu` です。並べた順がそのまま表示順になります。同じものを二度指定しても一度しか出ません。
+= Can I sort Japanese titles into kana order? =
 
-メニューは `menu:global-nav` `menu:12` のように、スラッグか ID を添えて**個別に指定**できます。グローバルナビとフッターナビを 1 ページに並べる、といった使い方ができます。`menu` とだけ書いた場合は「一覧の種類」で選んだメニューになります。
+Only with a custom field holding the reading. Sorting by title uses the database collation, which is right for kana and Latin but not for kanji — nothing in WordPress records that 大阪 reads おおさか. Store the reading in a custom field, choose **Custom field** as the ordering, and name the field.
 
-除外設定、件数上限、並び順、デザインなど他の設定は、**内容を並べるセクション**の中でそのまま有効です。件数上限は**セクションごと**に効きます。
+= Can I use Font Awesome icons as bullets? =
 
-投稿者一覧と年月アーカイブ一覧だけは別で、件数上限とデザインのほかは参照しません。誰がいつ公開したかから組み立てるためで、これは単独で表示したときと同じ挙動です。
+Yes. Choose **Icon class** for the bullet and enter a class such as `fa-solid fa-angle-right`. Dashicons and other icon fonts work the same way. The plugin does not bundle an icon font, so your theme or another plugin has to be loading one; where nothing is loaded the icon is simply absent and the sitemap is otherwise unaffected.
 
-何もチェックしなければ、これまでどおり「一覧の種類」で選んだ 1 種類だけのサイトマップになります。
+= Who can edit the Additional CSS box? =
 
-= 年度ごとのサイトマップを作れますか =
+Only users with `unfiltered_html`: administrators on a single site, network administrators on multisite. Not everyone who can open the settings screen, because on multisite that includes site administrators, and this field is printed verbatim. Users without the capability do not see the field, and saving the screen leaves the stored CSS untouched.
 
-「公開期間」に開始日と終了日を指定してください。**両端とも含みます**し、どちらか一方だけの指定もできます。
+= Does it print a credit link on my site? =
 
-`[rapls_sitemap date_after="2026-04-01" date_before="2027-03-31"]`
+No. Nothing is ever output on the front end that links to the plugin or its author.
 
-書式は `YYYY-MM-DD`、`YYYY-MM`、`YYYY` のいずれかです。**それ以外の書き方は「指定なし」として扱います。** WordPress は「先週の火曜日」のような表記も解釈できますが、解釈のされ方でサイトマップの中身が変わるより、読めないものは無視するほうが安全だと判断しています。入力を間違えた場合、一覧が空になるのではなく広くなります。
+= Does it work with a screen reader? =
 
-年月アーカイブ一覧も同じクエリから作るため、期間の指定が自動的に効きます。期間内に記事のない年は、そもそも一覧に出ません。
-
-= 投稿者一覧に載せたくない人がいます =
-
-「除外するユーザー ID」に指定してください。投稿者一覧にのみ効きます。
-
-WordPress をインストールしたときの管理アカウントや、制作会社のアカウントは、記事を公開していれば投稿者一覧に載りますが、読者を送る先ではないことがほとんどです。
-
-「投稿者一覧に含めるロール」で権限グループを限定することもできます。何もチェックしなければ、記事を公開しているすべての利用者が対象です。
-
-除外はクエリの時点で行うため、除外した人が件数上限の枠を消費することはありません。
-
-なお投稿者一覧は常に表示名の五十音・アルファベット順です。「並べ替えの基準」は記事の並び順の設定であり、人名の一覧に適用すると既定の設定のままで逆順になってしまうため、連動させていません。
-
-= 特定の固定ページの下だけを一覧にできますか =
-
-はい。「一覧にする範囲」に親となる固定ページの ID を指定すると、その下にぶら下がるページだけが並びます。指定したページ自身は並びません。
-
-ショートコードでは ID の代わりに `current` を指定できます。
-
-`[rapls_sitemap child_of="current"]`
-
-これを各セクションのトップページに貼っておけば、どのページでも「そのページの下にあるページ」の目次になります。ID を書き分ける必要も、ステージング環境と本番環境で ID がずれる心配もありません。
-
-階層を持たない投稿タイプ（通常の投稿など）は、範囲を指定している間は一覧に出ません。「この固定ページの下」という範囲を投稿は持たないためです。同じ理由で、「一覧の種類」を投稿者一覧や年月アーカイブにしている場合、この指定は無視されます。
-
-= 除外した固定ページの子ページはどうなりますか =
-
-一緒に除外されます。何階層下でも同じです。
-
-ただし「サイトマップを置いたページ自身」の自動除外は連鎖しません。そのページを一覧に載せない指定であって、下にぶら下がるページを隠す指定ではないためです。
-
-親が非公開になっているなど、除外以外の理由で親が一覧にない場合も、子は消えずに最上位に繰り上がって表示されます。
-
-= 大量の記事があっても大丈夫ですか =
-
-「1リストあたりの件数」で上限を設定できます。初期値は 2000 件です。
-
-サイトマップは全投稿タイプの全件を一度に取得する構造上、大規模サイトではこのクエリがメモリ不足を起こします。上限は**投稿・カテゴリー等のターム・投稿者の3つのクエリすべて**に効きます。
-
-上限に達した場合は「先頭の N 件のみ表示しています。」と出力に明記されるので、黙って一部が欠けることはありません。0 を指定すると上限なしになります。
-
-= カテゴリーの横に出る件数は何の数ですか =
-
-そのカテゴリーの下に**実際に表示されている項目の数**です。
-
-カテゴリーが保持している記事数ではありません。除外設定、noindex の除外、件数上限がそれぞれ表示内容に影響するため、保持数を出すと「12件」と書いてあるのに8件しか並んでいない、という食い違いが起きます。表示と一致する数のほうが読者にとって正しいと判断しています。
-
-「カテゴリーのみ」表示のときは並べる項目がないので、カテゴリーが保持する記事数を表示します。子カテゴリーを入れ子にしている場合は、子の分も含めた数になります。
-
-= XML サイトマップも出力されますか =
-
-いいえ。このプラグインは読者向けの HTML サイトマップ専用です。
-
-= カテゴリーの並び順を自分で決められますか =
-
-「カテゴリー見出しの並び順」で、名前・記事数・スラッグ・ID・「手動で設定した順序」から選べます。
-
-カテゴリーの並びは五十音順であるべきとは限りません。診療科、地域、商品カテゴリーなどは、運用者が決めた順序があるのが普通です。
-
-「手動で設定した順序」は、その順序を提供するプラグイン（Category Order and Taxonomy Terms Order など）と組み合わせて使ってください。**そうしたプラグインがない場合、WordPress はカテゴリー ID 順にフォールバックします。** 本プラグイン単体で並べ替える機能は持っていません。
-
-= 五十音順に並べられますか =
-
-読みを記録したカスタムフィールドがあれば可能です。「並べ替えの基準」で「カスタムフィールド」を選び、そのフィールド名を指定してください。
-
-「タイトル」順はデータベースの照合順序に従うため、かなと英字は正しく並びますが漢字は正しく並びません。大阪が「おおさか」と読むという情報は、WordPress のどこにも保存されていないためです。
-
-= 一覧を段組みにできますか =
-
-「段組み」でカラム数（1〜6）と段間を指定してください。デザインプリセットとは独立した設定なので、**どのデザインの上にも重ねられます**。
-
-分割されるのは最上位だけです。カテゴリーとその下の記事が段の途中で切り離されることはありません。
-
-カラム数を固定するため、スマートフォンでも指定した段数のままになります。画面幅に応じて段数を変えたい場合は、デザインプリセットの「段組み」を選んでください。こちらは入るだけの段数に自動で調整します。
-
-= 箇条書きに Font Awesome のアイコンを使えますか =
-
-使えます。「箇条書きの記号」で「アイコンのクラス」を選び、`fa-solid fa-angle-right` のようにクラスを入力してください。Dashicons やその他のアイコンフォントでも同じ方法で指定できます。
-
-ただし本プラグインはアイコンフォントを同梱していません。テーマや他のプラグインが読み込んでいる必要があります。読み込まれていない場合はアイコンが表示されないだけで、サイトマップ自体は問題なく動作します。
-
-= 箇条書きに国旗の絵文字を使えますか =
-
-選べますが、注意点があります。**Windows は国旗の字形を持っていません。** そのため Windows で閲覧している人には、🇯🇵 が「JP」のように2文字のアルファベットで表示されます。
-
-絵文字ピッカーの「旗」タブにも同じ注意を表示しています。🏁 🚩 🏳️ 🏴 🎌 は通常の記号なので、どの環境でも意図どおり表示されます。
-
-= noindex の判定はどれに対応していますか =
-
-以下は追加の設定なしで判定します。
-
-* Yoast SEO
-* Rank Math
-* SEO SIMPLE PACK
-* SEOPress
-* The SEO Framework
-* All in One SEO
-* Cocoon テーマ（記事ごとの「インデックスしない（noindex）」）
-
-All in One SEO だけは投稿メタではなく専用のテーブルに保存します。判定しようとしている記事だけをまとめて 1 クエリで問い合わせ、結果はリクエストの間おぼえておくので、セクションを複数並べても、記事ごとにクエリが発行されることはありません。他はすべて投稿メタです。
-
-いずれも**記事ごとの noindex 設定**を見ます。「この投稿タイプ全体を noindex にする」といったサイト全体の既定値は対象外です。それは「除外するカスタム投稿タイプ」で指定してください。
-
-Cocoon はチェックを外したときに 0 を保存し、行そのものは残します。また Cocoon 自身が、自前のキーが空のときに前身テーマ Simplicity のキーを参照します。本プラグインもこの挙動をそのまま再現しているので、Simplicity から移行したサイトでも正しく判定されます。
-
-WordPress 本体は noindex の情報をどこにも保存していないため、それ以外には対応コードが必要です。`rapls_sitemap/is_noindex` フィルターを用意しているので、次のように追加できます。
-
-`add_filter( 'rapls_sitemap/is_noindex', function ( $noindex, $post_id ) {
-    return $noindex || 'yes' === get_post_meta( $post_id, '_your_seo_noindex', true );
-}, 10, 2 );`
-
-推測で他プラグインのメタキーを読むことはしていません。誤って本文を非表示にするより、対応していないと明示するほうが安全なためです。
-
-なお、この設定を有効にすると投稿メタを読み込むため、描画のたびにクエリが1つ増えます。All in One SEO が有効なサイトでは、専用テーブルへの問い合わせがもう1つ加わります（いずれもキャッシュが効いている間は発生しません）。
-
-= 追加 CSS は誰が編集できますか =
-
-`unfiltered_html` 権限を持つ利用者のみです。シングルサイトでは管理者、マルチサイトではネットワーク管理者のみになります。
-
-`manage_options`（設定画面を開ける権限）では編集できません。マルチサイトではサイト管理者もこの権限を持つためです。追加 CSS はそのまま出力されるので、WordPress が同種の用途に用意している `unfiltered_html` に合わせています。
-
-権限のない利用者には入力欄自体が表示されず、その人が設定を保存しても保存済みの CSS は変更されません。
-
-= 多言語サイトで使えますか =
-
-WPML と Polylang に対応しています。設定は不要です。
-
-どちらも投稿とタームのクエリを現在の言語で自動的に絞り込むため、言語ごとに正しいサイトマップが出力されます。本プラグインはクエリフィルターを無効化しない（`suppress_filters` を `false` にしている）ので、その仕組みがそのまま働きます。
-
-描画結果のキャッシュも言語ごとに分かれます。設定内容はどの言語でも同じなので、キャッシュキーに現在のロケールを含めています。
-
-= スクリーンリーダーへの対応はどうなっていますか =
-
-サイトマップ全体を `nav` 要素でラベル付きの領域として出力します。
-
-さらに「構造」→「見出し」で、セクションやカテゴリーのラベルを `h2`〜`h6` の本当の見出し要素として出力できます。スクリーンリーダーの利用者は見出しを辿ってページを移動するため、サイトマップのように構造を辿るページでは効果が大きい設定です。
-
-初期値は通常のテキストです。適切な見出しレベルはサイトマップを置くページの構成によって変わり、誤ったレベルは見出しの階層を壊すため、選択式にしています。
-
-= フロントエンドに開発者へのリンクが出ませんか =
-
-出ません。サイトの表示側に本プラグインがリンクを出力することは一切ありません。
+The sitemap is a labelled `nav` landmark, and section and category labels can be output as real `h2`–`h6` headings rather than styled text. Screen-reader users move through a page by its headings, which matters more on a page whose purpose is structure than almost anywhere else. The heading level is a choice rather than a default, because the right level depends on the page the sitemap sits in.
 
 == Screenshots ==
 
-1. 表示する内容を選ぶ。複数のセクションを1か所にまとめて並べられます。
-2. 28 種のデザインプリセットと、その上に重ねる文字・色・箇条書きの設定。
-3. 出力例。固定ページは階層のまま、投稿はカテゴリー別に整理されます。
-4. ブロックのサイドバー。配置ごとに表示内容を変えられます。
+1. Choosing what to list. Several sections can be listed one after another from a single placement.
+2. 28 design presets, and the type, colour and bullet settings that layer on top of them.
+3. The output: pages in their hierarchy, posts under their categories.
+4. The block sidebar. Every placement can list something different.
 
 == Changelog ==
 
 = 0.1.0 =
-* 初回リリース。
-* 日本語翻訳を同梱 (管理画面・ブロックエディター)。
+* Initial release.
+* Japanese translation included (admin screen and block editor).
+
+== Upgrade Notice ==
+
+= 0.1.0 =
+First release.
