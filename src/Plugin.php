@@ -134,15 +134,19 @@ final class Plugin {
 		$settings = get_option( Settings::OPTION );
 
 		if ( false !== $settings ) {
-			if ( function_exists( 'wp_set_option_autoload' ) ) {
-				// WordPress 6.6 and later.
-				wp_set_option_autoload( Settings::OPTION, false );
-			} else {
-				// 6.0 to 6.5: removing and re-adding is the only way to change
-				// the column without also changing the value.
-				delete_option( Settings::OPTION );
-				add_option( Settings::OPTION, $settings, '', false );
-			}
+			/*
+			 * Removing and re-adding is the only way to change that column
+			 * without also changing the value, on every version this plugin
+			 * supports. `wp_set_option_autoload()` says it in one call and was
+			 * used here behind a `function_exists()` guard — but it arrived in
+			 * WordPress 6.4, three versions above the floor in the header, and
+			 * Plugin Check reads the call rather than the guard. A migration
+			 * that in practice has nobody to migrate is not worth an error on
+			 * the submission report; put the one-liner back if the floor ever
+			 * rises to 6.4.
+			 */
+			delete_option( Settings::OPTION );
+			add_option( Settings::OPTION, $settings, '', false );
 		}
 
 		update_option( self::VERSION_OPTION, RAPLS_SITEMAP_VERSION, false );

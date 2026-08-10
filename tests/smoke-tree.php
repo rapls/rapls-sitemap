@@ -348,6 +348,17 @@ class Rapls_Fake_Wpdb {
 	public function suppress_errors( $suppress = true ) {
 		return false;
 	}
+
+	public function prepare( $sql, ...$args ) {
+		// Enough of the real thing for the assertions: the placeholder list is
+		// what the test reads back.
+		foreach ( $args as $arg ) {
+			foreach ( (array) $arg as $value ) {
+				$sql = preg_replace( '/%d/', (string) (int) $value, $sql, 1 );
+			}
+		}
+		return $sql;
+	}
 }
 
 $GLOBALS['wpdb'] = new Rapls_Fake_Wpdb();

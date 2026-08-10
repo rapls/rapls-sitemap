@@ -1644,10 +1644,20 @@ final class TreeBuilder {
 		// and a sitemap is not the place to print a database error about it.
 		$suppress = method_exists( $wpdb, 'suppress_errors' ) ? $wpdb->suppress_errors( true ) : null;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// Prepared, even though every value in it is already an int: the IDs
+		// went through intval() above, so this changes nothing about what runs
+		// — but a raw IN list is a shape somebody copies into a query where the
+		// values did not, and Plugin Check is right to call it out.
+		$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$rows = $wpdb->get_col(
-			"SELECT post_id FROM {$wpdb->prefix}aioseo_posts"
-			. ' WHERE robots_default = 0 AND robots_noindex = 1 AND post_id IN (' . implode( ',', $ids ) . ')'
+			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- the placeholders are built above; the sniff only reads literals.
+			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- the table prefix and the placeholder list, neither of which can be prepared.
+				"SELECT post_id FROM {$wpdb->prefix}aioseo_posts WHERE robots_default = 0 AND robots_noindex = 1 AND post_id IN ({$placeholders})",
+				$ids
+			)
 		);
 
 		if ( null !== $suppress ) {
