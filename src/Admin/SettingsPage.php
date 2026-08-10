@@ -359,6 +359,15 @@ final class SettingsPage {
 							<p class="description">
 								<?php echo esc_html__( 'A menu is listed exactly as it was arranged, with its own labels — the order here is a decision somebody made, so it is not re-sorted. Only the exclusions, the depth limit and the entry cap apply to it.', 'rapls-sitemap' ); ?>
 							</p>
+							<label style="display:block">
+								<input type="checkbox" value="1"
+									name="<?php echo esc_attr( $name . '[menu_headings]' ); ?>"
+									<?php checked( ! empty( $settings['menu_headings'] ) ); ?> />
+								<?php echo esc_html__( 'Print items with no destination as headings', 'rapls-sitemap' ); ?>
+							</label>
+							<p class="description">
+								<?php echo esc_html__( 'A menu item whose link is "#" holds open a dropdown. In a table of contents it is a link that goes nowhere, so its label is printed as plain text instead.', 'rapls-sitemap' ); ?>
+							</p>
 						</td>
 					</tr>
 
@@ -1577,8 +1586,11 @@ final class SettingsPage {
 		$sections['author']  = __( 'Authors', 'rapls-sitemap' );
 		$sections['archive'] = __( 'Archives', 'rapls-sitemap' );
 
-		if ( array() !== self::available_menus() ) {
-			$sections['menu'] = __( 'Navigation menu', 'rapls-sitemap' );
+		// One box per menu rather than a single "Navigation menu": a site with a
+		// global nav and a footer nav can list both, and the bare `menu` alias
+		// could only ever mean whichever one the select above is on.
+		foreach ( self::available_menus() as $menu ) {
+			$sections[ 'menu:' . $menu->term_id ] = $menu->name;
 		}
 
 		return $sections;

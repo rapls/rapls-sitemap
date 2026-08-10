@@ -146,6 +146,7 @@ final class Shortcode {
 				'show_date',
 				'show_excerpt',
 				'show_count',
+				'menu_headings',
 			) as $flag
 		) {
 			if ( isset( $atts[ $flag ] ) ) {

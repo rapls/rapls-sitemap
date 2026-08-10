@@ -191,6 +191,20 @@ check(
 	'the list parser takes the loose format and drops duplicates'
 );
 
+// `menu:<id-or-slug>` is the one qualified form. sanitize_key() would eat the
+// colon, so the two halves are cleaned separately — a site with a global nav
+// and a footer nav can list both, which the bare alias cannot express.
+check(
+	array( 'menu:7', 'menu:footer-nav' ) === Settings::to_section_list( 'menu:7, menu:footer-nav' ),
+	'a menu can be named by ID or slug in a section list'
+);
+check( array( 'menu' ) === Settings::to_section_list( 'menu' ), 'the bare alias still means the selected menu' );
+
+// `menu:` with nothing after it is a typo, and answering it with the settings
+// screen's menu would hide that.
+check( array() === Settings::to_section_list( 'menu:' ), 'and a qualifier with nothing after it names nothing' );
+check( array( 'menu:7' ) === Settings::to_section_list( 'MENU:7' ), 'the prefix is case insensitive, like every other slug here' );
+
 /* --- ordering ------------------------------------------------------------ */
 
 check( 'title' === Settings::sanitize( array( 'orderby' => 'title' ) )['orderby'], 'a known ordering is kept' );

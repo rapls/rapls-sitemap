@@ -300,11 +300,11 @@ function get_term_link( $term ) {
 
 /* --- navigation menu stubs ---------------------------------------------- */
 
-function fixture_menu_item( $id, $title, $parent, $type, $object, $object_id ) {
+function fixture_menu_item( $id, $title, $parent, $type, $object, $object_id, $url = null ) {
 	$item                    = new stdClass();
 	$item->ID                = $id;
 	$item->title             = $title;
-	$item->url               = 'https://example.test/item/' . $id;
+	$item->url               = null === $url ? 'https://example.test/item/' . $id : $url;
 	$item->menu_item_parent  = $parent;
 	$item->type              = $type;
 	$item->object            = $object;
@@ -320,6 +320,9 @@ $GLOBALS['fixture_menu_items'] = array(
 	fixture_menu_item( 102, 'News', 0, 'taxonomy', 'category', 5 ),
 	fixture_menu_item( 103, 'Elsewhere', 0, 'custom', 'custom', 0 ),
 	fixture_menu_item( 106, 'Sub news', 0, 'taxonomy', 'category', 6 ),
+	// The `#` that holds open a dropdown: a real affordance in a menu, a link
+	// to nowhere in a table of contents.
+	fixture_menu_item( 107, 'Services', 0, 'custom', 'custom', 0, '#' ),
 	fixture_menu_item( 104, 'Members only', 0, 'post_type', 'post', 13 ),
 	fixture_menu_item( 105, 'Adrift', 999, 'custom', 'custom', 0 ),
 );
@@ -329,19 +332,30 @@ function get_ancestors( $object_id, $object_type, $resource_type = '' ) {
 	return 6 === (int) $object_id ? array( 5 ) : array();
 }
 
+// Two menus, because telling them apart is the whole reason `menu:<id>` exists.
 function wp_get_nav_menu_object( $menu ) {
-	if ( '' === (string) $menu || 'missing' === $menu ) {
+	$names = array( '7' => 'Main navigation', '8' => 'Footer navigation' );
+
+	if ( ! isset( $names[ (string) $menu ] ) ) {
 		return false;
 	}
 
 	$object          = new stdClass();
-	$object->term_id = 7;
-	$object->name    = 'Main navigation';
+	$object->term_id = (int) $menu;
+	$object->name    = $names[ (string) $menu ];
 	return $object;
 }
 
 function wp_get_nav_menu_items( $menu, $args = array() ) {
 	$GLOBALS['fixture_last_menu_args'] = $args;
+	$GLOBALS['fixture_menus_read'][]   = (int) $menu;
+
+	// The second menu holds one item, which is enough to prove each section
+	// listed the menu it named.
+	if ( 8 === (int) $menu ) {
+		return array( fixture_menu_item( 200, 'Privacy', 0, 'custom', 'custom', 0 ) );
+	}
+
 	return $GLOBALS['fixture_menu_items'];
 }
 
@@ -929,7 +943,7 @@ check( empty( $GLOBALS['fixture_last_term_args']['pad_counts'] ), 'and do not wh
 $menu = tree_settings( array( 'source' => 'menu', 'menu' => '7' ) );
 
 $roots = ( new TreeBuilder( $menu ) )->build();
-check( array( 'About us', 'News', 'Elsewhere', 'Sub news', 'Members only', 'Adrift' ) === titles( $roots ), 'a menu is listed in its own order, with its own labels' );
+check( array( 'About us', 'News', 'Elsewhere', 'Sub news', 'Services', 'Members only', 'Adrift' ) === titles( $roots ), 'a menu is listed in its own order, with its own labels' );
 check( array( 'Our history' ) === titles( $roots[0]->children ), 'and nested by menu_item_parent' );
 
 // The same rule the page tree follows: an item whose parent is not in the list
@@ -957,7 +971,7 @@ $roots = ( new TreeBuilder( array_merge( $menu, array( 'exclude_self' => 2 ) ) )
 check( array() === $roots[0]->children, 'while the item for that page itself is gone' );
 
 $roots = ( new TreeBuilder( array_merge( $menu, array( 'exclude_types' => array( 'page' ) ) ) ) )->build();
-check( array( 'News', 'Elsewhere', 'Sub news', 'Members only', 'Adrift' ) === titles( $roots ), 'an excluded post type takes its items with it' );
+check( array( 'News', 'Elsewhere', 'Sub news', 'Services', 'Members only', 'Adrift' ) === titles( $roots ), 'an excluded post type takes its items with it' );
 
 $roots = ( new TreeBuilder( array_merge( $menu, array( 'exclude_terms' => array( 5 ) ) ) ) )->build();
 check( ! in_array( 'News', titles( $roots ), true ), 'and an excluded term takes the item pointing at that term' );
@@ -986,7 +1000,7 @@ check( array( 1, 2, 13 ) === $GLOBALS['fixture_meta_primed'], 'the meta for ever
 $roots = ( new TreeBuilder(
 	array_merge( $menu, array( 'exclude_ids' => array( 1, 2, 13 ), 'exclude_terms' => array( 5 ) ) )
 ) )->build();
-check( array( 'Elsewhere', 'Adrift' ) === titles( $roots ), 'a custom link survives every exclusion' );
+check( array( 'Elsewhere', 'Services', 'Adrift' ) === titles( $roots ), 'a custom link survives every exclusion' );
 
 $roots = ( new TreeBuilder( array_merge( $menu, array( 'max_entries' => 2 ) ) ) )->build();
 check( has_note( $roots ), 'a truncated menu says so' );
@@ -1001,12 +1015,38 @@ check( 3 === count( $roots ), 'and the note sits below exactly the promised numb
 $roots = ( new TreeBuilder( array_merge( $menu, array( 'depth' => 1 ) ) ) )->build();
 check( array() === $roots[0]->children, 'the depth limit applies to a menu as well' );
 
+// A menu item whose link is "#" holds open a dropdown. In a table of contents
+// that is a link to nowhere, and an empty URL is already how this plugin says
+// "print the label, do not link it".
+$roots = ( new TreeBuilder( $menu ) )->build();
+$services = array_values( array_filter( $roots, static function ( $node ) { return 'Services' === $node->title; } ) );
+check( '' === $services[0]->url, 'an item with no destination is printed rather than linked' );
+
+$roots = ( new TreeBuilder( array_merge( $menu, array( 'menu_headings' => false ) ) ) )->build();
+$services = array_values( array_filter( $roots, static function ( $node ) { return 'Services' === $node->title; } ) );
+check( '' !== $services[0]->url, 'and the literal href comes back when that is switched off' );
+
 // Two menus in one sitemap have to be told apart, so the section takes the
 // menu's own name rather than a generic label.
 $roots = ( new TreeBuilder(
 	array_merge( $menu, array( 'sections' => array( 'page', 'menu' ), 'section_headings' => true ) )
 ) )->build();
 check( array( 'Pages', 'Main navigation' ) === titles( $roots ), 'a menu section is headed with the menu name' );
+
+// `menu:<id>` is the reason the heading is the menu's name and not a generic
+// one: the bare alias can only mean whichever menu the settings screen chose.
+$GLOBALS['fixture_menus_read'] = array();
+$roots = ( new TreeBuilder(
+	array_merge( $menu, array( 'sections' => array( 'menu:7', 'menu:8' ), 'section_headings' => true ) )
+) )->build();
+check( array( 'Main navigation', 'Footer navigation' ) === titles( $roots ), 'two menus can be listed in one sitemap, each under its own name' );
+check( array( 'Privacy' ) === titles( $roots[1]->children ), 'and each section lists the menu it named' );
+check( in_array( 8, $GLOBALS['fixture_menus_read'], true ), 'so the second menu really was read' );
+
+$roots = ( new TreeBuilder(
+	array_merge( $menu, array( 'sections' => array( 'page', 'menu:nope' ), 'section_headings' => true ) )
+) )->build();
+check( array( 'Parent', 'Standalone', 'Orphan' ) === titles( $roots ), 'a menu section naming nothing is skipped like any other' );
 
 /* --- sections: several listings in one placement ------------------------ */
 

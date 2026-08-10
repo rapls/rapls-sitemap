@@ -116,6 +116,14 @@ check( 'primary' === $out['menu'], 'though the menu is still remembered' );
 
 check( $base['source'] === Shortcode::apply_atts( $base, array( 'menu' => '' ) )['source'], 'and an empty menu selects nothing' );
 
+check( false === Shortcode::apply_atts( $base, array( 'menu_headings' => '0' ) )['menu_headings'], 'placeholder headings can be switched off per placement' );
+
+// Several menus in one placement, which the bare alias cannot express.
+check(
+	array( 'menu:global-nav', 'menu:12' ) === Shortcode::apply_atts( $base, array( 'sections' => 'menu:global-nav, menu:12' ) )['sections'],
+	'a section list can name one menu among several'
+);
+
 /* --- sections ------------------------------------------------------------ */
 
 check(

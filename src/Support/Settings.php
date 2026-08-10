@@ -209,6 +209,10 @@ final class Settings {
 			// string so all three survive a save; the settings screen posts the
 			// ID, but a shortcode is far more readable with a slug in it.
 			'menu'             => '',
+			// A menu item with no real destination — the `#` that holds open a
+			// dropdown — is printed as plain text rather than as a link that
+			// goes nowhere. Off restores the literal href.
+			'menu_headings'    => true,
 			// Several sections in one placement — post type slugs, taxonomy
 			// slugs, and the aliases in SECTIONS, in the order they should
 			// appear. Empty is the ordinary single-source sitemap, and `source`
@@ -409,6 +413,7 @@ final class Settings {
 				'legacy_marker',
 				'legacy_shortcode',
 				'load_styles',
+				'menu_headings',
 			) as $key
 		) {
 			$clean[ $key ] = ! empty( $input[ $key ] );
@@ -706,13 +711,46 @@ final class Settings {
 
 		$sections = array();
 		foreach ( $raw as $value ) {
-			$slug = sanitize_key( (string) $value );
+			$slug = self::sanitize_section( (string) $value );
 			if ( '' !== $slug ) {
 				$sections[ $slug ] = $slug;
 			}
 		}
 
 		return array_values( $sections );
+	}
+
+	/**
+	 * One section slug, in the only two shapes there are.
+	 *
+	 * A bare slug names a post type, a taxonomy, or one of SECTIONS. The one
+	 * qualified form is `menu:<id-or-slug>`, which exists because a site can
+	 * have several navigation menus and a sitemap listing both the global nav
+	 * and the footer nav is an ordinary thing to want — the bare `menu` alias
+	 * can only mean the one the settings screen selected.
+	 *
+	 * `sanitize_key()` would eat the colon, so the two halves are cleaned
+	 * separately. A menu named in Japanese therefore cannot be reached this way;
+	 * its ID can, and that is what the settings screen posts.
+	 *
+	 * @param string $value Raw slug.
+	 * @return string Empty when there is nothing usable in it.
+	 */
+	private static function sanitize_section( string $value ): string {
+		// Lowercased first: sanitize_key() would do it to a bare slug anyway, and
+		// a qualifier that only worked in lower case would be a rule nobody was
+		// told about.
+		$value = strtolower( trim( $value ) );
+
+		if ( 0 !== strpos( $value, 'menu:' ) ) {
+			return sanitize_key( $value );
+		}
+
+		$menu = sanitize_key( substr( $value, strlen( 'menu:' ) ) );
+
+		// `menu:` with nothing after it is not the bare `menu` alias — it is a
+		// typo, and answering it with the settings screen's menu would hide it.
+		return '' === $menu ? '' : 'menu:' . $menu;
 	}
 
 	/**

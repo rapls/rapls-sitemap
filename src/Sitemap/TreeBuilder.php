@@ -176,7 +176,7 @@ final class TreeBuilder {
 				$title = sprintf( __( '(no title) #%d', 'rapls-sitemap' ), (int) $item->ID );
 			}
 
-			$nodes[ (int) $item->ID ] = new Node( (int) $item->ID, $title, (string) $item->url, 'post' );
+			$nodes[ (int) $item->ID ] = new Node( (int) $item->ID, $title, $this->menu_url( $item ), 'post' );
 		}
 
 		$roots = array();
@@ -286,6 +286,29 @@ final class TreeBuilder {
 		}
 
 		return $this->cascade_menu_exclusions( $kept, $items );
+	}
+
+	/**
+	 * Where a menu item points, or nowhere at all.
+	 *
+	 * `#` is how a menu holds open a dropdown whose parent is not itself a
+	 * page. In a menu that is a real affordance; in a table of contents it is a
+	 * link that goes nowhere, which is worse than plain text for everyone and
+	 * worst for a screen reader. An empty URL is already how this plugin says
+	 * "print the label, do not link it", so the node simply gets one and every
+	 * preset styles it as the unlinked label it is.
+	 *
+	 * @param object $item Menu item.
+	 * @return string
+	 */
+	private function menu_url( $item ): string {
+		$url = trim( (string) $item->url );
+
+		if ( empty( $this->settings['menu_headings'] ) ) {
+			return $url;
+		}
+
+		return ( '' === $url || '#' === $url ) ? '' : $url;
 	}
 
 	/**
@@ -472,6 +495,18 @@ final class TreeBuilder {
 			);
 		}
 
+		// `menu:<id-or-slug>` names one menu among several, which the bare alias
+		// cannot: it can only mean whatever the settings screen selected.
+		if ( 0 === strpos( $slug, 'menu:' ) ) {
+			$identifier = substr( $slug, strlen( 'menu:' ) );
+
+			return array(
+				'settings' => array( 'source' => 'menu', 'menu' => $identifier ),
+				'label'    => $this->menu_label( $identifier ),
+				'url'      => '',
+			);
+		}
+
 		if ( post_type_exists( $slug ) ) {
 			return array(
 				'settings' => array( 'source' => 'content', 'post_types' => array( $slug ) ),
@@ -490,10 +525,8 @@ final class TreeBuilder {
 	/**
 	 * The heading a whole-source section is given.
 	 *
-	 * A menu gets its own name rather than the generic label — "グローバルナビ"
-	 * over that part of the sitemap says which menu it is, which the source name
-	 * cannot. There is one `menu` setting, so one placement lists one menu; the
-	 * label is still the menu's, because that is the honest heading for it.
+	 * A menu gets its own name rather than the generic label: which menu this is
+	 * is the one thing the source name cannot say.
 	 *
 	 * @param string $source One of Settings::SOURCES.
 	 * @return string
@@ -504,14 +537,27 @@ final class TreeBuilder {
 		}
 
 		if ( 'menu' === $source ) {
-			$menu = wp_get_nav_menu_object( $this->settings['menu'] );
-
-			return ( $menu && '' !== trim( (string) $menu->name ) )
-				? (string) $menu->name
-				: __( 'Navigation menu', 'rapls-sitemap' );
+			return $this->menu_label( (string) $this->settings['menu'] );
 		}
 
 		return __( 'Archives', 'rapls-sitemap' );
+	}
+
+	/**
+	 * A menu's own name, for the heading over it.
+	 *
+	 * Two menus in one sitemap is the reason `menu:<id-or-slug>` exists, and
+	 * "Navigation menu" twice would tell a reader nothing about which is which.
+	 *
+	 * @param string $identifier Menu ID, slug or name.
+	 * @return string
+	 */
+	private function menu_label( string $identifier ): string {
+		$menu = wp_get_nav_menu_object( $identifier );
+
+		return ( $menu && '' !== trim( (string) $menu->name ) )
+			? (string) $menu->name
+			: __( 'Navigation menu', 'rapls-sitemap' );
 	}
 
 	/**
