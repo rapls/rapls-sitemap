@@ -1564,8 +1564,26 @@ final class TreeBuilder {
 		$args = array(
 			'has_published_posts' => array() === $types ? true : $types,
 			'orderby'             => 'display_name',
+			// Always ascending, and deliberately not `order`. That setting means
+			// "newest first" and defaults to DESC; spending it on a list of
+			// names would turn every author listing on a default install
+			// upside-down to answer a question nobody asked about people.
 			'order'               => 'ASC',
 		);
+
+		// The account that installed WordPress, and the agency that built the
+		// site, are on the user list without being anyone a reader should be
+		// sent to. Excluded in the query rather than after it, so an excluded
+		// name cannot eat one of the capped slots.
+		$excluded = array_map( 'intval', (array) $this->settings['exclude_users'] );
+		if ( array() !== $excluded ) {
+			$args['exclude'] = $excluded;
+		}
+
+		$roles = array_values( array_filter( array_map( 'strval', (array) $this->settings['author_roles'] ) ) );
+		if ( array() !== $roles ) {
+			$args['role__in'] = $roles;
+		}
 
 		// Capped for the same reason posts are: a site with a large membership
 		// would otherwise load every user object to draw a list.

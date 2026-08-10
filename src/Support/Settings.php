@@ -209,6 +209,13 @@ final class Settings {
 			// string so all three survive a save; the settings screen posts the
 			// ID, but a shortcode is far more readable with a slug in it.
 			'menu'             => '',
+			// User IDs never listed in the author listing. A site's own admin
+			// account, or the agency that built it, is on the user list without
+			// being someone a reader should be sent to.
+			'exclude_users'    => array(),
+			// Roles the author listing is limited to; empty is every role that
+			// has published something.
+			'author_roles'     => array(),
 			// A menu item with no real destination — the `#` that holds open a
 			// dropdown — is printed as plain text rather than as a link that
 			// goes nowhere. Off restores the literal href.
@@ -389,10 +396,23 @@ final class Settings {
 			$clean['depth'] = max( 0, min( 10, (int) $input['depth'] ) );
 		}
 
-		foreach ( array( 'exclude_ids', 'exclude_terms' ) as $key ) {
+		foreach ( array( 'exclude_ids', 'exclude_terms', 'exclude_users' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = self::to_id_list( $input[ $key ] );
 			}
+		}
+
+		if ( isset( $input['author_roles'] ) ) {
+			// Not checked against the roles that exist: a role a plugin adds is
+			// not there when its plugin is being updated, and dropping it would
+			// silently widen the listing to everybody.
+			$clean['author_roles'] = array_values(
+				array_unique(
+					array_filter(
+						array_map( 'sanitize_key', (array) $input['author_roles'] )
+					)
+				)
+			);
 		}
 
 		foreach (

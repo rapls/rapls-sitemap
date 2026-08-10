@@ -194,7 +194,7 @@ final class Shortcode {
 			$settings['child_of'] = 'current' === strtolower( $child_of ) ? 'current' : max( 0, (int) $child_of );
 		}
 
-		foreach ( array( 'exclude_ids', 'exclude_terms' ) as $list ) {
+		foreach ( array( 'exclude_ids', 'exclude_terms', 'exclude_users' ) as $list ) {
 			if ( isset( $atts[ $list ] ) ) {
 				$settings[ $list ] = Settings::to_id_list( $atts[ $list ] );
 			}

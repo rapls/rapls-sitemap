@@ -69,6 +69,12 @@ function wp_get_nav_menus( $args = array() ) {
 	return array( $menu );
 }
 
+function wp_roles() {
+	$roles              = new stdClass();
+	$roles->role_names  = array( 'administrator' => 'Administrator', 'author' => 'Author' );
+	return $roles;
+}
+
 function add_options_page( $page, $menu, $cap, $slug, $callback ) {
 	$GLOBALS['rapls_admin_page'] = $slug;
 	return 'settings_page_' . $slug;
@@ -260,6 +266,8 @@ check( false !== strpos( $html, 'value="7"' ), 'with the site\'s menus in it' );
 // and a footer nav wants both.
 check( false !== strpos( $html, 'name="rapls_sitemap_settings[sections][]" value="menu:7"' ), 'and each menu is offered as a section of its own' );
 check( false !== strpos( $html, 'name="rapls_sitemap_settings[menu_headings]"' ), 'the placeholder-heading toggle is on the page' );
+check( false !== strpos( $html, 'name="rapls_sitemap_settings[author_roles][]" value="author"' ), 'the author-role filter lists the site\'s roles' );
+check( false !== strpos( $html, 'name="rapls_sitemap_settings[exclude_users]"' ), 'and user exclusions have a field' );
 
 // Sections nest, so counting a closing pair proves nothing. What matters is
 // that the page's divs balance overall — an unclosed section would swallow

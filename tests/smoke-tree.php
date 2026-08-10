@@ -1179,6 +1179,27 @@ check(
 	array( 'post' ) === $GLOBALS['fixture_last_user_args']['has_published_posts'],
 	'and an excluded type is taken out of that lookup too'
 );
+// The account WordPress was installed with is on the user list without being
+// anyone a reader should be sent to. Excluded in the query, not after it, so an
+// excluded name cannot eat one of the capped slots.
+$GLOBALS['fixture_last_user_args'] = null;
+( new TreeBuilder( tree_settings( array( 'source' => 'authors', 'exclude_users' => array( 1 ) ) ) ) )->build();
+check( array( 1 ) === $GLOBALS['fixture_last_user_args']['exclude'], 'excluded users are left out of the user query' );
+
+$GLOBALS['fixture_last_user_args'] = null;
+( new TreeBuilder( tree_settings( array( 'source' => 'authors', 'author_roles' => array( 'author', 'editor' ) ) ) ) )->build();
+check( array( 'author', 'editor' ) === $GLOBALS['fixture_last_user_args']['role__in'], 'and the listing can be limited to roles' );
+
+$GLOBALS['fixture_last_user_args'] = null;
+( new TreeBuilder( tree_settings( array( 'source' => 'authors' ) ) ) )->build();
+check( ! isset( $GLOBALS['fixture_last_user_args']['role__in'] ), 'ticking no role lists everyone who has published' );
+check( ! isset( $GLOBALS['fixture_last_user_args']['exclude'] ), 'and naming no user excludes nobody' );
+
+// `order` means "newest first" and defaults to DESC. Spending it on a list of
+// names would turn every author listing on a default install upside-down.
+( new TreeBuilder( tree_settings( array( 'source' => 'authors', 'order' => 'DESC' ) ) ) )->build();
+check( 'ASC' === $GLOBALS['fixture_last_user_args']['order'], 'the author listing stays alphabetical whatever the post order is' );
+
 check( 'author' === $roots[0]->kind, 'author nodes are marked as such' );
 check( 'https://example.test/author/3' === $roots[0]->url, 'authors link to their archive' );
 

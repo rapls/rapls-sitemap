@@ -456,6 +456,22 @@ final class SettingsPage {
 					</tr>
 
 					<tr>
+						<th scope="row">
+							<label for="rapls-sitemap-exclude-users"><?php echo esc_html__( 'Exclude user IDs', 'rapls-sitemap' ); ?></label>
+						</th>
+						<td>
+							<input type="text" class="regular-text"
+								id="rapls-sitemap-exclude-users"
+								name="<?php echo esc_attr( $name . '[exclude_users]' ); ?>"
+								value="<?php echo esc_attr( implode( ', ', (array) $settings['exclude_users'] ) ); ?>" />
+							<p class="description">
+								<?php echo esc_html__( 'The author listing only. The account WordPress was installed with, or the agency that built the site, is on the user list without being anyone a reader should be sent to.', 'rapls-sitemap' ); ?>
+							</p>
+							<?php $this->role_checkboxes( $name, $settings ); ?>
+						</td>
+					</tr>
+
+					<tr>
 						<th scope="row"><?php echo esc_html__( 'Home link', 'rapls-sitemap' ); ?></th>
 						<td>
 							<label>
@@ -1436,6 +1452,62 @@ final class SettingsPage {
 			'archives' => __( 'Monthly archives', 'rapls-sitemap' ),
 			'menu'     => __( 'A navigation menu', 'rapls-sitemap' ),
 		);
+	}
+
+	/**
+	 * The role filter for the author listing.
+	 *
+	 * Ticking nothing lists everyone who has published, which is the behaviour
+	 * this had before the boxes existed and the right default for a blog. A
+	 * company site usually wants one or two roles out of five.
+	 *
+	 * @param string              $name     Option name.
+	 * @param array<string,mixed> $settings Effective settings.
+	 */
+	private function role_checkboxes( string $name, array $settings ): void {
+		$roles = self::available_roles();
+		if ( array() === $roles ) {
+			return;
+		}
+
+		$selected = array_map( 'strval', (array) $settings['author_roles'] );
+
+		printf(
+			'<p><strong>%s</strong></p><input type="hidden" name="%s" value="" />',
+			esc_html__( 'Limit the author listing to these roles', 'rapls-sitemap' ),
+			esc_attr( $name . '[author_roles][]' )
+		);
+
+		foreach ( $roles as $slug => $label ) {
+			printf(
+				'<label style="display:inline-block;margin-right:1.5em">'
+					. '<input type="checkbox" name="%1$s" value="%2$s" %3$s /> %4$s</label>',
+				esc_attr( $name . '[author_roles][]' ),
+				esc_attr( $slug ),
+				checked( in_array( (string) $slug, $selected, true ), true, false ),
+				esc_html( $label )
+			);
+		}
+
+		printf(
+			'<p class="description">%s</p>',
+			esc_html__( 'Tick nothing to list everyone who has published something.', 'rapls-sitemap' )
+		);
+	}
+
+	/**
+	 * Roles offered on this screen, as slug => translated name.
+	 *
+	 * @return array<string,string>
+	 */
+	private static function available_roles(): array {
+		if ( ! function_exists( 'wp_roles' ) ) {
+			return array();
+		}
+
+		$roles = wp_roles();
+
+		return isset( $roles->role_names ) ? (array) $roles->role_names : array();
 	}
 
 	/**

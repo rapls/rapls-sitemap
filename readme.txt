@@ -24,6 +24,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 * 「記事も表示」「カテゴリーのみ」の切替
 * 階層の深さ制限、除外記事 ID、除外カテゴリー ID。どちらも親を除外すれば、その下の子も一緒に外れます
 * 投稿タイプ・タクソノミー単位での除外指定
+* 投稿者一覧の絞り込み。特定のユーザー ID を除外し、権限グループ（ロール）で限定できます
 * サイトマップを置いたページ自身、パスワード保護された項目、SEO プラグインで noindex に設定された項目の除外
 * 複数のカテゴリーに属する投稿を、それぞれのカテゴリーに表示するかの切替
 * すべてのリンクに `rel="nofollow"` を付与するオプション
@@ -72,7 +73,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 指定できる属性は次のとおりです。
 
 * 対象 — `post_types` / `source` / `sections` / `menu` / `taxonomy` / `term_mode` / `child_of`
-* 絞り込み — `exclude_ids` / `exclude_terms` / `exclude_current` / `exclude_protected` / `exclude_noindex`
+* 絞り込み — `exclude_ids` / `exclude_terms` / `exclude_users` / `exclude_current` / `exclude_protected` / `exclude_noindex`
 * 件数 — `number` / `offset` / `per_category` / `depth`
 * 並び順 — `orderby` / `order`
 * 表示 — `design` / `list_type` / `link_headings` / `show_home` / `group_by_term` / `nest_terms` / `duplicate_in_terms` / `section_headings` / `show_date` / `date_format` / `show_excerpt` / `excerpt_length` / `show_count` / `nofollow`
@@ -120,6 +121,18 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 投稿者一覧と年月アーカイブ一覧だけは別で、件数上限とデザインのほかは参照しません。誰がいつ公開したかから組み立てるためで、これは単独で表示したときと同じ挙動です。
 
 何もチェックしなければ、これまでどおり「一覧の種類」で選んだ 1 種類だけのサイトマップになります。
+
+= 投稿者一覧に載せたくない人がいます =
+
+「除外するユーザー ID」に指定してください。投稿者一覧にのみ効きます。
+
+WordPress をインストールしたときの管理アカウントや、制作会社のアカウントは、記事を公開していれば投稿者一覧に載りますが、読者を送る先ではないことがほとんどです。
+
+「投稿者一覧に含めるロール」で権限グループを限定することもできます。何もチェックしなければ、記事を公開しているすべての利用者が対象です。
+
+除外はクエリの時点で行うため、除外した人が件数上限の枠を消費することはありません。
+
+なお投稿者一覧は常に表示名の五十音・アルファベット順です。「並べ替えの基準」は記事の並び順の設定であり、人名の一覧に適用すると既定の設定のままで逆順になってしまうため、連動させていません。
 
 = 特定の固定ページの下だけを一覧にできますか =
 
