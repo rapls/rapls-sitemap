@@ -84,6 +84,22 @@ final class Settings {
 		'terminal',
 	);
 
+	/**
+	 * Orderings offered for the category and tag headings.
+	 *
+	 * Not the same list as ORDERBY, which is about entries: a term has no
+	 * publication date to sort by, and an entry has no count.
+	 *
+	 * `term_order` is the odd one. WordPress accepts it and, on its own, treats
+	 * it as the term ID — the column it refers to is only joined when the query
+	 * asks about one post's terms. What makes it useful is that the ordering
+	 * plugins a site installs to drag categories into a chosen order are the
+	 * ones that answer it. Offered because "商品カテゴリー" and "診療科" are
+	 * ordinary things to want in a chosen order rather than alphabetically, and
+	 * documented as needing one of those plugins.
+	 */
+	public const TERM_ORDERBY = array( 'name', 'count', 'slug', 'term_id', 'term_order' );
+
 	/** Orderings offered for the entries within a list. */
 	public const ORDERBY = array( 'default', 'date', 'title', 'ID', 'menu_order', 'modified', 'comment_count', 'rand', 'meta' );
 
@@ -229,6 +245,9 @@ final class Settings {
 			// Taxonomy used for grouping. Empty picks the post type's first
 			// public hierarchical taxonomy, which is `category` for posts.
 			'taxonomy'         => '',
+			// How the category and tag headings are ordered; see TERM_ORDERBY.
+			'term_orderby'     => 'name',
+			'term_order'       => 'ASC',
 			// 'posts' lists entries under each heading; 'terms_only' stops at
 			// the category links themselves.
 			'term_mode'        => 'posts',
@@ -461,6 +480,14 @@ final class Settings {
 
 		if ( isset( $input['source'] ) && in_array( $input['source'], self::SOURCES, true ) ) {
 			$clean['source'] = $input['source'];
+		}
+
+		if ( isset( $input['term_orderby'] ) && in_array( $input['term_orderby'], self::TERM_ORDERBY, true ) ) {
+			$clean['term_orderby'] = (string) $input['term_orderby'];
+		}
+
+		if ( isset( $input['term_order'] ) ) {
+			$clean['term_order'] = 'DESC' === strtoupper( (string) $input['term_order'] ) ? 'DESC' : 'ASC';
 		}
 
 		if ( isset( $input['menu'] ) ) {

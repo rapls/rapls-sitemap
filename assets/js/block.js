@@ -66,6 +66,15 @@
 		{ value: 'menu', label: __( 'A navigation menu', 'rapls-sitemap' ) },
 	];
 
+	var TERM_ORDERBY = [
+		{ value: '', label: __( 'Use the site default', 'rapls-sitemap' ) },
+		{ value: 'name', label: __( 'Name', 'rapls-sitemap' ) },
+		{ value: 'count', label: __( 'Number of entries', 'rapls-sitemap' ) },
+		{ value: 'slug', label: __( 'Slug', 'rapls-sitemap' ) },
+		{ value: 'term_id', label: __( 'Category ID', 'rapls-sitemap' ) },
+		{ value: 'term_order', label: __( 'The order set by hand', 'rapls-sitemap' ) },
+	];
+
 	var ORDERBY = [
 		{ value: '', label: __( 'Use the site default', 'rapls-sitemap' ) },
 		{ value: 'default', label: __( 'Whatever suits each list', 'rapls-sitemap' ) },
@@ -212,6 +221,8 @@
 						{ title: __( 'Order', 'rapls-sitemap' ), initialOpen: false },
 						select( __( 'Sort entries by', 'rapls-sitemap' ), 'orderby', ORDERBY ),
 						select( __( 'Direction', 'rapls-sitemap' ), 'order', ORDER ),
+						select( __( 'Sort category headings by', 'rapls-sitemap' ), 'termOrderby', TERM_ORDERBY ),
+						select( __( 'Category heading direction', 'rapls-sitemap' ), 'termOrder', ORDER ),
 						range( __( 'Maximum depth', 'rapls-sitemap' ), 'depth', -1, 10, __( '-1 uses the site default, 0 shows every level.', 'rapls-sitemap' ) ),
 						// A number field, not a slider: the site default is
 						// 2000, and a slider whose top end sits below the value

@@ -1020,7 +1020,27 @@ $GLOBALS['fixture_last_term_args'] = null;
 ( new TreeBuilder( grouped( array( 'term_mode' => 'terms_only', 'max_entries' => 0 ) ) ) )->build();
 check( ! isset( $GLOBALS['fixture_last_term_args']['number'] ), 'lifting the cap lifts it for terms as well' );
 
-// The count only lines up with a nested display if descendants are folded in.
+// A category order is frequently a decision rather than an alphabet, and
+// get_terms() was being asked for neither — it defaulted to name ASC, which is
+// only right by accident.
+$GLOBALS['fixture_last_term_args'] = null;
+( new TreeBuilder( grouped() ) )->build();
+check( 'name' === $GLOBALS['fixture_last_term_args']['orderby'], 'category headings are alphabetical by default' );
+check( 'ASC' === $GLOBALS['fixture_last_term_args']['order'], 'and ascending' );
+
+$GLOBALS['fixture_last_term_args'] = null;
+( new TreeBuilder( grouped( array( 'term_orderby' => 'count', 'term_order' => 'desc' ) ) ) )->build();
+check( 'count' === $GLOBALS['fixture_last_term_args']['orderby'], 'and both are settable' );
+check( 'DESC' === $GLOBALS['fixture_last_term_args']['order'], 'with the direction normalised' );
+
+// The column `term_order` refers to is only joined for a single post's terms,
+// so WordPress falls back to the ID on its own — what makes this worth offering
+// is the ordering plugins that answer it.
+$GLOBALS['fixture_last_term_args'] = null;
+( new TreeBuilder( grouped( array( 'term_orderby' => 'term_order' ) ) ) )->build();
+check( 'term_order' === $GLOBALS['fixture_last_term_args']['orderby'], 'a hand-set order is passed through for an ordering plugin to answer' );
+
+/* --- the count only lines up with a nested display if descendants are folded in --- */
 $GLOBALS['fixture_last_term_args'] = null;
 ( new TreeBuilder( grouped( array( 'term_mode' => 'terms_only', 'show_count' => true, 'nest_terms' => true ) ) ) )->build();
 check( ! empty( $GLOBALS['fixture_last_term_args']['pad_counts'] ), 'nested counts ask the database to include descendants' );

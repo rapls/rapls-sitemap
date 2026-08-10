@@ -177,6 +177,14 @@ final class Shortcode {
 			$settings['orderby'] = (string) $atts['orderby'];
 		}
 
+		if ( isset( $atts['term_orderby'] ) && in_array( $atts['term_orderby'], Settings::TERM_ORDERBY, true ) ) {
+			$settings['term_orderby'] = (string) $atts['term_orderby'];
+		}
+
+		if ( isset( $atts['term_order'] ) ) {
+			$settings['term_order'] = 'DESC' === strtoupper( (string) $atts['term_order'] ) ? 'DESC' : 'ASC';
+		}
+
 		if ( isset( $atts['order'] ) ) {
 			$settings['order'] = 'ASC' === strtoupper( (string) $atts['order'] ) ? 'ASC' : 'DESC';
 		}

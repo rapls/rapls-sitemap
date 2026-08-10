@@ -1333,6 +1333,12 @@ final class TreeBuilder {
 			'taxonomy'     => $taxonomy,
 			'hide_empty'   => false,
 			'exclude_tree' => (array) $this->settings['exclude_terms'],
+			// Alphabetical unless told otherwise, which is what get_terms()
+			// would have done anyway — but saying it is what lets a site say
+			// something else. A category order is frequently a decision rather
+			// than an alphabet: 診療科, 地域, 商品カテゴリー.
+			'orderby'      => (string) $this->settings['term_orderby'],
+			'order'        => 'DESC' === strtoupper( (string) $this->settings['term_order'] ) ? 'DESC' : 'ASC',
 		);
 
 		// Counts only mean what a reader expects when nesting is off. With it

@@ -63,6 +63,14 @@
 			"type": "string",
 			"default": ""
 		},
+		"termOrderby": {
+			"type": "string",
+			"default": ""
+		},
+		"termOrder": {
+			"type": "string",
+			"default": ""
+		},
 		"design": {
 			"type": "string",
 			"default": ""

@@ -125,6 +125,8 @@ final class Block {
 			'termMode'        => 'term_mode',
 			'orderby'         => 'orderby',
 			'order'           => 'order',
+			'termOrderby'     => 'term_orderby',
+			'termOrder'       => 'term_order',
 			'design'          => 'design',
 			'listType'        => 'list_type',
 			// Toggles always override.

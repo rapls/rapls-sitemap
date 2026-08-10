@@ -140,6 +140,10 @@ check( 'archives' === Settings::sanitize( array( 'source' => 'archives' ) )['sou
 check( 'content' === Settings::sanitize( array( 'source' => 'elsewhere' ) )['source'], 'an unknown source falls back to content' );
 check( 'menu' === Settings::sanitize( array( 'source' => 'menu' ) )['source'], 'a navigation menu is a source' );
 check( 'primary' === Settings::sanitize( array( 'menu' => ' primary ' ) )['menu'], 'and the menu it names is stored as given, trimmed' );
+check( 'count' === Settings::sanitize( array( 'term_orderby' => 'count' ) )['term_orderby'], 'a known term ordering is kept' );
+check( 'name' === Settings::sanitize( array( 'term_orderby' => 'popularity' ) )['term_orderby'], 'and an unknown one falls back to the name' );
+check( 'DESC' === Settings::sanitize( array( 'term_order' => 'desc' ) )['term_order'], 'the term direction is case insensitive' );
+check( 'ASC' === Settings::sanitize( array( 'term_order' => 'sideways' ) )['term_order'], 'and anything unrecognised reads as ascending — the opposite of the entry order, because a list of names is read A to Z' );
 check( 'post_tag' === Settings::sanitize( array( 'taxonomy' => 'post_tag' ) )['taxonomy'], 'a registered taxonomy is kept' );
 check( '' === Settings::sanitize( array( 'taxonomy' => 'imaginary' ) )['taxonomy'], 'an unregistered taxonomy resets to auto-detect' );
 check( '' === Settings::sanitize( array( 'taxonomy' => '' ) )['taxonomy'], 'an empty taxonomy stays empty — it means auto-detect' );

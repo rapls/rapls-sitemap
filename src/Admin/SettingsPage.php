@@ -837,6 +837,30 @@ final class SettingsPage {
 		<table class="form-table" role="presentation">
 			<tr>
 				<th scope="row">
+					<label for="rapls-sitemap-term-orderby"><?php echo esc_html__( 'Sort category headings by', 'rapls-sitemap' ); ?></label>
+				</th>
+				<td>
+					<select id="rapls-sitemap-term-orderby" name="<?php echo esc_attr( $name . '[term_orderby]' ); ?>">
+						<?php foreach ( self::term_orderings() as $slug => $label ) : ?>
+							<option value="<?php echo esc_attr( $slug ); ?>" <?php selected( $settings['term_orderby'], $slug ); ?>>
+								<?php echo esc_html( $label ); ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+
+					<select name="<?php echo esc_attr( $name . '[term_order]' ); ?>">
+						<option value="ASC" <?php selected( $settings['term_order'], 'ASC' ); ?>><?php echo esc_html__( 'Ascending (A to Z, fewest first)', 'rapls-sitemap' ); ?></option>
+						<option value="DESC" <?php selected( $settings['term_order'], 'DESC' ); ?>><?php echo esc_html__( 'Descending (Z to A, most first)', 'rapls-sitemap' ); ?></option>
+					</select>
+
+					<p class="description">
+						<?php echo esc_html__( 'A category order is often a decision rather than an alphabet — departments, regions, product lines. "The order set by hand" needs a plugin that provides one; without it WordPress falls back to the category ID.', 'rapls-sitemap' ); ?>
+					</p>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row">
 					<label for="rapls-sitemap-orderby"><?php echo esc_html__( 'Sort entries by', 'rapls-sitemap' ); ?></label>
 				</th>
 				<td>
@@ -1605,6 +1629,21 @@ final class SettingsPage {
 		}
 
 		return (array) wp_get_nav_menus();
+	}
+
+	/**
+	 * Term orderings as slug => translated label.
+	 *
+	 * @return array<string,string>
+	 */
+	private static function term_orderings(): array {
+		return array(
+			'name'       => __( 'Name', 'rapls-sitemap' ),
+			'count'      => __( 'Number of entries', 'rapls-sitemap' ),
+			'slug'       => __( 'Slug', 'rapls-sitemap' ),
+			'term_id'    => __( 'Category ID', 'rapls-sitemap' ),
+			'term_order' => __( 'The order set by hand', 'rapls-sitemap' ),
+		);
 	}
 
 	/**

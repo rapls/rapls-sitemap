@@ -38,6 +38,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 * セクション・カテゴリーの見出しをリンクにしない設定。中身の薄いアーカイブや noindex アーカイブ向け
 * `ul` / `ol` の切替
 * 並び順の指定。新しい順、古い順、タイトル順、ID 順、ページの並び順、更新日順、コメント数順、ランダム、カスタムフィールド順
+* カテゴリー見出しの並び順を、名前・記事数・スラッグ・ID・**手動の並び順**から指定
 * デザインプリセット 27 種＋スタイルなし。画像を一切使わない CSS のみの実装で、ダークテーマでもそのまま使えます
 * 文字の大きさ、行間、リンクの色、下線の有無、字下げ幅を個別に指定
 * 箇条書きの記号を、黒丸・白丸・四角・絵文字・アイコンクラス (Font Awesome 等) から選択。最上位と下の階層で別々に指定できます
@@ -79,7 +80,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 * 対象 — `post_types` / `source` / `sections` / `menu` / `taxonomy` / `term_mode` / `child_of`
 * 絞り込み — `exclude_ids` / `exclude_terms` / `exclude_users` / `exclude_current` / `exclude_protected` / `exclude_noindex`
 * 件数 — `number` / `offset` / `per_category` / `depth`
-* 並び順 — `orderby` / `order`
+* 並び順 — `orderby` / `order` / `term_orderby` / `term_order`
 * 表示 — `design` / `list_type` / `link_headings` / `show_home` / `group_by_term` / `nest_terms` / `duplicate_in_terms` / `section_headings` / `show_date` / `date_format` / `show_excerpt` / `excerpt_length` / `show_count` / `nofollow`
 
 キャッシュとスタイル読み込みはサイト全体の設定のみで、配置ごとの指定はできません。
@@ -177,6 +178,14 @@ WordPress をインストールしたときの管理アカウントや、制作�
 = XML サイトマップも出力されますか =
 
 いいえ。このプラグインは読者向けの HTML サイトマップ専用です。
+
+= カテゴリーの並び順を自分で決められますか =
+
+「カテゴリー見出しの並び順」で、名前・記事数・スラッグ・ID・「手動で設定した順序」から選べます。
+
+カテゴリーの並びは五十音順であるべきとは限りません。診療科、地域、商品カテゴリーなどは、運用者が決めた順序があるのが普通です。
+
+「手動で設定した順序」は、その順序を提供するプラグイン（Category Order and Taxonomy Terms Order など）と組み合わせて使ってください。**そうしたプラグインがない場合、WordPress はカテゴリー ID 順にフォールバックします。** 本プラグイン単体で並べ替える機能は持っていません。
 
 = 五十音順に並べられますか =
 

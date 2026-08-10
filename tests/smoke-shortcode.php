@@ -95,6 +95,10 @@ check( 'rand' === Shortcode::apply_atts( $base, array( 'orderby' => 'rand' ) )['
 check( $base['orderby'] === Shortcode::apply_atts( $base, array( 'orderby' => 'whatever' ) )['orderby'], 'an unknown ordering is ignored' );
 check( 'ASC' === Shortcode::apply_atts( $base, array( 'order' => 'asc' ) )['order'], 'the direction is case insensitive' );
 
+check( 'count' === Shortcode::apply_atts( $base, array( 'term_orderby' => 'count' ) )['term_orderby'], 'category headings can be ordered per placement' );
+check( $base['term_orderby'] === Shortcode::apply_atts( $base, array( 'term_orderby' => 'whatever' ) )['term_orderby'], 'and an unknown term ordering is ignored' );
+check( 'DESC' === Shortcode::apply_atts( $base, array( 'term_order' => 'desc' ) )['term_order'], 'with its own direction' );
+
 check( true === Shortcode::apply_atts( $base, array( 'show_date' => '1' ) )['show_date'], 'dates can be switched on per placement' );
 check( 'Y-m-d' === Shortcode::apply_atts( $base, array( 'date_format' => 'Y-m-d' ) )['date_format'], 'with their own format' );
 check( 5 === Shortcode::apply_atts( $base, array( 'excerpt_length' => '5' ) )['excerpt_length'], 'and excerpt length is settable too' );

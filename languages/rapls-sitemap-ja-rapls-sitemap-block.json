@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-08-10 03:56:21+0000",
+    "translation-revision-date": "2026-08-10 04:01:30+0000",
     "generator": "rapls-sitemap\/bin\/make-json.php",
     "domain": "messages",
     "locale_data": {
@@ -52,8 +52,14 @@
             "Categories only": [
                 "カテゴリーのみ"
             ],
+            "Category ID": [
+                "カテゴリー ID"
+            ],
             "Category display": [
                 "カテゴリーの表示"
+            ],
+            "Category heading direction": [
+                "カテゴリー見出しの方向"
             ],
             "Checklist": [
                 "チェックリスト"
@@ -142,6 +148,9 @@
             "Monthly archives": [
                 "年月アーカイブ"
             ],
+            "Name": [
+                "名前"
+            ],
             "Neon": [
                 "ネオン"
             ],
@@ -153,6 +162,9 @@
             ],
             "No style": [
                 "スタイルなし"
+            ],
+            "Number of entries": [
+                "記事数"
             ],
             "Numbered": [
                 "連番"
@@ -211,6 +223,12 @@
             "Simple": [
                 "シンプル"
             ],
+            "Slug": [
+                "スラッグ"
+            ],
+            "Sort category headings by": [
+                "カテゴリー見出しの並び順"
+            ],
             "Sort entries by": [
                 "並べ替えの基準"
             ],
@@ -222,6 +240,9 @@
             ],
             "The ID, slug or name of a navigation menu. Naming one selects it as the source.": [
                 "ナビゲーションメニューの ID、スラッグ、または名前です。指定するとメニュー表示になります。"
+            ],
+            "The order set by hand": [
+                "手動で設定した順序"
             ],
             "Timeline": [
                 "タイムライン"
