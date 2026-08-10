@@ -278,7 +278,10 @@ function get_term_link( $term ) {
 }
 
 function post_type_exists( $type ) {
-	return in_array( $type, array( 'page', 'post' ), true );
+	// `event` exists but is never listed by these fixtures; it is here so a
+	// taxonomy can be attached to two flat post types, which is the only way to
+	// tell "picked the first one" from "picked the first listable one" apart.
+	return in_array( $type, array( 'page', 'post', 'event' ), true );
 }
 
 function taxonomy_exists( $taxonomy ) {
@@ -291,12 +294,13 @@ function get_taxonomy( $taxonomy ) {
 		return false;
 	}
 
-	$object                 = $objects[ $taxonomy ];
-	$object->labels         = new stdClass();
-	$object->labels->name   = 'category' === $taxonomy ? 'Categories' : 'Tags';
-	// Both of the fixture's taxonomies live on `post` only. That the object
-	// type is flat is what lets a taxonomy be a section at all.
-	$object->object_type    = array( 'post' );
+	$object               = $objects[ $taxonomy ];
+	$object->labels       = new stdClass();
+	$object->labels->name = 'category' === $taxonomy ? 'Categories' : 'Tags';
+
+	// That the object type is flat is what lets a taxonomy be a section at all.
+	// Tags are attached to two of them, `event` first.
+	$object->object_type = 'category' === $taxonomy ? array( 'post' ) : array( 'event', 'post' );
 
 	return $object;
 }
@@ -912,6 +916,13 @@ check( 'section' !== $roots[0]->kind, 'and headings can be switched off as every
 // may well belong to a plugin that is being updated right now.
 $roots = ( new TreeBuilder( array_merge( $composed, array( 'sections' => array( 'page', 'nonsense', 'post' ) ) ) ) )->build();
 check( array( 'Pages', 'Posts' ) === titles( $roots ), 'an unresolvable section is skipped' );
+
+// The post type a term listing is reached through has to be one that would
+// actually be listed. Taking the first flat one and leaving build_post_type()
+// to refuse it drops the whole section — even where the taxonomy has another
+// post type that is perfectly listable.
+$roots = ( new TreeBuilder( array_merge( $composed, array( 'sections' => array( 'page', 'post_tag' ), 'exclude_types' => array( 'event' ) ) ) ) )->build();
+check( array( 'Pages', 'Tags' ) === titles( $roots ), 'an excluded post type does not take a taxonomy section with it' );
 
 // A term listing is reached only through a post type with no hierarchy of its
 // own, so an excluded taxonomy must drop the section rather than fall through

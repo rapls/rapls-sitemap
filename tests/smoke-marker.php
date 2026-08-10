@@ -84,6 +84,28 @@ check( rendered( $marker->replace( '<!-- sitemap content replace point -->' ) ),
 $twice = '<!-- SITEMAP CONTENT REPLACE POINT --><hr /><!-- SITEMAP CONTENT REPLACE POINT -->';
 check( 2 === substr_count( $marker->replace( $twice ), '<nav' ), 'every marker on the page is replaced' );
 
+/* --- one cache entry per language --------------------------------------- */
+
+// WPML and Polylang narrow the queries themselves, inside the render — the
+// settings are identical in every language, so without the locale in the key
+// whichever language was rendered first would be served to all of them. The
+// page ID from exclude_current usually differs between translations and hid
+// this; a placement with that switched off did not.
+$GLOBALS['rapls_transients'] = array();
+
+$marker->replace( '<!-- SITEMAP CONTENT REPLACE POINT -->' );
+$one = count( $GLOBALS['rapls_transients'] );
+
+$GLOBALS['rapls_locale'] = 'en_US';
+$marker->replace( '<!-- SITEMAP CONTENT REPLACE POINT -->' );
+$GLOBALS['rapls_locale'] = 'ja';
+
+check( 1 === $one, 'a render is cached', (string) $one );
+check( 2 === count( $GLOBALS['rapls_transients'] ), 'and the same sitemap in another language gets an entry of its own' );
+
+$marker->replace( '<!-- SITEMAP CONTENT REPLACE POINT -->' );
+check( 2 === count( $GLOBALS['rapls_transients'] ), 'while the same language reuses the one it already has' );
+
 /* --- the author CSS is attached once, not once per placement ------------ */
 
 update_option(

@@ -236,9 +236,14 @@ final class Settings {
 			// Separate from max_entries, which bounds the query — this one
 			// bounds how long any single group gets on the page.
 			'max_per_term'     => 0,
-			// Entries to skip at the start of each list.
+			// Entries to skip at the start of each post type's list. The term
+			// and author queries do not take it: an offset into a list of
+			// categories or of people answers no question anyone has asked, and
+			// the cap that bounds those queries is there for memory, not for
+			// paging.
 			'offset'           => 0,
-			// A heading above each post type's list when more than one is shown.
+			// A heading above each list when more than one is shown — over each
+			// post type, and over each entry of `sections`.
 			'section_headings' => true,
 			// `ul` or `ol`.
 			'list_type'        => 'ul',
@@ -608,7 +613,14 @@ final class Settings {
 	 * @return array<string,mixed>
 	 */
 	public static function for_request( array $settings ): array {
-		if ( ! empty( $settings['exclude_current'] ) ) {
+		// Whether anything content-shaped renders at all. `source` alone does
+		// not answer that: a composed sitemap ignores it, and each of its
+		// sections says for itself what it is built from — so a placement whose
+		// saved source is `authors` can still be listing pages.
+		$lists_content = array() !== self::to_section_list( $settings['sections'] )
+			|| 'content' === $settings['source'];
+
+		if ( ! empty( $settings['exclude_current'] ) && $lists_content ) {
 			$settings['exclude_self'] = self::current_post_id();
 		}
 
@@ -621,11 +633,12 @@ final class Settings {
 
 		$settings['child_of'] = max( 0, (int) $settings['child_of'] );
 
-		// Only the page tree has branches. Leaving a resolved ID on the author
-		// or archive listing would change nothing about the output and give
-		// every page its own cache entry for an identical list.
-		if ( 'content' !== $settings['source'] ) {
-			$settings['child_of'] = 0;
+		// Neither of these can change an author or archive listing, and both are
+		// the current page's ID — so leaving them on one would give every page
+		// its own cache entry for a list that is the same on all of them.
+		if ( ! $lists_content ) {
+			$settings['child_of']     = 0;
+			$settings['exclude_self'] = 0;
 		}
 
 		return $settings;

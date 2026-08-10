@@ -224,7 +224,7 @@
 						{ title: __( 'Appearance', 'rapls-sitemap' ), initialOpen: false },
 						select( __( 'Design', 'rapls-sitemap' ), 'design', DESIGNS ),
 						select( __( 'List element', 'rapls-sitemap' ), 'listType', LIST_TYPES ),
-						toggle( __( 'Put a heading above each post type', 'rapls-sitemap' ), 'sectionHeadings' ),
+						toggle( __( 'Put a heading above each list', 'rapls-sitemap' ), 'sectionHeadings' ),
 						toggle( __( 'Link section and category headings to their archives', 'rapls-sitemap' ), 'linkHeadings' ),
 						toggle( __( 'Published date', 'rapls-sitemap' ), 'showDate' ),
 						toggle( __( 'Excerpt', 'rapls-sitemap' ), 'showExcerpt' ),

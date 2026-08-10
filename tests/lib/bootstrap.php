@@ -149,6 +149,18 @@ if ( ! function_exists( 'set_transient' ) ) {
 	}
 }
 
+/* --- locale -------------------------------------------------------------- */
+
+// The render cache keys on this: a multilingual plugin narrows the queries
+// inside the render, and the settings are identical in every language.
+$GLOBALS['rapls_locale'] = 'ja';
+
+if ( ! function_exists( 'determine_locale' ) ) {
+	function determine_locale() {
+		return $GLOBALS['rapls_locale'];
+	}
+}
+
 /* --- hooks -------------------------------------------------------------- */
 
 $GLOBALS['rapls_hooks'] = array();

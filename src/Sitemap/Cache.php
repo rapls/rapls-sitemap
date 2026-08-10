@@ -128,13 +128,22 @@ final class Cache {
 	 * Includes the plugin version so an upgrade that changes the markup does not
 	 * serve last version's HTML.
 	 *
+	 * It also includes the locale, which is the entirety of the multilingual
+	 * story on this side. WPML and Polylang narrow the queries themselves — see
+	 * `suppress_filters` in TreeBuilder — but they do that *inside* the render,
+	 * and the settings are identical in every language. Without the locale in
+	 * the key, whichever language was asked for first would be served to all of
+	 * them. The page ID from `exclude_current` usually differs between
+	 * translations and hid this; a placement with that switched off did not.
+	 *
 	 * @param array<string,mixed> $settings Effective settings.
 	 * @return string
 	 */
 	private function key( array $settings ): string {
 		$salt    = (string) get_option( self::SALT_OPTION, '' );
 		$version = defined( 'RAPLS_SITEMAP_VERSION' ) ? RAPLS_SITEMAP_VERSION : '0';
+		$locale  = function_exists( 'determine_locale' ) ? determine_locale() : get_locale();
 
-		return self::PREFIX . md5( $salt . '|' . $version . '|' . wp_json_encode( $settings ) );
+		return self::PREFIX . md5( $salt . '|' . $version . '|' . $locale . '|' . wp_json_encode( $settings ) );
 	}
 }

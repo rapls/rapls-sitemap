@@ -231,6 +231,18 @@ check( false !== strpos( $html, 'rapls_sitemap_settings[custom_css]' ), 'and the
 check( false !== strpos( $html, 'rapls-sitemap__item--archive-month' ), 'the class reference lists every node kind' );
 check( false !== strpos( $html, 'buymeacoffee.com/rapls' ), 'the support panel is at the foot of the screen' );
 
+// The section boxes carry the slugs TreeBuilder::section() resolves, and each
+// slug is offered once. A box labelled with a taxonomy that turns out to list a
+// post type is worse than one option fewer, so the screen follows that method's
+// order — alias, then post type, then taxonomy — rather than overwriting as it
+// goes.
+check(
+	1 === substr_count( $html, 'name="rapls_sitemap_settings[sections][]" value="category"' ),
+	'each section slug is offered exactly once'
+);
+check( false !== strpos( $html, 'name="rapls_sitemap_settings[sections][]" value="author"' ), 'the author listing is offered as a section' );
+check( false !== strpos( $html, 'name="rapls_sitemap_settings[sections_order][archive]"' ), 'and each box has its position field' );
+
 // Sections nest, so counting a closing pair proves nothing. What matters is
 // that the page's divs balance overall — an unclosed section would swallow
 // everything after it into a collapsed panel.

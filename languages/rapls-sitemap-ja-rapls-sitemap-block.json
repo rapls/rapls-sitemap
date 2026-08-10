@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-08-10 01:03:49+0000",
+    "translation-revision-date": "2026-08-10 01:20:35+0000",
     "generator": "rapls-sitemap\/bin\/make-json.php",
     "domain": "messages",
     "locale_data": {
@@ -181,8 +181,8 @@
             "Published date": [
                 "公開日"
             ],
-            "Put a heading above each post type": [
-                "投稿タイプごとに見出しを付ける"
+            "Put a heading above each list": [
+                "一覧ごとに見出しを付ける"
             ],
             "Random": [
                 "ランダム"

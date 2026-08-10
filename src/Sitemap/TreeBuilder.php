@@ -258,11 +258,19 @@ final class TreeBuilder {
 			return null;
 		}
 
+		$excluded = (array) $this->settings['exclude_types'];
+
 		$types = array_values(
 			array_filter(
 				(array) $object->object_type,
-				static function ( $type ) {
-					return post_type_exists( $type ) && ! is_post_type_hierarchical( $type );
+				static function ( $type ) use ( $excluded ) {
+					// An excluded type is skipped here rather than left to
+					// build_post_type(), which would return nothing and take the
+					// whole section with it — even where the taxonomy has
+					// another post type that is perfectly listable.
+					return post_type_exists( $type )
+						&& ! is_post_type_hierarchical( $type )
+						&& ! in_array( $type, $excluded, true );
 				}
 			)
 		);

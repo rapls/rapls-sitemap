@@ -354,7 +354,7 @@ final class SettingsPage {
 								<?php echo esc_html__( 'Tick nothing for an ordinary sitemap built from the setting above. Tick two or more and one placement lists each of them in turn, under its own heading — which is the shape most sitemap pages have.', 'rapls-sitemap' ); ?>
 							</p>
 							<p class="description">
-								<?php echo esc_html__( 'The number sets the output order — the lowest is listed first. Everything below applies inside every section.', 'rapls-sitemap' ); ?>
+								<?php echo esc_html__( 'The number sets the output order — the lowest is listed first. The settings below apply inside every section that lists content; the author and archive sections read only the entry cap and the design.', 'rapls-sitemap' ); ?>
 							</p>
 						</td>
 					</tr>
@@ -596,10 +596,10 @@ final class SettingsPage {
 								<input type="checkbox" value="1"
 									name="<?php echo esc_attr( $name . '[section_headings]' ); ?>"
 									<?php checked( ! empty( $settings['section_headings'] ) ); ?> />
-								<?php echo esc_html__( 'Put a heading above each post type', 'rapls-sitemap' ); ?>
+								<?php echo esc_html__( 'Put a heading above each list', 'rapls-sitemap' ); ?>
 							</label>
 							<p class="description">
-								<?php echo esc_html__( 'Only when more than one post type is listed — a single list needs no label to tell it apart.', 'rapls-sitemap' ); ?>
+								<?php echo esc_html__( 'Applies to the post types and to the sections above. Only when more than one is listed — a single list needs no label to tell it apart.', 'rapls-sitemap' ); ?>
 							</p>
 							<p>
 								<label>
@@ -797,6 +797,9 @@ final class SettingsPage {
 					</p>
 					<p class="description">
 						<?php echo esc_html__( '"Per category" is a different limit: it caps how far a reader has to scroll past one category before reaching the next, rather than how much is fetched.', 'rapls-sitemap' ); ?>
+					</p>
+					<p class="description">
+						<?php echo esc_html__( 'The cap applies to all three queries — entries, categories and authors. "Skip the first" applies to the entries only: an offset into a list of categories or of people answers no question anyone has asked.', 'rapls-sitemap' ); ?>
 					</p>
 				</td>
 			</tr>
@@ -1506,17 +1509,39 @@ final class SettingsPage {
 	 * through their SECTIONS aliases; the aliases exist for `[wp_sitemap_page]`,
 	 * whose vocabulary they are, and both routes build the same section.
 	 *
+	 * A slug is offered once, with the label of whatever `TreeBuilder::section()`
+	 * would resolve it to — which is why this follows that method's order rather
+	 * than overwriting as it goes. A box labelled with a taxonomy that lists a
+	 * post type is worse than one option fewer.
+	 *
 	 * @return array<string,string>
 	 */
 	private static function available_sections(): array {
+		// `author` and `archive` are resolved before anything is looked up, so a
+		// post type or taxonomy that happens to use one of those slugs cannot be
+		// reached and must not be offered. `category` and `post_tag` are not in
+		// this list: their aliases resolve to those very taxonomies, so the
+		// taxonomy label is the right one for them.
+		$reserved = array();
+		foreach ( Settings::SECTIONS as $slug => $overrides ) {
+			if ( ! isset( $overrides['taxonomy'] ) ) {
+				$reserved[] = $slug;
+			}
+		}
+
 		$sections = array();
 
 		foreach ( self::available_post_types() as $post_type ) {
-			$sections[ $post_type->name ] = $post_type->labels->name;
+			if ( ! in_array( $post_type->name, $reserved, true ) ) {
+				$sections[ $post_type->name ] = $post_type->labels->name;
+			}
 		}
 
 		foreach ( self::available_taxonomies() as $taxonomy ) {
-			$sections[ $taxonomy->name ] = $taxonomy->labels->name;
+			// A post type of the same name wins in the builder, so it wins here.
+			if ( ! isset( $sections[ $taxonomy->name ] ) && ! in_array( $taxonomy->name, $reserved, true ) ) {
+				$sections[ $taxonomy->name ] = $taxonomy->labels->name;
+			}
 		}
 
 		$sections['author']  = __( 'Authors', 'rapls-sitemap' );

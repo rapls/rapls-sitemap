@@ -338,15 +338,29 @@ check( 0 === $out['exclude_self'], 'and the page is still listed, which is what 
 $out = Settings::for_request( array_merge( Settings::defaults(), array( 'exclude_current' => true ) ) );
 check( 7 === $out['exclude_self'], 'and exclude_current resolves with no child_of in play' );
 
-// Only the page tree has branches. A resolved ID left on the other sources
-// would change nothing about the output and give every page its own cache
-// entry for an identical list.
+// Only the page tree has branches, and neither key can change an author or
+// archive listing. Leaving the current page's ID on one would give every page
+// its own cache entry for a list that is the same on all of them.
 foreach ( array( 'authors', 'archives' ) as $source ) {
 	$out = Settings::for_request(
 		array_merge( Settings::defaults(), array( 'child_of' => 'current', 'source' => $source ) )
 	);
 	check( 0 === $out['child_of'], sprintf( 'the %s listing carries no branch, so it cannot split the cache', $source ) );
+	check( 0 === $out['exclude_self'], sprintf( 'and no current page either, for the same reason', $source ) );
 }
+
+// But `source` does not decide what renders once sections are in play: each
+// section says for itself what it is built from, so a saved source of `authors`
+// with a `page` section is a sitemap of pages — and the branch it was asked to
+// list must survive.
+$out = Settings::for_request(
+	array_merge(
+		Settings::defaults(),
+		array( 'child_of' => 'current', 'source' => 'authors', 'sections' => array( 'page' ) )
+	)
+);
+check( 7 === $out['child_of'], 'a composed sitemap keeps its branch whatever the source setting says' );
+check( 7 === $out['exclude_self'], 'and keeps the current page out of its own listing' );
 
 $GLOBALS['rapls_current_post'] = 7;
 check( 12 === Settings::for_request( array_merge( Settings::defaults(), array( 'child_of' => 12 ) ) )['child_of'], 'a literal ID is left alone' );
