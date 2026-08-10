@@ -43,7 +43,7 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-	.rapls-sitemap__link {
+.rapls-sitemap__link {
 		transition: opacity 120ms ease;
 	}
 }
@@ -51,11 +51,17 @@
 /* --- simple: headings plus indentation, no ornament ---------------------- */
 
 .rapls-sitemap--simple .rapls-sitemap__item--term > .rapls-sitemap__link,
+.rapls-sitemap--simple .rapls-sitemap__item--term > .rapls-sitemap__label,
 .rapls-sitemap--simple .rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--simple .rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__label,
 .rapls-sitemap--simple .rapls-sitemap__item--archive > .rapls-sitemap__link,
+.rapls-sitemap--simple .rapls-sitemap__item--archive > .rapls-sitemap__label,
 .rapls-sitemap--simple .rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--simple .rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__label,
 .rapls-sitemap--simple .rapls-sitemap__item--home > .rapls-sitemap__link,
-.rapls-sitemap--simple .rapls-sitemap__item--home > .rapls-sitemap__heading > .rapls-sitemap__link {
+.rapls-sitemap--simple .rapls-sitemap__item--home > .rapls-sitemap__label,
+.rapls-sitemap--simple .rapls-sitemap__item--home > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--simple .rapls-sitemap__item--home > .rapls-sitemap__heading > .rapls-sitemap__label {
 	font-weight: 700;
 }
 
@@ -127,7 +133,9 @@
 .rapls-sitemap--marker .rapls-sitemap__item--archive > .rapls-sitemap__label,
 .rapls-sitemap--marker .rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__label,
 .rapls-sitemap--marker .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__link,
-.rapls-sitemap--marker .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__link {
+.rapls-sitemap--marker .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__label,
+.rapls-sitemap--marker .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--marker .rapls-sitemap__list--depth-0 > .rapls-sitemap__item > .rapls-sitemap__heading > .rapls-sitemap__label {
 	/* The stripe sits behind the lower two-thirds of the text, the way a real
 	   marker lands. currentColor at low alpha keeps it theme-agnostic. */
 	background-image: linear-gradient( to top, rgba(255, 214, 0, 0.55) 0.7em, transparent 0.7em );
@@ -348,7 +356,9 @@
 .rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--archive > .rapls-sitemap__label,
 .rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__label,
 .rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--home > .rapls-sitemap__link,
-.rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--home > .rapls-sitemap__heading > .rapls-sitemap__link {
+.rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--home > .rapls-sitemap__label,
+.rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--home > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--neon .rapls-sitemap__item.rapls-sitemap__item--home > .rapls-sitemap__heading > .rapls-sitemap__label {
 	color: #ff6ec7;
 	font-weight: 700;
 	letter-spacing: 0.05em;
@@ -388,7 +398,9 @@
 .rapls-sitemap--compact .rapls-sitemap__item--term > .rapls-sitemap__link,
 .rapls-sitemap--compact .rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__link,
 .rapls-sitemap--compact .rapls-sitemap__item--archive > .rapls-sitemap__link,
+.rapls-sitemap--compact .rapls-sitemap__item--archive > .rapls-sitemap__label,
 .rapls-sitemap--compact .rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--compact .rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__label,
 .rapls-sitemap--compact .rapls-sitemap__item--term > .rapls-sitemap__label,
 .rapls-sitemap--compact .rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__label {
 	font-size: 0.95em;
@@ -658,7 +670,9 @@
 .rapls-sitemap--outline .rapls-sitemap__item--term > .rapls-sitemap__label,
 .rapls-sitemap--outline .rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__label,
 .rapls-sitemap--outline .rapls-sitemap__item--archive > .rapls-sitemap__link,
-.rapls-sitemap--outline .rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__link {
+.rapls-sitemap--outline .rapls-sitemap__item--archive > .rapls-sitemap__label,
+.rapls-sitemap--outline .rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--outline .rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__label {
 	font-weight: 700;
 }
 
@@ -779,9 +793,13 @@
 .rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--term > .rapls-sitemap__label,
 .rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--term > .rapls-sitemap__heading > .rapls-sitemap__label,
 .rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--archive > .rapls-sitemap__link,
+.rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--archive > .rapls-sitemap__label,
 .rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--archive > .rapls-sitemap__heading > .rapls-sitemap__label,
 .rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--home > .rapls-sitemap__link,
-.rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--home > .rapls-sitemap__heading > .rapls-sitemap__link {
+.rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--home > .rapls-sitemap__label,
+.rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--home > .rapls-sitemap__heading > .rapls-sitemap__link,
+.rapls-sitemap--terminal .rapls-sitemap__item.rapls-sitemap__item--home > .rapls-sitemap__heading > .rapls-sitemap__label {
 	color: #ffe066;
 	font-weight: 700;
 }

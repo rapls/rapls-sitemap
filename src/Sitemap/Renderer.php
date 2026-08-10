@@ -292,6 +292,26 @@ final class Renderer {
 	}
 
 	/**
+	 * Should this node's label be left as text even though it has a URL?
+	 *
+	 * Only headings, and only when asked. Sites whose category archives are
+	 * thin, or noindexed, do not want a table of contents pointing at them —
+	 * the same reason the `nofollow` option exists, taken one step further. The
+	 * entries themselves are always links; a sitemap of plain text would not be
+	 * a sitemap.
+	 *
+	 * @param Node $node Node to render.
+	 * @return bool
+	 */
+	private function unlinked( Node $node ): bool {
+		if ( ! isset( $this->settings['link_headings'] ) || $this->settings['link_headings'] ) {
+			return false;
+		}
+
+		return in_array( $node->kind, array( 'section', 'term', 'archive' ), true );
+	}
+
+	/**
 	 * Render a node's label — a link when it has a URL, plain text otherwise.
 	 *
 	 * @param Node $node Node to render.
@@ -300,7 +320,7 @@ final class Renderer {
 	private function link( Node $node ): string {
 		$label = esc_html( $node->title );
 
-		if ( '' === $node->url ) {
+		if ( '' === $node->url || $this->unlinked( $node ) ) {
 			return '<span class="' . esc_attr( self::BASE . '__label' ) . '">' . $label . '</span>';
 		}
 

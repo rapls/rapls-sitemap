@@ -85,6 +85,8 @@ check( array( 4, 8, 15 ) === $out['exclude_ids'], 'exclusions use the same loose
 check( 50 === Shortcode::apply_atts( $base, array( 'number' => '50' ) )['max_entries'], 'number caps the list for one placement' );
 check( 0 === Shortcode::apply_atts( $base, array( 'number' => '-5' ) )['max_entries'], 'a negative cap means no cap' );
 check( 10 === Shortcode::apply_atts( $base, array( 'offset' => '10' ) )['offset'], 'offset skips entries' );
+check( 5 === Shortcode::apply_atts( $base, array( 'per_category' => '5' ) )['max_per_term'], 'per_category caps each category' );
+check( false === Shortcode::apply_atts( $base, array( 'link_headings' => '0' ) )['link_headings'], 'headings can be unlinked per placement' );
 check( 'ol' === Shortcode::apply_atts( $base, array( 'list_type' => 'ol' ) )['list_type'], 'the list element is settable' );
 check( 'ul' === Shortcode::apply_atts( $base, array( 'list_type' => 'dl' ) )['list_type'], 'and an unknown one is ignored' );
 

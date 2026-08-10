@@ -117,6 +117,7 @@ final class Shortcode {
 				'duplicate_in_terms',
 				'nofollow',
 				'section_headings',
+				'link_headings',
 				'show_date',
 				'show_excerpt',
 				'show_count',
@@ -129,7 +130,14 @@ final class Shortcode {
 
 		// `number` reads better in a shortcode than `max_entries`, and it is
 		// what the plugins people are migrating from call it.
-		foreach ( array( 'number' => 'max_entries', 'offset' => 'offset', 'excerpt_length' => 'excerpt_length' ) as $att => $key ) {
+		foreach (
+			array(
+				'number'         => 'max_entries',
+				'offset'         => 'offset',
+				'excerpt_length' => 'excerpt_length',
+				'per_category'   => 'max_per_term',
+			) as $att => $key
+		) {
 			if ( isset( $atts[ $att ] ) ) {
 				$settings[ $key ] = max( 0, (int) $atts[ $att ] );
 			}

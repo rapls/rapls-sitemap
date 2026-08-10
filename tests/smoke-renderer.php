@@ -114,6 +114,33 @@ $html             = ( new Renderer( Settings::defaults() ) )->render( array( $ho
 check( false === strpos( $html, '<script>' ), 'an excerpt cannot inject markup' );
 check( false === strpos( $html, '<b>2026' ), 'nor can a date' );
 
+/* --- headings that are not links ----------------------------------------- */
+
+$term_node    = new Node( 50, 'News', 'https://example.test/news', 'term' );
+$section_node = new Node( 0, 'Pages', 'https://example.test/blog/', 'section' );
+$year_node    = new Node( 2026, '2026', 'https://example.test/2026/', 'archive' );
+$post_node    = new Node( 51, 'A page', 'https://example.test/a' );
+$home_node    = new Node( 0, 'Example Site', 'https://example.test/', 'home' );
+
+$html = ( new Renderer( Settings::defaults() ) )->render( array( $term_node, $post_node ) );
+check( 2 === substr_count( $html, '<a class' ), 'headings are links by default' );
+
+$settings                  = Settings::defaults();
+$settings['link_headings'] = false;
+$html                      = ( new Renderer( $settings ) )->render(
+	array( $section_node, $term_node, $year_node, $post_node, $home_node )
+);
+
+check( false === strpos( $html, 'href="https://example.test/news"' ), 'a category heading stops linking to its archive' );
+check( false === strpos( $html, 'href="https://example.test/blog/"' ), 'so does a section heading' );
+check( false === strpos( $html, 'href="https://example.test/2026/"' ), 'and a year heading' );
+check( 3 === substr_count( $html, 'rapls-sitemap__label' ), 'all three become plain text instead' );
+
+// An entry that is not a link is not a sitemap entry, and the front-page link
+// is a link by definition — neither is a heading.
+check( false !== strpos( $html, 'href="https://example.test/a"' ), 'the entries themselves still link' );
+check( false !== strpos( $html, 'href="https://example.test/"' ), 'and so does the front-page link' );
+
 /* --- heading elements ---------------------------------------------------- */
 
 $section         = new Node( 0, 'Pages', 'https://example.test/blog/', 'section' );

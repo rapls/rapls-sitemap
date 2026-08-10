@@ -512,6 +512,35 @@ check( 'meta_value' === $args['orderby'] && 'yomi' === $args['meta_key'], 'a cus
 $args = order_for( 'post', array( 'orderby' => 'meta', 'sort_meta_key' => '' ) );
 check( 'title' === $args['orderby'] && ! isset( $args['meta_key'] ), 'a custom field ordering with no key falls back to title' );
 
+/* --- a cap on how long any one category gets ---------------------------- */
+
+// A different job from max_entries, which bounds the query: this bounds how
+// far a reader has to scroll past one group to reach the next.
+$roots = ( new TreeBuilder( grouped( array( 'max_per_term' => 1 ) ) ) )->build();
+$news  = $roots[0];
+
+$entries = array_values( array_filter( $news->children, function ( $n ) { return 'post' === $n->kind; } ) );
+check( 1 === count( $entries ), 'a category stops at the cap' );
+check( has_note( $news->children ), 'and says so inside that category' );
+
+// The note is about the list, not a member of it.
+$roots = ( new TreeBuilder( grouped( array( 'max_per_term' => 1, 'show_count' => true ) ) ) )->build();
+check( 2 === $roots[0]->count, 'the count is of entries, not of the note beside them', (string) $roots[0]->count );
+
+$roots = ( new TreeBuilder( grouped( array( 'max_per_term' => 0 ) ) ) )->build();
+check( ! has_note( $roots[0]->children ), 'no cap, no note' );
+
+$roots = ( new TreeBuilder( grouped( array( 'max_per_term' => 99 ) ) ) )->build();
+check( ! has_note( $roots[0]->children ), 'and a cap nobody reaches adds none either' );
+
+// With duplication off, a post the cap kept out has still been spoken for —
+// letting the next category take it would put it somewhere arbitrary.
+$GLOBALS['fixture_term_members'][6][] = 11;
+$roots = ( new TreeBuilder( grouped( array( 'max_per_term' => 1, 'duplicate_in_terms' => false ) ) ) )->build();
+$sub   = $roots[0]->children[0];
+check( ! in_array( 'Middle', titles( $sub->children ), true ), 'a post held back by the cap does not fall into the next category' );
+array_pop( $GLOBALS['fixture_term_members'][6] );
+
 /* --- a post in several categories --------------------------------------- */
 
 // Post 10 sits in both News (5) and Sub (6) for this block only.

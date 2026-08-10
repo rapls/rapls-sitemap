@@ -162,18 +162,28 @@ final class TreeBuilder {
 			return $nodes;
 		}
 
-		$nodes[] = new Node(
+		$nodes[] = $this->more_note( (int) $this->settings['max_entries'] );
+
+		return $nodes;
+	}
+
+	/**
+	 * The node that says a list stopped short.
+	 *
+	 * @param int $shown How many entries were listed.
+	 * @return Node
+	 */
+	private function more_note( int $shown ): Node {
+		return new Node(
 			0,
 			sprintf(
 				/* translators: %s: number of entries shown. */
 				__( 'Only the first %s entries are listed.', 'rapls-sitemap' ),
-				number_format_i18n( (int) $this->settings['max_entries'] )
+				number_format_i18n( $shown )
 			),
 			'',
 			'more'
 		);
-
-		return $nodes;
 	}
 
 	/**
@@ -563,12 +573,22 @@ final class TreeBuilder {
 		// choice is at least stable between renders.
 		$duplicate = ! empty( $this->settings['duplicate_in_terms'] );
 
+		// A separate cap from max_entries, and a different job: that one bounds
+		// the query, this one bounds how long any single group gets on the
+		// page. A category with four hundred posts in it makes the rest of the
+		// sitemap unreachable without scrolling past all of them.
+		$per_term = max( 0, (int) $this->settings['max_per_term'] );
+
 		$claimed = array();
 		foreach ( $terms as $term ) {
 			$ids = get_objects_in_term( array( (int) $term->term_id ), $taxonomy );
 			if ( is_wp_error( $ids ) ) {
 				continue;
 			}
+
+			$node  = $nodes[ (int) $term->term_id ];
+			$shown = 0;
+			$more  = false;
 
 			// Membership comes from the term, ordering from $posts — walk $posts
 			// so each group keeps the post type's configured sort order.
@@ -581,8 +601,23 @@ final class TreeBuilder {
 				if ( ! $duplicate && isset( $claimed[ $id ] ) ) {
 					continue;
 				}
-				$nodes[ (int) $term->term_id ]->add( $this->to_node( $by_id[ $id ] ) );
+
+				// Claimed either way: with duplication off, a post the cap kept
+				// out of this group has still been spoken for, and letting the
+				// next group take it would put it somewhere arbitrary.
 				$claimed[ $id ] = true;
+
+				if ( $per_term > 0 && $shown >= $per_term ) {
+					$more = true;
+					continue;
+				}
+
+				$node->add( $this->to_node( $by_id[ $id ] ) );
+				$shown++;
+			}
+
+			if ( $more ) {
+				$node->add( $this->more_note( $per_term ) );
 			}
 		}
 
@@ -618,6 +653,12 @@ final class TreeBuilder {
 		$total = 0;
 
 		foreach ( $nodes as $node ) {
+			// The "and more" line is a note about the list, not a member of it.
+			// Counting it would put a category at one above what it shows.
+			if ( 'more' === $node->kind ) {
+				continue;
+			}
+
 			$below = $this->count_entries( $node->children );
 
 			if ( 'term' === $node->kind ) {

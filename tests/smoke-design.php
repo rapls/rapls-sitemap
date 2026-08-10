@@ -308,6 +308,29 @@ check(
 	implode( ' | ', array_slice( $orphans, 0, 3 ) )
 );
 
+// The same shape of problem for `link_headings`: a heading rendered as text is
+// a __label, so a rule that only names __link stops applying and the heading
+// silently loses its styling.
+$unpaired = array();
+foreach ( preg_split( '/\R/', $code ) as $line ) {
+	$line = trim( rtrim( trim( $line ), ',{' ) );
+
+	if ( ! preg_match( '/> \.rapls-sitemap__link$/', $line ) ) {
+		continue;
+	}
+
+	$twin = substr( $line, 0, -strlen( '__link' ) ) . '__label';
+	if ( false === strpos( $code, $twin ) ) {
+		$unpaired[] = $line;
+	}
+}
+
+check(
+	array() === $unpaired,
+	'and every one has a __label counterpart, for headings rendered as text',
+	implode( ' | ', array_slice( $unpaired, 0, 3 ) )
+);
+
 /* --- every preset is registered in all four places ----------------------- */
 
 $css_file = (string) file_get_contents( $root . '/assets/css/rapls-sitemap.css' );

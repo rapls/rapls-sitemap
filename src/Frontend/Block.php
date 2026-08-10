@@ -129,6 +129,7 @@ final class Block {
 			'groupByTerm'     => 'group_by_term',
 			'nestTerms'       => 'nest_terms',
 			'sectionHeadings' => 'section_headings',
+			'linkHeadings'    => 'link_headings',
 			'showDate'        => 'show_date',
 			'showExcerpt'     => 'show_excerpt',
 			'showCount'       => 'show_count',
@@ -147,7 +148,7 @@ final class Block {
 		// Negative means inherit for both of these: 0 is already meaningful
 		// (unlimited depth, and an uncapped list), so it cannot double as the
 		// "not set" value the way an empty string can.
-		foreach ( array( 'depth' => 'depth', 'number' => 'number' ) as $from => $to ) {
+		foreach ( array( 'depth' => 'depth', 'number' => 'number', 'perCategory' => 'per_category' ) as $from => $to ) {
 			if ( isset( $attributes[ $from ] ) && (int) $attributes[ $from ] >= 0 ) {
 				$atts[ $to ] = (int) $attributes[ $from ];
 			}

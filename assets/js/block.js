@@ -200,7 +200,8 @@
 							onChange: function ( value ) {
 								set( { number: '' === value ? -1 : parseInt( value, 10 ) } );
 							},
-						} )
+						} ),
+						range( __( 'Entries per category', 'rapls-sitemap' ), 'perCategory', -1, 100, __( '-1 uses the site default, 0 lifts the cap.', 'rapls-sitemap' ) )
 					),
 					el(
 						components.PanelBody,
@@ -208,6 +209,7 @@
 						select( __( 'Design', 'rapls-sitemap' ), 'design', DESIGNS ),
 						select( __( 'List element', 'rapls-sitemap' ), 'listType', LIST_TYPES ),
 						toggle( __( 'Put a heading above each post type', 'rapls-sitemap' ), 'sectionHeadings' ),
+						toggle( __( 'Link section and category headings to their archives', 'rapls-sitemap' ), 'linkHeadings' ),
 						toggle( __( 'Published date', 'rapls-sitemap' ), 'showDate' ),
 						toggle( __( 'Excerpt', 'rapls-sitemap' ), 'showExcerpt' ),
 						toggle( __( 'Entry count beside each category', 'rapls-sitemap' ), 'showCount' ),

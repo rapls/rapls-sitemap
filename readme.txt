@@ -31,6 +31,8 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 * 投稿タイプごとの見出し（2種類以上を表示するときのみ）
 * 各項目への投稿日・抜粋の表示、カテゴリーごとの記事数の表示
 * 1リストあたりの件数上限と開始位置の指定。大規模サイトでのメモリ不足を防ぎます
+* カテゴリーごとの表示件数上限。1つのカテゴリーが長くなりすぎて他が読めなくなるのを防ぎます
+* セクション・カテゴリーの見出しをリンクにしない設定。中身の薄いアーカイブや noindex アーカイブ向け
 * `ul` / `ol` の切替
 * 並び順の指定。新しい順、古い順、タイトル順、ID 順、ページの並び順、更新日順、コメント数順、ランダム、カスタムフィールド順
 * デザインプリセット 27 種＋スタイルなし。画像を一切使わない CSS のみの実装で、ダークテーマでもそのまま使えます
@@ -69,9 +71,9 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 * 対象 — `post_types` / `source` / `taxonomy` / `term_mode`
 * 絞り込み — `exclude_ids` / `exclude_terms` / `exclude_current` / `exclude_protected` / `exclude_noindex`
-* 件数 — `number` / `offset` / `depth`
+* 件数 — `number` / `offset` / `per_category` / `depth`
 * 並び順 — `orderby` / `order`
-* 表示 — `design` / `list_type` / `show_home` / `group_by_term` / `nest_terms` / `duplicate_in_terms` / `section_headings` / `show_date` / `date_format` / `show_excerpt` / `excerpt_length` / `show_count` / `nofollow`
+* 表示 — `design` / `list_type` / `link_headings` / `show_home` / `group_by_term` / `nest_terms` / `duplicate_in_terms` / `section_headings` / `show_date` / `date_format` / `show_excerpt` / `excerpt_length` / `show_count` / `nofollow`
 
 キャッシュとスタイル読み込みはサイト全体の設定のみで、配置ごとの指定はできません。
 

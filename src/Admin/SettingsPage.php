@@ -576,6 +576,17 @@ final class SettingsPage {
 							</p>
 							<p>
 								<label>
+									<input type="checkbox" value="1"
+										name="<?php echo esc_attr( $name . '[link_headings]' ); ?>"
+										<?php checked( ! empty( $settings['link_headings'] ) ); ?> />
+									<?php echo esc_html__( 'Link section and category headings to their archives', 'rapls-sitemap' ); ?>
+								</label>
+								<span class="description">
+									<?php echo esc_html__( 'Off leaves the text in place without linking it, for archives that are thin or noindexed.', 'rapls-sitemap' ); ?>
+								</span>
+							</p>
+							<p>
+								<label>
 									<?php echo esc_html__( 'Headings', 'rapls-sitemap' ); ?>
 									<select name="<?php echo esc_attr( $name . '[heading_level]' ); ?>">
 										<option value="" <?php selected( $settings['heading_level'], '' ); ?>>
@@ -739,8 +750,17 @@ final class SettingsPage {
 							name="<?php echo esc_attr( $name . '[offset]' ); ?>"
 							value="<?php echo esc_attr( (string) $settings['offset'] ); ?>" />
 					</label>
+					<label style="margin-left:1.5em">
+						<?php echo esc_html__( 'Per category', 'rapls-sitemap' ); ?>
+						<input type="number" min="0" step="1" style="width:6em"
+							name="<?php echo esc_attr( $name . '[max_per_term]' ); ?>"
+							value="<?php echo esc_attr( (string) $settings['max_per_term'] ); ?>" />
+					</label>
 					<p class="description">
 						<?php echo esc_html__( 'A sitemap asks for every entry of every post type at once, which is the query that runs out of memory on a large site. 0 lifts the cap; a list that stops short always says so in the output.', 'rapls-sitemap' ); ?>
+					</p>
+					<p class="description">
+						<?php echo esc_html__( '"Per category" is a different limit: it caps how far a reader has to scroll past one category before reaching the next, rather than how much is fetched.', 'rapls-sitemap' ); ?>
 					</p>
 				</td>
 			</tr>

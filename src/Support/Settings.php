@@ -186,12 +186,20 @@ final class Settings {
 			'sort_meta_key'    => '',
 			// Entries per post type; 0 lifts the cap entirely.
 			'max_entries'      => self::DEFAULT_MAX_ENTRIES,
+			// Entries listed under each category heading; 0 lifts that cap.
+			// Separate from max_entries, which bounds the query — this one
+			// bounds how long any single group gets on the page.
+			'max_per_term'     => 0,
 			// Entries to skip at the start of each list.
 			'offset'           => 0,
 			// A heading above each post type's list when more than one is shown.
 			'section_headings' => true,
 			// `ul` or `ol`.
 			'list_type'        => 'ul',
+			// Whether a section or category heading is a link to its archive.
+			// Off leaves the text in place without linking it, for sites whose
+			// archives are thin or noindexed and should not be pointed at.
+			'link_headings'    => true,
 			// Render section and category headings as a real heading element.
 			// Empty keeps the plain span this plugin has always emitted, since
 			// the right level depends on the page the sitemap sits in.
@@ -320,6 +328,7 @@ final class Settings {
 				'duplicate_in_terms',
 				'nofollow',
 				'section_headings',
+				'link_headings',
 				'show_date',
 				'show_excerpt',
 				'show_count',
@@ -386,7 +395,7 @@ final class Settings {
 			$clean['cache_ttl'] = max( 0, (int) $input['cache_ttl'] );
 		}
 
-		foreach ( array( 'max_entries', 'offset' ) as $key ) {
+		foreach ( array( 'max_entries', 'offset', 'max_per_term' ) as $key ) {
 			if ( isset( $input[ $key ] ) ) {
 				$clean[ $key ] = max( 0, (int) $input[ $key ] );
 			}
