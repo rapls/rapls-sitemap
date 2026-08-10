@@ -79,6 +79,48 @@ Entries marked noindex can be left out. These are read with no configuration: **
 
 Every one of those was read from the plugin itself rather than guessed. Anything else can be added with the `rapls_sitemap/is_noindex` filter — this plugin does not read meta keys on a hunch, because a wrong guess hides a page nobody asked to hide.
 
+= Customising with filters =
+
+The settings cover what most sites need. Where they do not, `rapls_sitemap/query_args` hands you the query for one post type before it runs, so a few lines in a theme or a small plugin do the rest. It is passed the arguments and the post type slug.
+
+**WooCommerce: leave out products hidden from the catalog, and ones out of stock.** WooCommerce records both as terms in its private `product_visibility` taxonomy, so this is one clause:
+
+`add_filter( 'rapls_sitemap/query_args', function ( $args, $post_type ) {
+    if ( 'product' !== $post_type ) {
+        return $args;
+    }
+
+    $args['tax_query'][] = array(
+        'taxonomy' => 'product_visibility',
+        'field'    => 'slug',
+        'terms'    => array( 'exclude-from-catalog', 'outofstock' ),
+        'operator' => 'NOT IN',
+    );
+
+    return $args;
+}, 10, 2 );`
+
+Append to `tax_query` rather than assigning it: the plugin puts your category exclusions there, and replacing the array would drop them.
+
+**List only the pages somebody has flagged.** Useful where the sitemap is a curated index rather than everything:
+
+`add_filter( 'rapls_sitemap/query_args', function ( $args, $post_type ) {
+    if ( 'page' !== $post_type ) {
+        return $args;
+    }
+
+    $args['meta_query'][] = array(
+        'key'   => 'show_in_sitemap',
+        'value' => 'yes',
+    );
+
+    return $args;
+}, 10, 2 );`
+
+A page with no such custom field is left out entirely, which is the point — but it does mean every page you want listed needs the field set.
+
+The other extension points are `rapls_sitemap/settings` (the whole configuration, before it is used), `rapls_sitemap/tree` (the assembled nodes, before rendering), `rapls_sitemap/output` (the finished HTML), `rapls_sitemap/is_noindex`, `rapls_sitemap/post_types`, `rapls_sitemap/taxonomies`, `rapls_sitemap/designs` and `rapls_sitemap/cache_ttl`.
+
 = Multilingual =
 
 WPML and Polylang work with no configuration. Both narrow the post and term queries to the current language, and this plugin does not switch those filters off. The render cache keys on the locale, so one language is never served another's sitemap.

@@ -268,6 +268,8 @@ $GLOBALS['rapls_noindex_filter'] = null;
 
 $GLOBALS['rapls_tree_filter'] = null;
 
+$GLOBALS['rapls_query_args_filter'] = null;
+
 function apply_filters( $hook, $value ) {
 	if ( 'rapls_sitemap/is_noindex' === $hook && $GLOBALS['rapls_noindex_filter'] ) {
 		$args = func_get_args();
@@ -275,6 +277,10 @@ function apply_filters( $hook, $value ) {
 	}
 	if ( 'rapls_sitemap/tree' === $hook && $GLOBALS['rapls_tree_filter'] ) {
 		return call_user_func( $GLOBALS['rapls_tree_filter'], $value );
+	}
+	if ( 'rapls_sitemap/query_args' === $hook && $GLOBALS['rapls_query_args_filter'] ) {
+		$args = func_get_args();
+		return call_user_func( $GLOBALS['rapls_query_args_filter'], $value, $args[2] ?? '' );
 	}
 	return $value;
 }
@@ -1312,6 +1318,39 @@ check( array( 'Pages', 'Tags' ) === titles( $roots ), 'an excluded post type doe
 // to listing that post type's posts.
 $roots = ( new TreeBuilder( array_merge( $composed, array( 'sections' => array( 'page', 'category' ), 'exclude_tax' => array( 'category' ) ) ) ) )->build();
 check( array( 'Parent', 'Standalone', 'Orphan' ) === titles( $roots ), 'an excluded taxonomy cannot become a section of posts' );
+
+/* --- the query_args filter, as the readme documents it ------------------- */
+
+// Both readmes hand out a recipe built on this filter, and both say to APPEND
+// to tax_query rather than assign it — because the plugin puts the category
+// exclusions there and an assignment would drop them. That instruction is only
+// worth printing if it is true.
+$GLOBALS['fixture_last_args']       = null;
+$GLOBALS['rapls_query_args_filter'] = static function ( $args, $post_type ) {
+	if ( 'post' !== $post_type ) {
+		return $args;
+	}
+
+	$args['tax_query'][] = array(
+		'taxonomy' => 'product_visibility',
+		'field'    => 'slug',
+		'terms'    => array( 'exclude-from-catalog', 'outofstock' ),
+		'operator' => 'NOT IN',
+	);
+
+	return $args;
+};
+
+( new TreeBuilder( grouped( array( 'group_by_term' => false, 'exclude_terms' => array( 5 ) ) ) ) )->build();
+
+$clauses = $GLOBALS['fixture_last_args']['tax_query'];
+check( 2 === count( $clauses ), 'a filter can add a clause without losing the one the plugin put there', (string) count( $clauses ) );
+check( 'category' === $clauses[0]['taxonomy'], 'the exclusion stays first' );
+check( 'product_visibility' === $clauses[1]['taxonomy'], 'and the filter\'s clause follows it' );
+
+check( 'post' === ( $GLOBALS['fixture_last_args']['post_type'] ?? '' ), 'the post type is passed alongside, so one filter can answer for one type' );
+
+$GLOBALS['rapls_query_args_filter'] = null;
 
 /* --- the publication window --------------------------------------------- */
 

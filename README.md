@@ -132,6 +132,67 @@ add_filter( 'rapls_sitemap/is_noindex', function ( $noindex, $post_id ) {
 
 なお読み取るのは**記事ごとの noindex 設定**です。「この投稿タイプ全体を noindex にする」といったサイト全体の既定値は対象外で、それは「除外するカスタム投稿タイプ」で指定してください。
 
+## フィルターでのカスタマイズ
+
+設定画面で足りない場合は、`rapls_sitemap/query_args` が投稿タイプごとのクエリを実行前に渡します。テーマか小さなプラグインに数行書けば済みます。引数はクエリ引数と投稿タイプのスラッグです。
+
+### WooCommerce — カタログ非表示・在庫切れの商品を除外する
+
+WooCommerce はどちらも非公開タクソノミー `product_visibility` のタームとして記録しているので、1 つの条件で書けます。
+
+```php
+add_filter( 'rapls_sitemap/query_args', function ( $args, $post_type ) {
+	if ( 'product' !== $post_type ) {
+		return $args;
+	}
+
+	$args['tax_query'][] = array(
+		'taxonomy' => 'product_visibility',
+		'field'    => 'slug',
+		'terms'    => array( 'exclude-from-catalog', 'outofstock' ),
+		'operator' => 'NOT IN',
+	);
+
+	return $args;
+}, 10, 2 );
+```
+
+**`tax_query` は代入ではなく追加してください。** 除外カテゴリーの指定を本プラグインがそこに入れているため、配列ごと置き換えると消えます。
+
+### カスタムフィールドで掲載対象を選ぶ
+
+「全部載せる」ではなく「載せると決めたページだけ載せる」サイトマップにする場合です。
+
+```php
+add_filter( 'rapls_sitemap/query_args', function ( $args, $post_type ) {
+	if ( 'page' !== $post_type ) {
+		return $args;
+	}
+
+	$args['meta_query'][] = array(
+		'key'   => 'show_in_sitemap',
+		'value' => 'yes',
+	);
+
+	return $args;
+}, 10, 2 );
+```
+
+カスタムフィールドを持たないページは一覧から完全に外れます。それが目的の指定ですが、**載せたいページすべてにフィールドを設定する必要がある**という意味でもあります。
+
+### そのほかの拡張ポイント
+
+| フィルター | 渡されるもの |
+|---|---|
+| `rapls_sitemap/settings` | 設定一式（使われる直前） |
+| `rapls_sitemap/query_args` | 投稿タイプごとのクエリ引数、投稿タイプ |
+| `rapls_sitemap/tree` | 組み上がったノード配列、設定 |
+| `rapls_sitemap/output` | 完成した HTML、ノード配列、設定 |
+| `rapls_sitemap/is_noindex` | noindex かどうかの真偽値、投稿 ID |
+| `rapls_sitemap/post_types` / `rapls_sitemap/taxonomies` | 設定画面に出す候補 |
+| `rapls_sitemap/designs` | デザインプリセットの一覧 |
+| `rapls_sitemap/cache_ttl` | キャッシュの保持秒数、設定 |
+
 ## よくある質問
 
 ### 大量の記事があっても大丈夫ですか
