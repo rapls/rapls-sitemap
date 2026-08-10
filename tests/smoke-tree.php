@@ -285,6 +285,19 @@ function apply_filters( $hook, $value ) {
 	return $value;
 }
 
+// Term 5 is noindexed by Rank Math, term 6 by Cocoon. Yoast's answer lives in
+// an option rather than in term meta, which is the whole reason it is read
+// separately — term 7 is its example.
+$GLOBALS['fixture_term_meta'] = array(
+	5 => array( 'rank_math_robots' => array( 'noindex', 'nofollow' ) ),
+	6 => array( 'the_tag_noindex' => 1 ),
+);
+
+function get_term_meta( $id, $key, $single = false ) {
+	$meta = $GLOBALS['fixture_term_meta'][ (int) $id ][ $key ] ?? '';
+	return $single ? $meta : array( $meta );
+}
+
 function get_post_meta( $id, $key, $single = false ) {
 	$meta = $GLOBALS['fixture_meta'][ $id ][ $key ] ?? '';
 	return $single ? $meta : array( $meta );
@@ -413,6 +426,19 @@ $GLOBALS['wpdb'] = new Rapls_Fake_Wpdb();
 /**
  * Empty the per-request memo, so a test can watch the query happen.
  */
+/**
+ * Empty Yoast's per-request memo, so a test can change the option under it.
+ */
+function rapls_forget_yoast_terms() {
+	$property = ( new ReflectionClass( RaplsSitemap\Sitemap\TreeBuilder::class ) )->getProperty( 'yoast_terms' );
+
+	if ( PHP_VERSION_ID < 80100 ) {
+		$property->setAccessible( true );
+	}
+
+	$property->setValue( null, null );
+}
+
 function rapls_forget_aioseo() {
 	$property = ( new ReflectionClass( RaplsSitemap\Sitemap\TreeBuilder::class ) )->getProperty( 'aioseo_noindex' );
 
@@ -1318,6 +1344,48 @@ check( array( 'Pages', 'Tags' ) === titles( $roots ), 'an excluded post type doe
 // to listing that post type's posts.
 $roots = ( new TreeBuilder( array_merge( $composed, array( 'sections' => array( 'page', 'category' ), 'exclude_tax' => array( 'category' ) ) ) ) )->build();
 check( array( 'Parent', 'Standalone', 'Orphan' ) === titles( $roots ), 'an excluded taxonomy cannot become a section of posts' );
+
+/* --- terms an SEO plugin has marked noindex ------------------------------- */
+
+// Only the term LISTING asks. Where posts are grouped under category headings
+// the entries are the posts, and dropping the heading would take perfectly
+// indexable posts with it.
+$GLOBALS['fixture_term_meta'] = array(
+	5 => array( 'rank_math_robots' => array( 'noindex', 'nofollow' ) ),
+);
+$roots = ( new TreeBuilder( grouped( array( 'term_mode' => 'terms_only', 'exclude_noindex' => true ) ) ) )->build();
+check( ! in_array( 'News', titles( $roots ), true ), 'a Rank Math noindexed term is dropped from the listing' );
+
+$GLOBALS['fixture_term_meta'] = array( 5 => array( 'the_category_noindex' => 1 ) );
+$roots = ( new TreeBuilder( grouped( array( 'term_mode' => 'terms_only', 'exclude_noindex' => true ) ) ) )->build();
+check( ! in_array( 'News', titles( $roots ), true ), 'and so is one Cocoon marked' );
+
+// Yoast keeps every term's settings in one option rather than in term meta,
+// which is why it is read separately — and once.
+$GLOBALS['fixture_term_meta'] = array();
+update_option( 'wpseo_taxonomy_meta', array( 'category' => array( 5 => array( 'wpseo_noindex' => 'noindex' ) ) ) );
+rapls_forget_yoast_terms();
+$roots = ( new TreeBuilder( grouped( array( 'term_mode' => 'terms_only', 'exclude_noindex' => true ) ) ) )->build();
+check( ! in_array( 'News', titles( $roots ), true ), 'a Yoast noindexed term is dropped too' );
+
+update_option( 'wpseo_taxonomy_meta', array( 'category' => array( 5 => array( 'wpseo_noindex' => 'index' ) ) ) );
+rapls_forget_yoast_terms();
+$roots = ( new TreeBuilder( grouped( array( 'term_mode' => 'terms_only', 'exclude_noindex' => true ) ) ) )->build();
+check( in_array( 'News', titles( $roots ), true ), 'while an explicit "index" keeps it' );
+
+// The setting has to be on for any of this to happen.
+$GLOBALS['fixture_term_meta'] = array( 5 => array( 'the_category_noindex' => 1 ) );
+$roots = ( new TreeBuilder( grouped( array( 'term_mode' => 'terms_only' ) ) ) )->build();
+check( in_array( 'News', titles( $roots ), true ), 'and nothing is dropped while the setting is off' );
+
+// Grouping is the case this deliberately leaves alone: the heading is not the
+// entry there, and the posts under it are indexable.
+$roots = ( new TreeBuilder( grouped( array( 'exclude_noindex' => true ) ) ) )->build();
+check( in_array( 'News', titles( $roots ), true ), 'a noindexed category still heads its posts when they are what is listed' );
+
+$GLOBALS['fixture_term_meta'] = array();
+update_option( 'wpseo_taxonomy_meta', array() );
+rapls_forget_yoast_terms();
 
 /* --- the query_args filter, as the readme documents it ------------------- */
 

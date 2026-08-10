@@ -44,6 +44,13 @@ final class TreeBuilder {
 	private $truncated = array();
 
 	/**
+	 * Yoast's taxonomy settings, read once, or null before they are read.
+	 *
+	 * @var array<string,mixed>|null
+	 */
+	private static $yoast_terms = null;
+
+	/**
 	 * All in One SEO's verdict on the posts asked about so far.
 	 *
 	 * Static, so a composed sitemap does not repeat the query once per section
@@ -1376,6 +1383,21 @@ final class TreeBuilder {
 			return array();
 		}
 
+		if ( ! empty( $this->settings['exclude_noindex'] ) ) {
+			$terms = array_values(
+				array_filter(
+					$terms,
+					function ( $term ) use ( $taxonomy ) {
+						return ! $this->is_term_noindex( (int) $term->term_id, $taxonomy );
+					}
+				)
+			);
+
+			if ( array() === $terms ) {
+				return array();
+			}
+		}
+
 		if ( null !== $only ) {
 			$terms = array_values(
 				array_filter(
@@ -1649,6 +1671,90 @@ final class TreeBuilder {
 		}
 
 		return $this->filter_noindex( false, $id );
+	}
+
+	/**
+	 * Has an SEO plugin marked this term noindex?
+	 *
+	 * Only the term LISTING asks. Where posts are grouped under category
+	 * headings the entries are the posts, and dropping the heading would take
+	 * perfectly indexable posts down with it — `link_headings` is the setting
+	 * for "the archive is noindexed, do not link to it". A term listing is
+	 * different: there, the term is the entry.
+	 *
+	 * Three sources, each read from the plugin itself rather than guessed, and
+	 * each keeping this somewhere different:
+	 *
+	 *   Yoast      one option, `wpseo_taxonomy_meta`, keyed
+	 *              [taxonomy][term_id]['wpseo_noindex'] with 'noindex'
+	 *   Rank Math  term meta `rank_math_robots`, a list containing 'noindex'
+	 *   Cocoon     term meta `the_category_noindex` for categories and
+	 *              `the_tag_noindex` for everything else, a checkbox
+	 *
+	 * @param int    $term_id  Term ID.
+	 * @param string $taxonomy Its taxonomy.
+	 * @return bool
+	 */
+	private function is_term_noindex( int $term_id, string $taxonomy ): bool {
+		if ( 'noindex' === $this->yoast_term_setting( $term_id, $taxonomy ) ) {
+			return $this->filter_term_noindex( true, $term_id, $taxonomy );
+		}
+
+		$rank_math = get_term_meta( $term_id, 'rank_math_robots', true );
+		if ( is_array( $rank_math ) && in_array( 'noindex', $rank_math, true ) ) {
+			return $this->filter_term_noindex( true, $term_id, $taxonomy );
+		}
+
+		// Cocoon writes 0 rather than deleting the row, the same as it does for
+		// posts, so this has to be a truth test on the value.
+		$cocoon = 'category' === $taxonomy ? 'the_category_noindex' : 'the_tag_noindex';
+		if ( ! empty( get_term_meta( $term_id, $cocoon, true ) ) ) {
+			return $this->filter_term_noindex( true, $term_id, $taxonomy );
+		}
+
+		return $this->filter_term_noindex( false, $term_id, $taxonomy );
+	}
+
+	/**
+	 * Yoast's stored setting for one term, or ''.
+	 *
+	 * Yoast keeps every term's settings in a single option rather than in term
+	 * meta, so this is one read for the whole render however many terms are
+	 * listed — remembered statically, because each section of a composed
+	 * sitemap is a builder of its own.
+	 *
+	 * @param int    $term_id  Term ID.
+	 * @param string $taxonomy Its taxonomy.
+	 * @return string
+	 */
+	private function yoast_term_setting( int $term_id, string $taxonomy ): string {
+		if ( null === self::$yoast_terms ) {
+			$stored            = get_option( 'wpseo_taxonomy_meta' );
+			self::$yoast_terms = is_array( $stored ) ? $stored : array();
+		}
+
+		$setting = self::$yoast_terms[ $taxonomy ][ $term_id ]['wpseo_noindex'] ?? '';
+
+		return is_string( $setting ) ? $setting : '';
+	}
+
+	/**
+	 * Let a site answer for the plugins this one does not read.
+	 *
+	 * @param bool   $noindex  What this plugin concluded.
+	 * @param int    $term_id  Term ID.
+	 * @param string $taxonomy Its taxonomy.
+	 * @return bool
+	 */
+	private function filter_term_noindex( bool $noindex, int $term_id, string $taxonomy ): bool {
+		/**
+		 * Filters whether a term is treated as noindexed.
+		 *
+		 * @param bool   $noindex  Whether this plugin found it noindexed.
+		 * @param int    $term_id  Term ID.
+		 * @param string $taxonomy Taxonomy name.
+		 */
+		return (bool) apply_filters( Hooks::IS_TERM_NOINDEX, $noindex, $term_id, $taxonomy );
 	}
 
 	/**

@@ -77,6 +77,12 @@ Both compatibility options are **off by default**, because answering to another 
 
 Entries marked noindex can be left out. These are read with no configuration: **Yoast SEO, Rank Math, SEO SIMPLE PACK, SEOPress, The SEO Framework, All in One SEO**, and the **Cocoon** theme (including its fallback to the Simplicity key it inherited).
 
+Categories and tags are read too, where the term itself is what is listed: Yoast keeps that in one option rather than in term meta, Rank Math and Cocoon in term meta, and all three are honoured. `rapls_sitemap/is_term_noindex` extends it.
+
+Where posts are grouped **under** category headings this is deliberately not applied. There the entries are the posts, and dropping a heading would take perfectly indexable posts with it — switch off **Link section and category headings** instead, which is the setting for "the archive is noindexed, do not send readers to it".
+
+The site-wide archive settings an SEO plugin has — "noindex author archives", "disable date archives" — are not read either, and do not need to be: those listings appear only because you ticked them, so the decision has already been made on this screen.
+
 Every one of those was read from the plugin itself rather than guessed. Anything else can be added with the `rapls_sitemap/is_noindex` filter — this plugin does not read meta keys on a hunch, because a wrong guess hides a page nobody asked to hide.
 
 = Customising with filters =

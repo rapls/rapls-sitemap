@@ -57,6 +57,12 @@ final class Hooks {
 	 */
 	public const IS_NOINDEX = 'rapls_sitemap/is_noindex';
 
+	/**
+	 * The same question about a term, which is stored somewhere else entirely
+	 * by every plugin that answers it.
+	 */
+	public const IS_TERM_NOINDEX = 'rapls_sitemap/is_term_noindex';
+
 	/* Extension points (actions). */
 
 	/** Fires after the cached markup has been flushed. */
