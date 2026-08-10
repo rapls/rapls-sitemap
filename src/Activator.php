@@ -36,6 +36,12 @@ final class Activator {
 		// hash the same empty string across reinstalls.
 		update_option( Cache::SALT_OPTION, (string) wp_generate_uuid4(), false );
 
+		// Stamped here so `Plugin::maybe_upgrade()` has nothing to do on a fresh
+		// install. Without it the migration runs once on the first admin page
+		// load of every new site, deleting and re-adding the option it just
+		// created — a no-op with a window where the settings do not exist.
+		update_option( Plugin::VERSION_OPTION, RAPLS_SITEMAP_VERSION, false );
+
 		if ( false === get_option( 'rapls_sitemap_activated_at' ) ) {
 			add_option( 'rapls_sitemap_activated_at', gmdate( 'Y-m-d H:i:s' ), '', false );
 		}

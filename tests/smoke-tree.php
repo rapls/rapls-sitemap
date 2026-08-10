@@ -177,7 +177,14 @@ function get_permalink( $post ) {
 }
 
 function get_post_type_object( $type ) {
+	// `internal` stands for a post type registered `public => false`: real
+	// content, deliberately kept off the front end.
+	if ( ! in_array( $type, array( 'page', 'post', 'event', 'internal' ), true ) ) {
+		return null;
+	}
+
 	$object                       = new stdClass();
+	$object->public               = 'internal' !== $type;
 	$object->labels               = new stdClass();
 	$object->labels->name         = 'page' === $type ? 'Pages' : 'Posts';
 	$object->labels->singular_name = 'page' === $type ? 'Page' : 'Post';
@@ -352,6 +359,9 @@ function get_the_terms( $post, $taxonomy ) {
 }
 
 function get_objects_in_term( $term_ids, $taxonomy ) {
+	// Counted so a test can prove the grouping stopped asking per term.
+	$GLOBALS['fixture_objects_in_term_calls'] = ( $GLOBALS['fixture_objects_in_term_calls'] ?? 0 ) + 1;
+
 	$out = array();
 	foreach ( (array) $term_ids as $id ) {
 		foreach ( $GLOBALS['fixture_term_members'][ (int) $id ] ?? array() as $object_id ) {
@@ -494,6 +504,10 @@ function update_meta_cache( $type, $ids ) {
 }
 
 function post_type_exists( $type ) {
+	if ( 'internal' === $type ) {
+		return true;
+	}
+
 	// `event` exists but is never listed by these fixtures; it is here so a
 	// taxonomy can be attached to two flat post types, which is the only way to
 	// tell "picked the first one" from "picked the first listable one" apart.
@@ -1352,6 +1366,35 @@ check( array( 'Pages', 'Tags' ) === titles( $roots ), 'an excluded post type doe
 $roots = ( new TreeBuilder( array_merge( $composed, array( 'sections' => array( 'page', 'category' ), 'exclude_tax' => array( 'category' ) ) ) ) )->build();
 check( array( 'Parent', 'Standalone', 'Orphan' ) === titles( $roots ), 'an excluded taxonomy cannot become a section of posts' );
 
+/* --- a list emptied by filtering still says it stopped short -------------- */
+
+// The cap bounds the QUERY: it asks for max + 1 rows and the extra row is the
+// evidence there was more. When every one of those rows is then filtered out —
+// all noindex, say — the old code dropped the section silently, so a reader saw
+// nothing at all and no hint that anything had been cut.
+$capped = grouped( array( 'group_by_term' => false, 'exclude_noindex' => true, 'max_entries' => 2 ) );
+$GLOBALS['fixture_meta'][10] = array( '_yoast_wpseo_meta-robots-noindex' => '1' );
+
+$roots = ( new TreeBuilder( $capped ) )->build();
+check( has_note( $roots ), 'a list the cap and the filter emptied between them still says so' );
+
+$GLOBALS['fixture_meta'][10] = array();
+
+/* --- grouping asks the posts, not each term ------------------------------ */
+
+// Asking each term what it holds is a query per term unless something has
+// cached it — a store with two thousand product categories would issue two
+// thousand of them — and then walking every post inside every term is
+// terms x posts comparisons on top.
+$GLOBALS['fixture_objects_in_term_calls'] = 0;
+$roots = ( new TreeBuilder( grouped() ) )->build();
+check( 0 === $GLOBALS['fixture_objects_in_term_calls'], 'no per-term membership query is issued', (string) $GLOBALS['fixture_objects_in_term_calls'] );
+check(
+	titles( $roots ) === titles( ( new TreeBuilder( grouped() ) )->build() ),
+	'and the grouping is stable',
+	implode( ', ', titles( $roots ) )
+);
+
 /* --- terms an SEO plugin has marked noindex ------------------------------- */
 
 // Only the term LISTING asks. Where posts are grouped under category headings
@@ -1476,6 +1519,18 @@ $GLOBALS['fixture_last_args'] = null;
 ( new TreeBuilder( tree_settings( array( 'source' => 'archives', 'post_types' => array( 'post' ), 'date_after' => '2026-01-01' ) ) ) )->build();
 check( isset( $GLOBALS['fixture_last_args']['date_query'] ), 'the archive listing inherits the window' );
 
+/* --- what a shortcode may list ------------------------------------------- */
+
+// `sanitize_key()` makes a slug safe to put in a query; it says nothing about
+// whether the site meant that content to be readable. A post type registered
+// `public => false` is content somebody deliberately kept off the front end,
+// and a shortcode attribute is written by anyone who can edit a post.
+$roots = ( new TreeBuilder( tree_settings( array( 'post_types' => array( 'internal' ) ) ) ) )->build();
+check( array() === $roots, 'a post type registered private lists nothing, whatever asked for it' );
+
+$roots = ( new TreeBuilder( tree_settings( array( 'sections' => array( 'internal', 'page' ), 'section_headings' => true ) ) ) )->build();
+check( array( 'Parent', 'Standalone', 'Orphan' ) === titles( $roots ), 'and it is not a section either' );
+
 /* --- child_of: one branch of the page tree ------------------------------ */
 
 $roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 1 ) ) ) )->build();
@@ -1498,6 +1553,19 @@ check( array() === titles( $roots ), 'a page with nothing under it lists nothing
 // branch root out of the result set on the very page this is most useful on.
 $roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 99 ) ) ) )->build();
 check( array( 'Orphan' ) === titles( $roots ), 'the branch root need not be in the result set itself' );
+
+// The branch has to be found before the cap can mean anything. Capping the
+// query first would ask for the first N pages of the site and then look for one
+// page's children among them — on any site where that branch sorts late, the
+// answer would be "no children" rather than "here they are".
+$GLOBALS['fixture_last_args'] = null;
+$roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 1, 'max_entries' => 1 ) ) ) )->build();
+check( 'Child' === $roots[0]->title, 'a capped branch lists the branch, not whatever the cap reached first' );
+check( has_note( $roots ), 'and says it stopped short, which the query-side cap could not have known' );
+check( -1 === $GLOBALS['fixture_last_args']['posts_per_page'], 'the query is unbounded because the branch is what gets bounded' );
+
+$roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 1, 'max_entries' => 0 ) ) ) )->build();
+check( array( 'Child' ) === titles( $roots ), 'and an uncapped one is unchanged' );
 
 $roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 0 ) ) ) )->build();
 check( array( 'Parent', 'Standalone', 'Orphan' ) === titles( $roots ), 'and 0 is the whole site, as before' );

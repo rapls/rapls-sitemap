@@ -45,6 +45,15 @@ final class Hooks {
 	/** Filters the cache lifetime in seconds (0 disables caching). */
 	public const CACHE_TTL = 'rapls_sitemap/cache_ttl';
 
+	/**
+	 * Extra strings to hash into the cache key.
+	 *
+	 * The escape hatch for a site whose own filters make the output depend on
+	 * something this plugin does not know about — who is logged in, which
+	 * currency, which A/B bucket.
+	 */
+	public const CACHE_VARIANT = 'rapls_sitemap/cache_variant';
+
 	/** Vetoes claiming the `[wp_sitemap_page]` tag, on top of the setting. */
 	public const LEGACY_SHORTCODE = 'rapls_sitemap/legacy_shortcode';
 

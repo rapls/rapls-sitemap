@@ -603,7 +603,7 @@ final class TreeBuilder {
 			);
 		}
 
-		if ( post_type_exists( $slug ) ) {
+		if ( self::is_listable_post_type( $slug ) ) {
 			return array(
 				'settings' => array( 'source' => 'content', 'post_types' => array( $slug ) ),
 				'label'    => $this->post_type_label( $slug ),
@@ -611,7 +611,7 @@ final class TreeBuilder {
 			);
 		}
 
-		if ( taxonomy_exists( $slug ) ) {
+		if ( self::is_listable_taxonomy( $slug ) ) {
 			return $this->taxonomy_section( $slug, array() );
 		}
 
@@ -672,7 +672,7 @@ final class TreeBuilder {
 	 */
 	private function taxonomy_section( string $taxonomy, array $overrides ) {
 		$object = get_taxonomy( $taxonomy );
-		if ( ! $object ) {
+		if ( ! $object || ! self::is_listable_taxonomy( $taxonomy ) ) {
 			return null;
 		}
 
@@ -741,9 +741,14 @@ final class TreeBuilder {
 
 		foreach ( (array) $this->settings['post_types'] as $post_type ) {
 			$post_type = (string) $post_type;
-			$nodes     = $this->depth_limited( $this->build_post_type( $post_type ), $depth );
+			$nodes = $this->depth_limited( $this->build_post_type( $post_type ), $depth );
 
-			if ( array() === $nodes ) {
+			// An empty list is normally nothing to say. It is not when the cap
+			// was reached: the query stopped at `max` rows and every one of
+			// them was then filtered out, so there IS more content and the
+			// reader would otherwise be shown a heading over nothing, or no
+			// heading at all — with no hint that anything was cut.
+			if ( array() === $nodes && empty( $this->truncated[ $post_type ] ) ) {
 				continue;
 			}
 
@@ -860,6 +865,16 @@ final class TreeBuilder {
 	 * @return Node[]
 	 */
 	private function build_post_type( string $post_type ): array {
+		// A sitemap is a public page. `sanitize_key()` makes a slug safe to put
+		// in a query; it says nothing about whether the site meant that content
+		// to be readable, and a shortcode attribute is written by anyone who
+		// can edit a post. A post type registered `public => false` is content
+		// somebody deliberately kept off the front end — its titles and its
+		// excerpts included.
+		if ( ! self::is_listable_post_type( $post_type ) ) {
+			return array();
+		}
+
 		// A page subtree is the scope, so a flat post type has nothing to
 		// contribute to it. Listing every blog post beside "the pages under
 		// this one" would be a different sitemap wearing the same settings.
@@ -888,13 +903,32 @@ final class TreeBuilder {
 			return $this->term_tree( $taxonomy, $this->terms_in_window( $post_type, $taxonomy ) );
 		}
 
+		$child_of = (int) $this->settings['child_of'];
+
+		if ( is_post_type_hierarchical( $post_type ) && $child_of > 0 ) {
+			// The branch has to be found before the cap can mean anything. A
+			// branch is worked out from the `post_parent` links, which means
+			// having them all: capping the query first would ask for the first
+			// N pages of the site and then look for one page's children among
+			// them, and on any site where that branch sorts late the answer
+			// would be "no children" rather than "here they are".
+			//
+			// So the whole type is fetched, narrowed, and only then bounded.
+			// This is the one place the query is unbounded, and it is the one
+			// where the scope is a page tree — the type `child_of` applies to
+			// at all, and the small one on essentially every site.
+			$branch = $this->descendants_of( $this->fetch( $post_type, false ), $child_of );
+
+			return $this->nest( $this->bounded( $branch, $post_type ) );
+		}
+
 		$posts = $this->fetch( $post_type );
 		if ( array() === $posts ) {
 			return array();
 		}
 
 		if ( is_post_type_hierarchical( $post_type ) ) {
-			return $this->nest( $this->descendants_of( $posts, (int) $this->settings['child_of'] ) );
+			return $this->nest( $posts );
 		}
 
 		if ( $grouping ) {
@@ -910,10 +944,10 @@ final class TreeBuilder {
 	 * @param string $post_type Post type slug.
 	 * @return \WP_Post[]
 	 */
-	private function fetch( string $post_type ): array {
+	private function fetch( string $post_type, bool $bounded = true ): array {
 		$noindex = ! empty( $this->settings['exclude_noindex'] );
-		$max     = $this->cap();
-		$offset  = max( 0, (int) $this->settings['offset'] );
+		$max     = $bounded ? $this->cap() : 0;
+		$offset  = $bounded ? max( 0, (int) $this->settings['offset'] ) : 0;
 
 		$args = array_merge(
 			array(
@@ -1099,6 +1133,77 @@ final class TreeBuilder {
 	}
 
 	/**
+	 * A term's archive URL, or nothing.
+	 *
+	 * `get_term_link()` returns a WP_Error for a term that has just been
+	 * deleted, or one a filter refused. Casting that to a string is a fatal in
+	 * PHP 8 and a useless href before it.
+	 *
+	 * @param object $term Term.
+	 * @return string
+	 */
+	private static function term_url( $term ): string {
+		$link = get_term_link( $term );
+
+		return is_string( $link ) ? $link : '';
+	}
+
+	/**
+	 * May this post type appear on a public page at all?
+	 *
+	 * The settings screen only ever offers public types; this is the same rule
+	 * applied where a slug can arrive from somewhere else — a shortcode
+	 * attribute, a block, a `sections` list, or `[wp_sitemap_page only="..."]`.
+	 *
+	 * @param string $post_type Post type slug.
+	 * @return bool
+	 */
+	public static function is_listable_post_type( string $post_type ): bool {
+		$object = get_post_type_object( $post_type );
+
+		return is_object( $object ) && ! empty( $object->public );
+	}
+
+	/**
+	 * ...and may this taxonomy?
+	 *
+	 * @param string $taxonomy Taxonomy slug.
+	 * @return bool
+	 */
+	public static function is_listable_taxonomy( string $taxonomy ): bool {
+		$object = get_taxonomy( $taxonomy );
+
+		return false !== $object && ! empty( $object->public );
+	}
+
+	/**
+	 * Apply `offset` and the entry cap to a list already in memory.
+	 *
+	 * The query-side cap cannot be used where the rows have to be narrowed
+	 * first — a branch of the page tree — so the same two numbers are applied
+	 * here instead, and truncation is recorded the same way so the note still
+	 * appears.
+	 *
+	 * @param \WP_Post[] $posts     Posts to bound.
+	 * @param string     $post_type Post type, for the truncation record.
+	 * @return \WP_Post[]
+	 */
+	private function bounded( array $posts, string $post_type ): array {
+		$offset = max( 0, (int) $this->settings['offset'] );
+		if ( $offset > 0 ) {
+			$posts = array_slice( $posts, $offset );
+		}
+
+		$max = $this->cap();
+		if ( $max > 0 && count( $posts ) > $max ) {
+			$posts                          = array_slice( $posts, 0, $max );
+			$this->truncated[ $post_type ] = true;
+		}
+
+		return $posts;
+	}
+
+	/**
 	 * Narrow a post list to what sits under one page.
 	 *
 	 * Worked out from the `post_parent` links already in hand rather than with
@@ -1242,7 +1347,7 @@ final class TreeBuilder {
 			$node = new Node(
 				(int) $term->term_id,
 				$term->name,
-				(string) get_term_link( $term ),
+				self::term_url( $term ),
 				'term'
 			);
 
@@ -1274,23 +1379,45 @@ final class TreeBuilder {
 		// sitemap unreachable without scrolling past all of them.
 		$per_term = max( 0, (int) $this->settings['max_per_term'] );
 
-		$claimed = array();
-		foreach ( $terms as $term ) {
-			$ids = get_objects_in_term( array( (int) $term->term_id ), $taxonomy );
-			if ( is_wp_error( $ids ) ) {
+		// Membership is worked out once, from the posts, rather than once per
+		// term from the term. Asking each term what it holds is a query per
+		// term unless something has cached it — a store with two thousand
+		// product categories would issue two thousand of them — and then
+		// walking every post inside every term is terms x posts comparisons on
+		// top. The posts were fetched with their term cache primed, so this
+		// costs nothing extra and the work is proportional to what is actually
+		// listed.
+		$members = array();
+		foreach ( $posts as $post ) {
+			$post_terms = get_the_terms( $post, $taxonomy );
+
+			if ( ! is_array( $post_terms ) ) {
 				continue;
 			}
 
-			$node  = $nodes[ (int) $term->term_id ];
+			foreach ( $post_terms as $post_term ) {
+				$members[ (int) $post_term->term_id ][ (int) $post->ID ] = true;
+			}
+		}
+
+		$claimed = array();
+		foreach ( $terms as $term ) {
+			$term_id = (int) $term->term_id;
+
+			$node  = $nodes[ $term_id ];
 			$shown = 0;
 			$more  = false;
 
 			// Membership comes from the term, ordering from $posts — walk $posts
 			// so each group keeps the post type's configured sort order.
-			$members = array_flip( array_map( 'intval', $ids ) );
+			$held = $members[ $term_id ] ?? array();
+			if ( array() === $held ) {
+				continue;
+			}
+
 			foreach ( $posts as $post ) {
 				$id = (int) $post->ID;
-				if ( ! isset( $members[ $id ] ) ) {
+				if ( ! isset( $held[ $id ] ) ) {
 					continue;
 				}
 				if ( ! $duplicate && isset( $claimed[ $id ] ) ) {
@@ -1419,7 +1546,7 @@ final class TreeBuilder {
 		$counts = array();
 		foreach ( $terms as $term ) {
 			$id            = (int) $term->term_id;
-			$nodes[ $id ]  = new Node( $id, $term->name, (string) get_term_link( $term ), 'term' );
+			$nodes[ $id ]  = new Node( $id, $term->name, self::term_url( $term ), 'term' );
 			$counts[ $id ] = (int) $term->count;
 
 			if ( $show_count ) {
@@ -1596,7 +1723,7 @@ final class TreeBuilder {
 
 		$configured = (string) $this->settings['taxonomy'];
 		if ( '' !== $configured ) {
-			if ( in_array( $configured, $excluded, true ) ) {
+			if ( in_array( $configured, $excluded, true ) || ! self::is_listable_taxonomy( $configured ) ) {
 				return '';
 			}
 			return in_array( $configured, get_object_taxonomies( $post_type, 'names' ), true ) ? $configured : '';

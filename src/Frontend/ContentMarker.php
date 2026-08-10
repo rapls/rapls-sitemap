@@ -91,6 +91,13 @@ final class ContentMarker {
 			return $content;
 		}
 
+		// The real marker, before anything is built. The word "sitemap" appears
+		// in plenty of pages that hold no marker at all, and building a sitemap
+		// to then not use it is a full set of queries spent on nothing.
+		if ( ! preg_match( self::PATTERN, $content ) ) {
+			return $content;
+		}
+
 		$settings = Settings::for_request( $settings );
 		Styles::request( $settings );
 

@@ -3,7 +3,7 @@
  * Plugin Name:       Rapls Sitemap – HTML Sitemap Page for Pages, Posts, Categories, Authors & Menus
  * Description:       An HTML sitemap page for readers: pages, posts, categories, authors, archives and navigation menus, from one shortcode or block.
  * Version:           0.1.0
- * Requires at least: 6.0
+ * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            Rapls
  * Author URI:        https://raplsworks.com/

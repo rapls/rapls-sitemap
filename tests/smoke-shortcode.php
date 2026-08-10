@@ -102,6 +102,13 @@ check( 'DESC' === Shortcode::apply_atts( $base, array( 'term_order' => 'desc' ) 
 check( true === Shortcode::apply_atts( $base, array( 'show_date' => '1' ) )['show_date'], 'dates can be switched on per placement' );
 check( 'Y-m-d' === Shortcode::apply_atts( $base, array( 'date_format' => 'Y-m-d' ) )['date_format'], 'with their own format' );
 check( 5 === Shortcode::apply_atts( $base, array( 'excerpt_length' => '5' ) )['excerpt_length'], 'and excerpt length is settable too' );
+
+// The same ceilings the settings screen applies. A placement is written by
+// anyone who can edit a post, and these are limits on what the renderer will
+// do rather than preferences.
+check( 10 === Shortcode::apply_atts( $base, array( 'depth' => '99' ) )['depth'], 'depth is clamped as it is on the screen' );
+check( 200 === Shortcode::apply_atts( $base, array( 'excerpt_length' => '5000' ) )['excerpt_length'], 'and so is excerpt length' );
+check( 1 === Shortcode::apply_atts( $base, array( 'excerpt_length' => '0' ) )['excerpt_length'], 'whose floor is one word, not none' );
 check( false === Shortcode::apply_atts( $base, array( 'section_headings' => 'no' ) )['section_headings'], 'headings can be switched off per placement' );
 
 /* --- the publication window ------------------------------------------------ */

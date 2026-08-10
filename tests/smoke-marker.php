@@ -35,6 +35,17 @@ function get_bloginfo( $key ) {
 	return 'Example Site';
 }
 
+// The marker renders a real sitemap, so the builder's public-visibility gate
+// runs — a post type nothing can describe is not one this plugin will list.
+function get_post_type_object( $type ) {
+	$object                        = new stdClass();
+	$object->public                = true;
+	$object->labels                = new stdClass();
+	$object->labels->name          = ucfirst( $type ) . 's';
+	$object->labels->singular_name = ucfirst( $type );
+	return $object;
+}
+
 require_once __DIR__ . '/lib/bootstrap.php';
 
 use RaplsSitemap\Frontend\ContentMarker;

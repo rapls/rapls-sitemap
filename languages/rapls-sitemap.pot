@@ -25,7 +25,7 @@ msgstr ""
 
 #. translators: %d: menu item ID.
 #. translators: %d: post ID.
-#: src/Sitemap/TreeBuilder.php:195 src/Sitemap/TreeBuilder.php:2138
+#: src/Sitemap/TreeBuilder.php:195 src/Sitemap/TreeBuilder.php:2265
 msgid "(no title) #%d"
 msgstr ""
 
@@ -462,7 +462,7 @@ msgid "Exclusions"
 msgstr ""
 
 #. translators: PHP date format for a monthly archive heading. Japanese uses Y年n月.
-#: src/Sitemap/TreeBuilder.php:2103
+#: src/Sitemap/TreeBuilder.php:2230
 msgid "F Y"
 msgstr ""
 
@@ -800,7 +800,7 @@ msgid "On hover only"
 msgstr ""
 
 #. translators: %s: number of entries shown.
-#: src/Sitemap/TreeBuilder.php:804
+#: src/Sitemap/TreeBuilder.php:809
 msgid "Only the first %s entries are listed."
 msgstr ""
 
@@ -1270,7 +1270,7 @@ msgid "Windows ships no country flag glyphs, so these appear as two letters — 
 msgstr ""
 
 #. translators: PHP date format for a yearly archive heading. Japanese uses Y年.
-#: src/Sitemap/TreeBuilder.php:2091
+#: src/Sitemap/TreeBuilder.php:2218
 msgid "Y"
 msgstr ""
 

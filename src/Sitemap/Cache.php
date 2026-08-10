@@ -40,7 +40,7 @@ final class Cache {
 	public function register(): void {
 		// Post lifecycle. `save_post` covers create/update; the others cover
 		// trash, restore, delete, and status transitions that skip save_post.
-		add_action( 'save_post', array( $this, 'flush' ) );
+		add_action( 'save_post', array( $this, 'flush_for_post' ), 10, 2 );
 		add_action( 'deleted_post', array( $this, 'flush' ) );
 		add_action( 'trashed_post', array( $this, 'flush' ) );
 		add_action( 'untrashed_post', array( $this, 'flush' ) );
@@ -70,6 +70,13 @@ final class Cache {
 
 		// The site title is the default home-link label.
 		add_action( 'update_option_blogname', array( $this, 'flush' ) );
+
+		// Every entry in a sitemap is a URL, and these decide what URLs look
+		// like. Without them a permalink change leaves the old ones on the page
+		// for as long as the cache lives — twelve hours by default.
+		foreach ( array( 'home', 'siteurl', 'permalink_structure', 'category_base', 'tag_base', 'date_format' ) as $option ) {
+			add_action( 'update_option_' . $option, array( $this, 'flush' ) );
+		}
 	}
 
 	/**
@@ -101,6 +108,30 @@ final class Cache {
 		set_transient( $key, $html, $ttl );
 
 		return $html;
+	}
+
+	/**
+	 * Flush for a saved post, unless it was not really a save.
+	 *
+	 * Revisions and autosaves are neither listed nor capable of changing what
+	 * is: rotating the salt for them would throw the cache away every thirty
+	 * seconds while somebody writes.
+	 *
+	 * @param int      $post_id Post ID.
+	 * @param \WP_Post $post    Post object, when WordPress passes one.
+	 */
+	public function flush_for_post( $post_id, $post = null ): void {
+		if ( wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) ) {
+			return;
+		}
+
+		$type = is_object( $post ) ? (string) $post->post_type : (string) get_post_type( $post_id );
+
+		if ( 'revision' === $type || 'nav_menu_item' !== $type && ! is_post_type_viewable( $type ) ) {
+			return;
+		}
+
+		$this->flush();
 	}
 
 	/**
@@ -151,6 +182,21 @@ final class Cache {
 		$version = defined( 'RAPLS_SITEMAP_VERSION' ) ? RAPLS_SITEMAP_VERSION : '0';
 		$locale  = function_exists( 'determine_locale' ) ? determine_locale() : get_locale();
 
-		return self::PREFIX . md5( $salt . '|' . $version . '|' . $locale . '|' . wp_json_encode( $settings ) );
+		/**
+		 * Filters extra strings to hash into the cache key.
+		 *
+		 * The four filters this plugin exposes can all make the output depend
+		 * on something it cannot see — who is logged in, most obviously. One
+		 * cache entry would then be built for whoever arrived first and served
+		 * to everybody. A site that varies its output has to say what it varied
+		 * on here, or set the lifetime to 0.
+		 *
+		 * @param array $variant  Strings to include in the key.
+		 * @param array $settings Effective settings.
+		 */
+		$variant = apply_filters( Hooks::CACHE_VARIANT, array(), $settings );
+		$variant = is_array( $variant ) ? implode( '|', array_map( 'strval', $variant ) ) : '';
+
+		return self::PREFIX . md5( $salt . '|' . $version . '|' . $locale . '|' . $variant . '|' . wp_json_encode( $settings ) );
 	}
 }

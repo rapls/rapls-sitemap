@@ -3,7 +3,7 @@
 Contributors: rapls
 Donate link: https://buymeacoffee.com/rapls
 Tags: html sitemap, sitemap, table of contents, site map page, navigation
-Requires at least: 6.0
+Requires at least: 6.3
 Tested up to: 7.0
 Stable tag: 0.1.0
 Requires PHP: 7.4
@@ -26,7 +26,7 @@ It is a maintained replacement for **PS Auto Sitemap** (closed in 2022) and **WP
 * **Your navigation, as your team arranged it.** List a WordPress menu in the menu's own order with the menu's own labels. On a site with hundreds of pages, "the routes we decided on" is often a better table of contents than "everything we have published".
 * **Nothing is hidden quietly.** Where a list stops short of the content, it says so in the output. Caps, exclusions and truncation are always visible to the reader.
 * **28 designs, no images.** Every preset is pure CSS with no sprites and no icon font, so they inherit your theme's colours and survive a dark background.
-* **Built for large sites.** One query per post type, a configurable entry cap on all three queries, and a render cache that clears itself when content changes.
+* **Built for large sites.** One query per post type — grouping posts under their categories adds none — a configurable entry cap on all three queries, and a render cache that clears itself when content changes, including when you change your permalink structure.
 * **No front-end credit link. Ever.** The plugin never prints a link to its author on your site.
 
 = What it lists =
@@ -37,7 +37,7 @@ It is a maintained replacement for **PS Auto Sitemap** (closed in 2022) and **WP
 * **Authors**, filtered by user ID and by role.
 * **Date archives**, by year and month.
 * **Navigation menus**, in the menu's order, with `#` placeholder items printed as headings rather than links that go nowhere.
-* **Custom post types and custom taxonomies**, alongside or instead of the built-in ones.
+* **Custom post types and custom taxonomies**, alongside or instead of the built-in ones — public ones. A post type registered private is never listed, whatever asks for it, because that is content deliberately kept off the front end.
 
 = Choosing what appears =
 
@@ -126,6 +126,8 @@ Append to `tax_query` rather than assigning it: the plugin puts your category ex
 }, 10, 2 );`
 
 A page with no such custom field is left out entirely, which is the point — but it does mean every page you want listed needs the field set.
+
+If one of those filters makes the output depend on something this plugin cannot see — who is logged in, say — add what it varied on with `rapls_sitemap/cache_variant`, or set the cache lifetime to 0. Otherwise one entry is built for whoever arrives first and served to everybody.
 
 The other extension points are `rapls_sitemap/settings` (the whole configuration, before it is used), `rapls_sitemap/tree` (the assembled nodes, before rendering), `rapls_sitemap/output` (the finished HTML), the three noindex questions — `rapls_sitemap/is_noindex`, `rapls_sitemap/is_term_noindex` and `rapls_sitemap/is_user_noindex` — and `rapls_sitemap/post_types`, `rapls_sitemap/taxonomies`, `rapls_sitemap/designs` and `rapls_sitemap/cache_ttl`.
 

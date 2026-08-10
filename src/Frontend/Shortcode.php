@@ -86,8 +86,11 @@ final class Shortcode {
 			}
 		}
 
+		// Clamped to the same ceiling the settings screen applies: ten levels is
+		// a limit on what the renderer will nest, not a preference, and a
+		// placement is written by anyone who can edit a post.
 		if ( isset( $atts['depth'] ) ) {
-			$settings['depth'] = max( 0, (int) $atts['depth'] );
+			$settings['depth'] = max( 0, min( 10, (int) $atts['depth'] ) );
 		}
 
 		if ( isset( $atts['design'] ) && in_array( $atts['design'], Settings::DESIGNS, true ) ) {
@@ -168,6 +171,13 @@ final class Shortcode {
 			if ( isset( $atts[ $att ] ) ) {
 				$settings[ $key ] = max( 0, (int) $atts[ $att ] );
 			}
+		}
+
+		// Bounded on the settings screen and therefore here: 1 because a
+		// zero-word excerpt is not an excerpt, 200 because past that it stops
+		// being one. A placement is written by anyone who can edit a post.
+		if ( isset( $atts['excerpt_length'] ) ) {
+			$settings['excerpt_length'] = max( 1, min( 200, (int) $atts['excerpt_length'] ) );
 		}
 
 		if ( isset( $atts['list_type'] ) && in_array( $atts['list_type'], Settings::LIST_TYPES, true ) ) {
