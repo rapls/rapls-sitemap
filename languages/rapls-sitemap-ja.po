@@ -44,7 +44,7 @@ msgstr "-1でサイト全体の設定を使い、0ですべての階層を表示
 msgid "0 shows every level."
 msgstr "0ですべての階層を表示します。"
 
-#: src/Admin/SettingsPage.php:1166
+#: src/Admin/SettingsPage.php:1185
 msgid "A category or tag heading."
 msgstr "カテゴリーまたはタグの見出しです。"
 
@@ -56,6 +56,10 @@ msgstr "カテゴリーの並びは五十音順であるべきとは限りませ
 msgid "A custom field is an extra named value stored alongside a post — WordPress calls the name a \"key\" and the contents a \"value\". Nothing shows it to readers; it is there for code like this to read."
 msgstr "カスタムフィールドは、投稿に付随して保存される「名前付きの追加データ」です。WordPress では名前を「キー」、中身を「値」と呼びます。読者には表示されず、このプラグインのようなコードが読み取るためのものです。"
 
+#: src/Admin/SettingsPage.php:1058
+msgid "A fixed number of columns does not narrow on a phone. Where that matters, the \"Columns\" design flows into as many as fit instead."
+msgstr "カラム数を固定するため、スマートフォンでも段数は変わりません。画面幅に合わせたい場合は、デザインの「段組み」を選んでください。入るだけの段数に自動で調整します。"
+
 #: src/Admin/SettingsPage.php:405
 msgid "A menu is listed exactly as it was arranged, with its own labels — the order here is a decision somebody made, so it is not re-sorted. Only the exclusions, the depth limit and the entry cap apply to it."
 msgstr "メニューは組んだとおりの順序とラベルで出力します。その順序は運用者が決めたものなので、並べ替えは行いません。効くのは除外設定、階層の深さ制限、件数上限だけです。"
@@ -64,11 +68,11 @@ msgstr "メニューは組んだとおりの順序とラベルで出力します
 msgid "A menu item whose link is \"#\" holds open a dropdown. In a table of contents it is a link that goes nowhere, so its label is printed as plain text instead."
 msgstr "リンク先が「#」の項目は、メニューでドロップダウンを開くために置かれたものです。目次の中ではどこにも行かないリンクになるため、ラベルだけを表示します。"
 
-#: src/Admin/SettingsPage.php:1170
+#: src/Admin/SettingsPage.php:1189
 msgid "A month entry under that year."
 msgstr "その年の下にある月の項目です。"
 
-#: src/Admin/SettingsPage.php:1582 assets/js/block.js:66
+#: src/Admin/SettingsPage.php:1601 assets/js/block.js:66
 msgid "A navigation menu"
 msgstr "ナビゲーションメニュー"
 
@@ -80,15 +84,15 @@ msgstr "固定ページの ID、またはこのブロックを置いたページ
 msgid "A page ID. Only the pages filed under it are listed, and the page itself is not. 0 lists the whole site. Post types with no hierarchy are left out entirely, since a page branch is not a scope they have."
 msgstr "固定ページの ID です。その下にぶら下がるページだけが並び、指定したページ自身は並びません。0 ならサイト全体を一覧にします。階層を持たない投稿タイプは一覧に出ません。「この固定ページの下」という範囲を持たないためです。"
 
-#: src/Admin/SettingsPage.php:1188
+#: src/Admin/SettingsPage.php:1207
 msgid "A post"
 msgstr "記事"
 
-#: src/Admin/SettingsPage.php:1165
+#: src/Admin/SettingsPage.php:1184
 msgid "A post or page entry."
 msgstr "投稿または固定ページの項目です。"
 
-#: src/Admin/SettingsPage.php:1227
+#: src/Admin/SettingsPage.php:1246
 msgid "A rule here beats the design and the settings above. If a rule seems to do nothing, the theme is probably winning on specificity — add .rapls-sitemap in front of your selector to raise it."
 msgstr "ここに書いた指定は、デザインや上の設定より優先されます。指定が効かない場合は、テーマの指定が詳細度で勝っている可能性があります。セレクタの前に .rapls-sitemap を足して詳細度を上げてください。"
 
@@ -105,11 +109,11 @@ msgstr "サイト全体の目次です。"
 msgid "A taxonomy slug such as post_tag. Empty picks one automatically."
 msgstr "post_tag のようなタクソノミーのスラッグを指定します。空欄の場合は自動で選ばれます。"
 
-#: src/Admin/SettingsPage.php:1169
+#: src/Admin/SettingsPage.php:1188
 msgid "A year heading in the date archives."
 msgstr "年別アーカイブの年の見出しです。"
 
-#: src/Admin/SettingsPage.php:1929 assets/js/block.js:36
+#: src/Admin/SettingsPage.php:1948 assets/js/block.js:36
 msgid "Accordion"
 msgstr "アコーディオン"
 
@@ -117,11 +121,11 @@ msgstr "アコーディオン"
 msgid "Add rel=\"nofollow\" to every link"
 msgstr "すべてのリンクに rel=\"nofollow\" を付ける"
 
-#: src/Admin/SettingsPage.php:1126
+#: src/Admin/SettingsPage.php:1145
 msgid "Additional CSS"
 msgstr "追加 CSS"
 
-#: src/Admin/SettingsPage.php:1118
+#: src/Admin/SettingsPage.php:1137
 msgid "Advanced"
 msgstr "詳細設定"
 
@@ -137,15 +141,15 @@ msgstr "PS Auto Sitemap のコメントマーカーがある場所にも出力�
 msgid "Also render where a WP Sitemap Page shortcode appears"
 msgstr "WP Sitemap Page のショートコードがある場所にも出力する"
 
-#: src/Admin/SettingsPage.php:1678
+#: src/Admin/SettingsPage.php:1697
 msgid "Always"
 msgstr "常に表示"
 
-#: src/Admin/SettingsPage.php:1168
+#: src/Admin/SettingsPage.php:1187
 msgid "An author entry."
 msgstr "投稿者の項目です。"
 
-#: src/Admin/SettingsPage.php:1846
+#: src/Admin/SettingsPage.php:1865
 msgid "An exclusion here always wins."
 msgstr "ここでの除外指定が常に優先されます。"
 
@@ -163,7 +167,7 @@ msgstr "%s と、その only=\"...\" 属性を認識します。WP Sitemap Page 
 msgid "Answers to %s, which that plugin left in the page content."
 msgstr "%s を認識します。旧プラグインがページ本文に残したものです。"
 
-#: src/Admin/SettingsPage.php:1171
+#: src/Admin/SettingsPage.php:1190
 msgid "Any row that has a nested list under it."
 msgstr "下に入れ子のリストを持つ行です。"
 
@@ -175,11 +179,11 @@ msgstr "外観"
 msgid "Applies to the post types and to the sections above. Only when more than one is listed — a single list needs no label to tell it apart."
 msgstr "投稿タイプと、上の「1つにまとめるセクション」の両方に効きます。2つ以上並ぶときだけ付きます。一覧が1つだけなら、見分けるための見出しは不要なためです。"
 
-#: src/Admin/SettingsPage.php:1803 src/Sitemap/TreeBuilder.php:590
+#: src/Admin/SettingsPage.php:1822 src/Sitemap/TreeBuilder.php:590
 msgid "Archives"
 msgstr "年月アーカイブ"
 
-#: src/Admin/SettingsPage.php:1935 assets/js/block.js:42
+#: src/Admin/SettingsPage.php:1954 assets/js/block.js:42
 msgid "Arrows"
 msgstr "矢印"
 
@@ -191,7 +195,7 @@ msgstr "昇順 (A → Z、少ない順)"
 msgid "Ascending (oldest, A to Z)"
 msgstr "昇順 (古い順、A→Z)"
 
-#: src/Admin/SettingsPage.php:1580 src/Admin/SettingsPage.php:1802
+#: src/Admin/SettingsPage.php:1599 src/Admin/SettingsPage.php:1821
 #: src/Sitemap/TreeBuilder.php:583 assets/js/block.js:64
 msgid "Authors"
 msgstr "投稿者"
@@ -200,11 +204,11 @@ msgstr "投稿者"
 msgid "Automatic picks the first hierarchical taxonomy, which is Categories. A flat one such as Tags has to be chosen here."
 msgstr "自動では最初の階層タクソノミー、つまりカテゴリーが選ばれます。タグのような階層のないものは、ここで明示的に指定してください。"
 
-#: src/Admin/SettingsPage.php:1482
+#: src/Admin/SettingsPage.php:1501
 msgid "Bold"
 msgstr "太字"
 
-#: src/Admin/SettingsPage.php:1940 assets/js/block.js:47
+#: src/Admin/SettingsPage.php:1959 assets/js/block.js:47
 msgid "Book contents"
 msgstr "書籍の目次"
 
@@ -216,19 +220,19 @@ msgstr "どちらも初期状態ではオフです。移行元のプラグイン
 msgid "Both ends are included, and either can stand on its own. Leave both empty to list everything. A school or a council listing one year at a time is what this is for."
 msgstr "両端とも含みます。どちらか一方だけの指定もできます。両方空欄ならすべてを一覧にします。学校や自治体が年度ごとに一覧を作る場合を想定しています。"
 
-#: src/Admin/SettingsPage.php:1097
+#: src/Admin/SettingsPage.php:1116
 msgid "Bullet colour"
 msgstr "記号の色"
 
-#: src/Admin/SettingsPage.php:1917 assets/js/block.js:24
+#: src/Admin/SettingsPage.php:1936 assets/js/block.js:24
 msgid "Bulleted list"
 msgstr "箇条書き"
 
-#: src/Admin/SettingsPage.php:1092
+#: src/Admin/SettingsPage.php:1111
 msgid "Bullets"
 msgstr "箇条書きの記号"
 
-#: src/Admin/SettingsPage.php:1926 assets/js/block.js:33
+#: src/Admin/SettingsPage.php:1945 assets/js/block.js:33
 msgid "Business"
 msgstr "ビジネス"
 
@@ -240,7 +244,7 @@ msgstr "コーヒーを1杯おごる"
 msgid "Cache lifetime"
 msgstr "キャッシュの有効期間"
 
-#: src/Admin/SettingsPage.php:1925 assets/js/block.js:32
+#: src/Admin/SettingsPage.php:1944 assets/js/block.js:32
 msgid "Cards"
 msgstr "カード"
 
@@ -252,11 +256,11 @@ msgstr "カテゴリー"
 msgid "Categories only"
 msgstr "カテゴリーのみ"
 
-#: src/Admin/SettingsPage.php:1076
+#: src/Admin/SettingsPage.php:1095
 msgid "Categories, years, and the front-page link."
 msgstr "カテゴリー、年、ホームページへのリンクが対象です。"
 
-#: src/Admin/SettingsPage.php:1665 assets/js/block.js:74
+#: src/Admin/SettingsPage.php:1684 assets/js/block.js:74
 msgid "Category ID"
 msgstr "カテゴリー ID"
 
@@ -272,11 +276,11 @@ msgstr "カテゴリー見出しの方向"
 msgid "Celebration"
 msgstr "お祝い"
 
-#: src/Admin/SettingsPage.php:1933 assets/js/block.js:40
+#: src/Admin/SettingsPage.php:1952 assets/js/block.js:40
 msgid "Checklist"
 msgstr "チェックリスト"
 
-#: src/Admin/SettingsPage.php:1100
+#: src/Admin/SettingsPage.php:1119
 msgid "Choose \"Emoji\" and type one, or choose \"Icon\" and paste the class from an icon library your theme already loads — for example fa-solid fa-angle-right for Font Awesome. This plugin bundles no icon font; if nothing loads it, no icon shows and the sitemap is otherwise unaffected."
 msgstr "「絵文字」を選んで1文字入力するか、「アイコンのクラス」を選んで、テーマがすでに読み込んでいるアイコンライブラリのクラスを貼り付けてください。Font Awesome なら fa-solid fa-angle-right のように指定します。本プラグインはアイコンフォントを同梱していません。読み込まれていない場合はアイコンが表示されないだけで、サイトマップ自体に影響はありません。"
 
@@ -284,11 +288,11 @@ msgstr "「絵文字」を選んで1文字入力するか、「アイコンの�
 msgid "Choose \"Enter new\", type the field name, and put the reading in the value box."
 msgstr "「新規追加」を選び、フィールド名を入力して、値の欄に読みを入力します。"
 
-#: src/Admin/SettingsPage.php:1198
+#: src/Admin/SettingsPage.php:1217
 msgid "Class"
 msgstr "クラス"
 
-#: src/Admin/SettingsPage.php:1445
+#: src/Admin/SettingsPage.php:1464
 msgid "Clear the colour"
 msgstr "色をクリア"
 
@@ -296,13 +300,17 @@ msgstr "色をクリア"
 msgid "Close"
 msgstr "閉じる"
 
-#: src/Admin/SettingsPage.php:1072 src/Admin/SettingsPage.php:1085
+#: src/Admin/SettingsPage.php:1091 src/Admin/SettingsPage.php:1104
 msgid "Colour"
 msgstr "色"
 
-#: src/Admin/SettingsPage.php:1063
+#: src/Admin/SettingsPage.php:1082
 msgid "Colours accept #hex, rgb(), hsl(), a CSS variable, or a colour name."
 msgstr "色は #hex、rgb()、hsl()、CSS 変数、色名で指定できます。"
+
+#: src/Admin/SettingsPage.php:1045
+msgid "Columns"
+msgstr "段組み"
 
 #: assets/js/block.js:187
 msgid "Comma separated slugs. Empty uses the site default."
@@ -324,11 +332,11 @@ msgstr "カンマ区切りで指定します。除外したページの子ペー
 msgid "Comma separated. Children of an excluded page go too. Empty uses the site default."
 msgstr "コンマ区切りです。除外したページの子ページも一緒に除外されます。空欄ならサイト全体の設定を使います。"
 
-#: src/Admin/SettingsPage.php:1566 assets/js/block.js:97
+#: src/Admin/SettingsPage.php:1585 assets/js/block.js:97
 msgid "Comment count"
 msgstr "コメント数"
 
-#: src/Admin/SettingsPage.php:1918 assets/js/block.js:25
+#: src/Admin/SettingsPage.php:1937 assets/js/block.js:25
 msgid "Compact"
 msgstr "コンパクト"
 
@@ -340,7 +348,7 @@ msgstr "内容"
 msgid "Content to include"
 msgstr "表示する内容"
 
-#: src/Admin/SettingsPage.php:1568
+#: src/Admin/SettingsPage.php:1587
 msgid "Custom field"
 msgstr "カスタムフィールド"
 
@@ -368,7 +376,7 @@ msgstr "デザイン"
 msgid "Direction"
 msgstr "並び順の方向"
 
-#: src/Admin/SettingsPage.php:1919 assets/js/block.js:26
+#: src/Admin/SettingsPage.php:1938 assets/js/block.js:26
 msgid "Document tree"
 msgstr "ドキュメントツリー"
 
@@ -376,20 +384,20 @@ msgstr "ドキュメントツリー"
 msgid "Documents"
 msgstr "書類"
 
-#: src/Admin/SettingsPage.php:144 src/Admin/SettingsPage.php:1936
+#: src/Admin/SettingsPage.php:144 src/Admin/SettingsPage.php:1955
 #: assets/js/block.js:43
 msgid "Dots"
 msgstr "ドット"
 
-#: src/Admin/SettingsPage.php:1131
+#: src/Admin/SettingsPage.php:1150
 msgid "Editing CSS needs the unfiltered_html capability, which a network reserves for super administrators. Any CSS already saved keeps working; it is only shown here to those who may change it."
 msgstr "CSS の編集には unfiltered_html 権限が必要です。マルチサイトではこの権限はネットワーク管理者のみに与えられます。すでに保存済みの CSS はそのまま動作します。編集できる人にだけ、ここに表示されます。"
 
-#: src/Admin/SettingsPage.php:1512
+#: src/Admin/SettingsPage.php:1531
 msgid "Emoji"
 msgstr "絵文字"
 
-#: src/Admin/SettingsPage.php:1541
+#: src/Admin/SettingsPage.php:1560
 msgid "Emoji bullet"
 msgstr "絵文字の記号"
 
@@ -413,15 +421,15 @@ msgstr "1リストあたりの件数"
 msgid "Entry count beside each category"
 msgstr "カテゴリーごとの記事数"
 
-#: src/Admin/SettingsPage.php:1163
+#: src/Admin/SettingsPage.php:1182
 msgid "Every list. Also carries its depth: --depth-0 is the top level, --depth-1 the first nesting, and so on."
 msgstr "すべてのリストです。階層も同時に付きます。--depth-0 が最上位、--depth-1 が1段目の入れ子、以下同様です。"
 
-#: src/Admin/SettingsPage.php:1164
+#: src/Admin/SettingsPage.php:1183
 msgid "Every row."
 msgstr "すべての行です。"
 
-#: src/Admin/SettingsPage.php:1212
+#: src/Admin/SettingsPage.php:1231
 msgid "Examples"
 msgstr "記述例"
 
@@ -463,7 +471,7 @@ msgstr "表情"
 msgid "Field name"
 msgstr "フィールド名"
 
-#: src/Admin/SettingsPage.php:1509
+#: src/Admin/SettingsPage.php:1528
 msgid "Filled circle"
 msgstr "黒丸"
 
@@ -471,8 +479,8 @@ msgstr "黒丸"
 msgid "Flags"
 msgstr "旗"
 
-#: src/Admin/SettingsPage.php:1036 src/Admin/SettingsPage.php:1071
-#: src/Admin/SettingsPage.php:1084
+#: src/Admin/SettingsPage.php:1036 src/Admin/SettingsPage.php:1090
+#: src/Admin/SettingsPage.php:1103
 msgid "Font size"
 msgstr "文字の大きさ"
 
@@ -480,7 +488,11 @@ msgstr "文字の大きさ"
 msgid "Food"
 msgstr "食べ物"
 
-#: src/Admin/SettingsPage.php:1930 assets/js/block.js:37
+#: src/Admin/SettingsPage.php:1053
+msgid "Gap between columns"
+msgstr "段間"
+
+#: src/Admin/SettingsPage.php:1949 assets/js/block.js:37
 msgid "Grid"
 msgstr "グリッド"
 
@@ -512,15 +524,15 @@ msgstr "見出し"
 msgid "Hearts"
 msgstr "ハート"
 
-#: src/Admin/SettingsPage.php:1221
+#: src/Admin/SettingsPage.php:1240
 msgid "Hide the second level and deeper"
 msgstr "2階層目より下を非表示にする"
 
-#: src/Admin/SettingsPage.php:1932 assets/js/block.js:39
+#: src/Admin/SettingsPage.php:1951 assets/js/block.js:39
 msgid "Highlighter"
 msgstr "蛍光ペン"
 
-#: src/Admin/SettingsPage.php:1510
+#: src/Admin/SettingsPage.php:1529
 msgid "Hollow circle"
 msgstr "白丸"
 
@@ -528,19 +540,19 @@ msgstr "白丸"
 msgid "Home link"
 msgstr "ホームページへのリンク"
 
-#: src/Admin/SettingsPage.php:1049
+#: src/Admin/SettingsPage.php:1068
 msgid "Hover colour"
 msgstr "ホバー時の色"
 
-#: src/Admin/SettingsPage.php:1565 assets/js/block.js:96
+#: src/Admin/SettingsPage.php:1584 assets/js/block.js:96
 msgid "ID"
 msgstr "ID"
 
-#: src/Admin/SettingsPage.php:1513 src/Admin/SettingsPage.php:1549
+#: src/Admin/SettingsPage.php:1532 src/Admin/SettingsPage.php:1568
 msgid "Icon class"
 msgstr "アイコンのクラス"
 
-#: src/Admin/SettingsPage.php:1288
+#: src/Admin/SettingsPage.php:1307
 msgid "Import from PS Auto Sitemap"
 msgstr "PS Auto Sitemap から読み込む"
 
@@ -557,7 +569,7 @@ msgstr "ブロックエディターで、右上のオプションメニュー (�
 msgid "Indent per level"
 msgstr "階層ごとの字下げ"
 
-#: src/Admin/SettingsPage.php:1920 assets/js/block.js:27
+#: src/Admin/SettingsPage.php:1939 assets/js/block.js:27
 msgid "Index"
 msgstr "索引"
 
@@ -565,11 +577,11 @@ msgstr "索引"
 msgid "Interface"
 msgstr "UI"
 
-#: src/Admin/SettingsPage.php:1296
+#: src/Admin/SettingsPage.php:1315
 msgid "It overwrites the settings on this screen and nothing else. The old configuration is left where it is, so you can do this again."
 msgstr "上書きするのはこの画面の設定だけです。旧設定はそのまま残るので、何度でもやり直せます。"
 
-#: src/Admin/SettingsPage.php:1562 assets/js/block.js:93
+#: src/Admin/SettingsPage.php:1581 assets/js/block.js:93
 msgid "Last modified"
 msgstr "更新日"
 
@@ -593,15 +605,15 @@ msgstr "パスワード保護された項目を除外する"
 msgid "Leave out this page"
 msgstr "このページを除外する"
 
-#: src/Admin/SettingsPage.php:1480 src/Admin/SettingsPage.php:1507
+#: src/Admin/SettingsPage.php:1499 src/Admin/SettingsPage.php:1526
 msgid "Leave to the design"
 msgstr "デザインに任せる"
 
-#: src/Admin/SettingsPage.php:1677
+#: src/Admin/SettingsPage.php:1696
 msgid "Leave to the theme"
 msgstr "テーマに任せる"
 
-#: src/Admin/SettingsPage.php:1606
+#: src/Admin/SettingsPage.php:1625
 msgid "Limit the author listing to these roles"
 msgstr "投稿者一覧に含めるロール"
 
@@ -613,7 +625,7 @@ msgstr "一覧にする範囲"
 msgid "Line height"
 msgstr "行間"
 
-#: src/Admin/SettingsPage.php:1048
+#: src/Admin/SettingsPage.php:1067
 msgid "Link colour"
 msgstr "リンクの色"
 
@@ -621,7 +633,7 @@ msgstr "リンクの色"
 msgid "Link section and category headings to their archives"
 msgstr "セクションとカテゴリーの見出しをアーカイブにリンクする"
 
-#: src/Admin/SettingsPage.php:651 src/Admin/SettingsPage.php:1045
+#: src/Admin/SettingsPage.php:651 src/Admin/SettingsPage.php:1064
 msgid "Links"
 msgstr "リンク"
 
@@ -645,11 +657,11 @@ msgstr "カテゴリーごとに投稿を表示"
 msgid "Load the bundled stylesheet"
 msgstr "付属のスタイルシートを読み込む"
 
-#: src/Admin/SettingsPage.php:1939 assets/js/block.js:46
+#: src/Admin/SettingsPage.php:1958 assets/js/block.js:46
 msgid "Magazine"
 msgstr "マガジン"
 
-#: src/Admin/SettingsPage.php:1215
+#: src/Admin/SettingsPage.php:1234
 msgid "Make category headings bigger"
 msgstr "カテゴリー見出しを大きくする"
 
@@ -669,11 +681,11 @@ msgstr "メニュー"
 msgid "Migration"
 msgstr "移行"
 
-#: src/Admin/SettingsPage.php:1581 assets/js/block.js:65
+#: src/Admin/SettingsPage.php:1600 assets/js/block.js:65
 msgid "Monthly archives"
 msgstr "年月アーカイブ"
 
-#: src/Admin/SettingsPage.php:1662 assets/js/block.js:71
+#: src/Admin/SettingsPage.php:1681 assets/js/block.js:71
 msgid "Name"
 msgstr "名前"
 
@@ -685,7 +697,7 @@ msgstr "自然"
 msgid "Navigation menu"
 msgstr "ナビゲーションメニュー"
 
-#: src/Admin/SettingsPage.php:1941 assets/js/block.js:48
+#: src/Admin/SettingsPage.php:1960 assets/js/block.js:48
 msgid "Neon"
 msgstr "ネオン"
 
@@ -697,27 +709,27 @@ msgstr "子カテゴリーを入れ子にする"
 msgid "Nest child categories inside their parents"
 msgstr "子カテゴリーを親カテゴリーの中に入れ子にする"
 
-#: src/Admin/SettingsPage.php:1096
+#: src/Admin/SettingsPage.php:1115
 msgid "Nested"
 msgstr "下の階層"
 
-#: src/Admin/SettingsPage.php:1081
+#: src/Admin/SettingsPage.php:1100
 msgid "Nested items"
 msgstr "下の階層の項目"
 
-#: src/Admin/SettingsPage.php:1680
+#: src/Admin/SettingsPage.php:1699
 msgid "Never"
 msgstr "表示しない"
 
-#: src/Admin/SettingsPage.php:1837
+#: src/Admin/SettingsPage.php:1856
 msgid "Never list these, whatever else is set"
 msgstr "ほかの設定にかかわらず、常に除外するもの"
 
-#: src/Admin/SettingsPage.php:1185
+#: src/Admin/SettingsPage.php:1204
 msgid "News"
 msgstr "お知らせ"
 
-#: src/Admin/SettingsPage.php:1922 assets/js/block.js:29
+#: src/Admin/SettingsPage.php:1941 assets/js/block.js:29
 msgid "Newspaper columns"
 msgstr "段組み"
 
@@ -729,15 +741,15 @@ msgstr "絵文字なし"
 msgid "No entries yet."
 msgstr "表示できる項目がありません。"
 
-#: src/Admin/SettingsPage.php:1915 assets/js/block.js:22
+#: src/Admin/SettingsPage.php:1934 assets/js/block.js:22
 msgid "No style"
 msgstr "スタイルなし"
 
-#: src/Admin/SettingsPage.php:1508
+#: src/Admin/SettingsPage.php:1527
 msgid "None"
 msgstr "なし"
 
-#: src/Admin/SettingsPage.php:1481
+#: src/Admin/SettingsPage.php:1500
 msgid "Normal"
 msgstr "標準"
 
@@ -745,11 +757,15 @@ msgstr "標準"
 msgid "Notes"
 msgstr "注意点"
 
-#: src/Admin/SettingsPage.php:1663 assets/js/block.js:72
+#: src/Admin/SettingsPage.php:1048
+msgid "Number of columns"
+msgstr "カラム数"
+
+#: src/Admin/SettingsPage.php:1682 assets/js/block.js:72
 msgid "Number of entries"
 msgstr "記事数"
 
-#: src/Admin/SettingsPage.php:1924 assets/js/block.js:31
+#: src/Admin/SettingsPage.php:1943 assets/js/block.js:31
 msgid "Numbered"
 msgstr "連番"
 
@@ -769,7 +785,7 @@ msgstr "オフにすると、最初に該当したカテゴリーに1回だけ�
 msgid "On"
 msgstr "オン"
 
-#: src/Admin/SettingsPage.php:1679
+#: src/Admin/SettingsPage.php:1698
 msgid "On hover only"
 msgstr "ホバー時のみ"
 
@@ -777,6 +793,10 @@ msgstr "ホバー時のみ"
 #: src/Sitemap/TreeBuilder.php:755
 msgid "Only the first %s entries are listed."
 msgstr "先頭の%s件のみ表示しています。"
+
+#: src/Admin/SettingsPage.php:1055
+msgid "Only the top level is split; a category keeps its own entries with it. Empty leaves the design alone, and one column is a real answer on a design that would otherwise flow into several."
+msgstr "分割されるのは最上位だけです。カテゴリーとその下の記事は切り離されません。空欄ならデザインの指定のままです。段数を自動で増やすデザインに対しては、1 も有効な指定です。"
 
 #: src/Admin/SettingsPage.php:969
 msgid "Open a post or page for editing."
@@ -790,19 +810,19 @@ msgstr "並び順"
 msgid "Ordered (ol)"
 msgstr "順序付き (ol)"
 
-#: src/Admin/SettingsPage.php:1923 assets/js/block.js:30
+#: src/Admin/SettingsPage.php:1942 assets/js/block.js:30
 msgid "Outlined boxes"
 msgstr "囲み枠"
 
-#: src/Admin/SettingsPage.php:1304
+#: src/Admin/SettingsPage.php:1323
 msgid "Overwrite the settings on this screen with the PS Auto Sitemap ones?"
 msgstr "この画面の設定を PS Auto Sitemap の設定で上書きします。よろしいですか。"
 
-#: src/Admin/SettingsPage.php:1564 assets/js/block.js:95
+#: src/Admin/SettingsPage.php:1583 assets/js/block.js:95
 msgid "Page order"
 msgstr "ページの並び順"
 
-#: src/Admin/SettingsPage.php:1927 assets/js/block.js:34
+#: src/Admin/SettingsPage.php:1946 assets/js/block.js:34
 msgid "Panels"
 msgstr "パネル"
 
@@ -818,7 +838,7 @@ msgstr "人"
 msgid "Per category"
 msgstr "カテゴリーごと"
 
-#: src/Admin/SettingsPage.php:1444
+#: src/Admin/SettingsPage.php:1463
 msgid "Pick a colour"
 msgstr "色を選ぶ"
 
@@ -830,7 +850,7 @@ msgstr "絵文字を選ぶ"
 msgid "Pick automatically"
 msgstr "自動で選ぶ"
 
-#: src/Admin/SettingsPage.php:1937 assets/js/block.js:44
+#: src/Admin/SettingsPage.php:1956 assets/js/block.js:44
 msgid "Pills"
 msgstr "ピル"
 
@@ -854,11 +874,11 @@ msgstr "矢印"
 msgid "Post title"
 msgstr "投稿タイトル"
 
-#: src/Admin/SettingsPage.php:1848 assets/js/block.js:186
+#: src/Admin/SettingsPage.php:1867 assets/js/block.js:186
 msgid "Post types"
 msgstr "投稿タイプ"
 
-#: src/Admin/SettingsPage.php:1579 assets/js/block.js:63
+#: src/Admin/SettingsPage.php:1598 assets/js/block.js:63
 msgid "Posts and pages"
 msgstr "投稿と固定ページ"
 
@@ -874,7 +894,7 @@ msgstr "フィールドが空、または未設定の投稿は、除外される
 msgid "Print items with no destination as headings"
 msgstr "リンク先のない項目を見出しとして表示する"
 
-#: src/Admin/SettingsPage.php:1137
+#: src/Admin/SettingsPage.php:1156
 msgid "Printed with the sitemap, after everything above, so it wins. Scope your rules to .rapls-sitemap to avoid affecting the rest of the page."
 msgstr "サイトマップと一緒に出力されます。上のすべての設定より後に読み込まれるため、こちらが優先されます。ページの他の部分に影響しないよう、.rapls-sitemap を起点に指定してください。"
 
@@ -882,7 +902,7 @@ msgstr "サイトマップと一緒に出力されます。上のすべての設
 msgid "Published between"
 msgstr "公開期間"
 
-#: src/Admin/SettingsPage.php:669 src/Admin/SettingsPage.php:1561
+#: src/Admin/SettingsPage.php:669 src/Admin/SettingsPage.php:1580
 #: assets/js/block.js:92 assets/js/block.js:307
 msgid "Published date"
 msgstr "公開日"
@@ -899,11 +919,11 @@ msgstr "公開日がこの日以前"
 msgid "Put a heading above each list"
 msgstr "一覧ごとに見出しを付ける"
 
-#: src/Admin/SettingsPage.php:1323
+#: src/Admin/SettingsPage.php:1342
 msgid "Puts every setting on this screen back to its default. Your pages and posts are not touched."
 msgstr "この画面のすべての設定を初期値に戻します。固定ページや投稿には影響しません。"
 
-#: src/Admin/SettingsPage.php:1567 assets/js/block.js:98
+#: src/Admin/SettingsPage.php:1586 assets/js/block.js:98
 msgid "Random"
 msgstr "ランダム"
 
@@ -916,19 +936,19 @@ msgstr "Rapls Sitemap"
 msgid "Rapls Sitemap is free and always will be. If it saved you some time, there are two ways to help."
 msgstr "Rapls Sitemap は無料で、これからも無料です。お役に立てたなら、応援する方法が2つあります。"
 
-#: src/Admin/SettingsPage.php:1300
+#: src/Admin/SettingsPage.php:1319
 msgid "Read in the old settings"
 msgstr "旧設定を読み込む"
 
-#: src/Admin/SettingsPage.php:1319
+#: src/Admin/SettingsPage.php:1338
 msgid "Reset"
 msgstr "初期化"
 
-#: src/Admin/SettingsPage.php:1326
+#: src/Admin/SettingsPage.php:1345
 msgid "Reset all settings"
 msgstr "すべての設定を初期化"
 
-#: src/Admin/SettingsPage.php:1330
+#: src/Admin/SettingsPage.php:1349
 msgid "Reset every setting to its default?"
 msgstr "すべての設定を初期値に戻しますか?"
 
@@ -936,11 +956,11 @@ msgstr "すべての設定を初期値に戻しますか?"
 msgid "Reviews help other people find the plugin. Thank you."
 msgstr "レビューは、このプラグインを他の方に見つけてもらう助けになります。ありがとうございます。"
 
-#: src/Admin/SettingsPage.php:1938 assets/js/block.js:45
+#: src/Admin/SettingsPage.php:1957 assets/js/block.js:45
 msgid "Ribbons"
 msgstr "リボン"
 
-#: src/Admin/SettingsPage.php:1921 assets/js/block.js:28
+#: src/Admin/SettingsPage.php:1940 assets/js/block.js:28
 msgid "Ruled rows"
 msgstr "罫線"
 
@@ -984,7 +1004,7 @@ msgstr "ホームページへのリンクを表示"
 msgid "Show with each entry"
 msgstr "各項目に表示するもの"
 
-#: src/Admin/SettingsPage.php:1916 assets/js/block.js:23
+#: src/Admin/SettingsPage.php:1935 assets/js/block.js:23
 msgid "Simple"
 msgstr "シンプル"
 
@@ -1001,7 +1021,7 @@ msgstr "サイトマップ"
 msgid "Skip the first"
 msgstr "先頭から除く件数"
 
-#: src/Admin/SettingsPage.php:1664 assets/js/block.js:73
+#: src/Admin/SettingsPage.php:1683 assets/js/block.js:73
 msgid "Slug"
 msgstr "スラッグ"
 
@@ -1013,15 +1033,15 @@ msgstr "カテゴリー見出しの並び順"
 msgid "Sort entries by"
 msgstr "並べ替えの基準"
 
-#: src/Admin/SettingsPage.php:1073
+#: src/Admin/SettingsPage.php:1092
 msgid "Space above"
 msgstr "上の余白"
 
-#: src/Admin/SettingsPage.php:1511
+#: src/Admin/SettingsPage.php:1530
 msgid "Square"
 msgstr "四角"
 
-#: src/Admin/SettingsPage.php:1934 assets/js/block.js:41
+#: src/Admin/SettingsPage.php:1953 assets/js/block.js:41
 msgid "Sticky notes"
 msgstr "付箋"
 
@@ -1033,11 +1053,11 @@ msgstr "構造"
 msgid "Support this plugin"
 msgstr "このプラグインを応援する"
 
-#: src/Admin/SettingsPage.php:1860
+#: src/Admin/SettingsPage.php:1879
 msgid "Taxonomies"
 msgstr "タクソノミー"
 
-#: src/Admin/SettingsPage.php:1942 assets/js/block.js:49
+#: src/Admin/SettingsPage.php:1961 assets/js/block.js:49
 msgid "Terminal"
 msgstr "ターミナル"
 
@@ -1045,7 +1065,7 @@ msgstr "ターミナル"
 msgid "Text"
 msgstr "文字"
 
-#: src/Admin/SettingsPage.php:1173
+#: src/Admin/SettingsPage.php:1192
 msgid "Text for a row with no link — a heading whose archive is switched off."
 msgstr "リンクのない行のテキストです。アーカイブを表示しない設定の見出しなどが該当します。"
 
@@ -1077,23 +1097,23 @@ msgstr "上限は投稿・カテゴリー等のターム・投稿者の 3 つの
 msgid "The field name is yours to choose. \"yomi\" is only a suggestion; use whatever an existing plugin already fills in if you have one."
 msgstr "フィールド名は自由に決められます。「yomi」はあくまで一例です。すでに読みを保存しているプラグインがあれば、そのフィールド名を指定してください。"
 
-#: src/Admin/SettingsPage.php:1174
+#: src/Admin/SettingsPage.php:1193
 msgid "The icon element, when the bullet is set to an icon class."
 msgstr "箇条書きの記号を「アイコンのクラス」にしたときに出力されるアイコン要素です。"
 
-#: src/Admin/SettingsPage.php:1172
+#: src/Admin/SettingsPage.php:1191
 msgid "The link itself."
 msgstr "リンクそのものです。"
 
-#: src/Admin/SettingsPage.php:1167
+#: src/Admin/SettingsPage.php:1186
 msgid "The link to the front page."
 msgstr "ホームページへのリンクです。"
 
-#: src/Admin/SettingsPage.php:1180
+#: src/Admin/SettingsPage.php:1199
 msgid "The markup is the same for every design, so a rule written against these classes keeps working if you change the design later."
 msgstr "マークアップの構造はどのデザインでも共通です。ここに挙げたクラスに対して書いた指定は、後からデザインを変えてもそのまま効きます。"
 
-#: src/Admin/SettingsPage.php:1175
+#: src/Admin/SettingsPage.php:1194
 msgid "The message shown when there is nothing to list."
 msgstr "表示する項目がないときのメッセージです。"
 
@@ -1105,7 +1125,7 @@ msgstr "数字は表示順です。小さいものから順に表示されます
 msgid "The number sets the output order — the lowest is listed first. The settings below apply inside every section that lists content; the author and archive sections read only the entry cap and the design."
 msgstr "数字は表示順です。小さいものから並びます。下の設定は、内容を並べるセクションの中でそのまま有効です。投稿者と年月アーカイブのセクションだけは、件数上限とデザインのほかは参照しません。"
 
-#: src/Admin/SettingsPage.php:1666 assets/js/block.js:75
+#: src/Admin/SettingsPage.php:1685 assets/js/block.js:75
 msgid "The order set by hand"
 msgstr "手動で設定した順序"
 
@@ -1117,7 +1137,7 @@ msgstr "サイトマップを置いたページ自身"
 msgid "The same mechanism works for any ordering you want to control by hand — a number field gives you a manual running order, for instance."
 msgstr "同じ仕組みは、手動で順序を決めたい場合にも使えます。たとえば数値を入れたフィールドを使えば、任意の並び順を指定できます。"
 
-#: src/Admin/SettingsPage.php:1162
+#: src/Admin/SettingsPage.php:1181
 msgid "The wrapper around everything. Also carries the design class, e.g. .rapls-sitemap--card."
 msgstr "全体を囲む要素です。デザインのクラス (例: .rapls-sitemap--card) も同時に付きます。"
 
@@ -1129,7 +1149,7 @@ msgstr "上で選んだデザインに追加で適用されます。空欄にし
 msgid "This is how a true kana ordering is possible. Store the reading of each title in one field, name that field here, and entries sort by the reading instead of by the characters."
 msgstr "本当の五十音順を実現できるのがこの仕組みです。各タイトルの読みを1つのフィールドに保存し、そのフィールド名をここで指定すると、文字そのものではなく読みの順に並びます。"
 
-#: src/Admin/SettingsPage.php:1293
+#: src/Admin/SettingsPage.php:1312
 msgid "This site still holds a PS Auto Sitemap configuration. Reading it in fills this screen with the answers you already gave there: which lists to show and in which order, the depth, the categories and posts to leave out, and the nearest design."
 msgstr "このサイトには PS Auto Sitemap の設定が残っています。読み込むと、そこで指定済みの内容がこの画面に入ります。表示するリストとその順序、階層の深さ、除外するカテゴリーと記事、そして近いデザインです。"
 
@@ -1137,15 +1157,15 @@ msgstr "このサイトには PS Auto Sitemap の設定が残っています。�
 msgid "Tick nothing for an ordinary sitemap built from the setting above. Tick two or more and one placement lists each of them in turn, under its own heading — which is the shape most sitemap pages have."
 msgstr "何もチェックしなければ、上の「一覧の種類」で作る通常のサイトマップになります。2つ以上チェックすると、1か所の設置でそれぞれを順に、見出しを付けて並べます。サイトマップページの多くはこの形です。"
 
-#: src/Admin/SettingsPage.php:1623
+#: src/Admin/SettingsPage.php:1642
 msgid "Tick nothing to list everyone who has published something."
 msgstr "何もチェックしなければ、記事を公開しているすべての利用者を表示します。"
 
-#: src/Admin/SettingsPage.php:1928 assets/js/block.js:35
+#: src/Admin/SettingsPage.php:1947 assets/js/block.js:35
 msgid "Timeline"
 msgstr "タイムライン"
 
-#: src/Admin/SettingsPage.php:1563 assets/js/block.js:94
+#: src/Admin/SettingsPage.php:1582 assets/js/block.js:94
 msgid "Title"
 msgstr "タイトル"
 
@@ -1153,15 +1173,15 @@ msgstr "タイトル"
 msgid "Titles sort by the database collation, which is correct for kana and Latin but not for kanji — nothing records that 大阪 reads おおさか. For a true kana order, store the reading in a custom field and sort by that instead."
 msgstr "タイトル順はデータベースの照合順序に従います。かなと英字では正しく並びますが、漢字では正しく並びません。大阪が「おおさか」と読むことを記録した情報がないためです。本当の五十音順にするには、読みをカスタムフィールドに保存し、それを基準に並べ替えてください。"
 
-#: src/Admin/SettingsPage.php:1095
+#: src/Admin/SettingsPage.php:1114
 msgid "Top level"
 msgstr "最上位"
 
-#: src/Admin/SettingsPage.php:1068
+#: src/Admin/SettingsPage.php:1087
 msgid "Top-level items"
 msgstr "最上位の項目"
 
-#: src/Admin/SettingsPage.php:1217
+#: src/Admin/SettingsPage.php:1236
 msgid "Two columns on wide screens only"
 msgstr "広い画面でのみ2段組みにする"
 
@@ -1169,15 +1189,15 @@ msgstr "広い画面でのみ2段組みにする"
 msgid "Typography and bullets"
 msgstr "文字と記号"
 
-#: src/Admin/SettingsPage.php:1053
+#: src/Admin/SettingsPage.php:1072
 msgid "Underline"
 msgstr "下線"
 
-#: src/Admin/SettingsPage.php:1931 assets/js/block.js:38
+#: src/Admin/SettingsPage.php:1950 assets/js/block.js:38
 msgid "Underlined headings"
 msgstr "見出し下線"
 
-#: src/Admin/SettingsPage.php:1374
+#: src/Admin/SettingsPage.php:1393
 msgid "Unit"
 msgstr "単位"
 
@@ -1211,7 +1231,7 @@ msgstr "値は文字列として並べ替えられます。ひらがなだけ、
 msgid "Weather"
 msgstr "天気"
 
-#: src/Admin/SettingsPage.php:1074 src/Admin/SettingsPage.php:1086
+#: src/Admin/SettingsPage.php:1093 src/Admin/SettingsPage.php:1105
 msgid "Weight"
 msgstr "太さ"
 
@@ -1219,7 +1239,7 @@ msgstr "太さ"
 msgid "What is a custom field, and how do I fill one in?"
 msgstr "カスタムフィールドとは? 設定方法は?"
 
-#: src/Admin/SettingsPage.php:1199
+#: src/Admin/SettingsPage.php:1218
 msgid "What it is"
 msgstr "対象"
 
@@ -1227,11 +1247,11 @@ msgstr "対象"
 msgid "What to list"
 msgstr "表示する対象"
 
-#: src/Admin/SettingsPage.php:1560 assets/js/block.js:91
+#: src/Admin/SettingsPage.php:1579 assets/js/block.js:91
 msgid "Whatever suits each list"
 msgstr "リストごとに最適な順序"
 
-#: src/Admin/SettingsPage.php:1141
+#: src/Admin/SettingsPage.php:1160
 msgid "Which classes can I target?"
 msgstr "指定できるクラス一覧"
 
@@ -1260,7 +1280,7 @@ msgstr "Yoast SEO、Rank Math、SEO SIMPLE PACK、SEOPress、The SEO Framework�
 msgid "You do not have permission to change these settings."
 msgstr "この設定を変更する権限がありません。"
 
-#: src/Admin/SettingsPage.php:1540
+#: src/Admin/SettingsPage.php:1559
 msgid "emoji"
 msgstr "絵文字"
 
@@ -1272,7 +1292,7 @@ msgstr "文字の大きさ、行間、リンクの色、下線、箇条書きの
 msgid "words"
 msgstr "語"
 
-#: src/Admin/SettingsPage.php:1119
+#: src/Admin/SettingsPage.php:1138
 msgid "your own CSS"
 msgstr "独自の CSS"
 

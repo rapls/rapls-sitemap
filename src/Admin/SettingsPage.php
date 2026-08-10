@@ -1042,6 +1042,25 @@ final class SettingsPage {
 			</tr>
 
 			<tr>
+				<th scope="row"><?php echo esc_html__( 'Columns', 'rapls-sitemap' ); ?></th>
+				<td>
+					<span class="rapls-field">
+						<label class="rapls-field__label" for="rapls-sitemap-columns"><?php echo esc_html__( 'Number of columns', 'rapls-sitemap' ); ?></label>
+						<input type="number" min="1" max="6" step="1" id="rapls-sitemap-columns"
+							name="<?php echo esc_attr( $field . '[columns]' ); ?>"
+							value="<?php echo esc_attr( (string) $style['columns'] ); ?>" />
+					</span>
+					<?php self::length_field( $field, 'column_gap', __( 'Gap between columns', 'rapls-sitemap' ), $style ); ?>
+					<p class="description">
+						<?php echo esc_html__( 'Only the top level is split; a category keeps its own entries with it. Empty leaves the design alone, and one column is a real answer on a design that would otherwise flow into several.', 'rapls-sitemap' ); ?>
+					</p>
+					<p class="description">
+						<?php echo esc_html__( 'A fixed number of columns does not narrow on a phone. Where that matters, the "Columns" design flows into as many as fit instead.', 'rapls-sitemap' ); ?>
+					</p>
+				</td>
+			</tr>
+
+			<tr>
 				<th scope="row"><?php echo esc_html__( 'Links', 'rapls-sitemap' ); ?></th>
 				<td>
 					<?php

@@ -57,6 +57,11 @@ final class Design {
 			'font_size'         => '',
 			'line_height'       => '',
 			'indent'            => '',
+			/* Layout. The top-level list flows into this many columns; 1 is a
+			   single column, which is a real answer on a preset that would
+			   otherwise flow. Empty leaves the preset alone. */
+			'columns'           => '',
+			'column_gap'        => '',
 
 			/* Links. */
 			'link_color'        => '',
@@ -95,6 +100,8 @@ final class Design {
 			'font_size'         => 'length',
 			'line_height'       => 'number_or_length',
 			'indent'            => 'length',
+			'columns'           => 'columns',
+			'column_gap'        => 'length',
 			'link_color'        => 'color',
 			'link_hover_color'  => 'color',
 			'underline'         => 'underline',
@@ -230,6 +237,13 @@ final class Design {
 					return $value;
 				}
 				return preg_match( '/^\d+(\.\d+)?(px|rem|em|%)$/', $value ) ? $value : '';
+
+			case 'columns':
+				// Two to six is the useful range and the honest one: seven
+				// columns of links is not a table of contents anyone reads, and
+				// a cap keeps a typed 200 from producing hairlines.
+				$columns = (int) $value;
+				return ( $columns >= 1 && $columns <= 6 ) ? (string) $columns : '';
 
 			case 'color':
 				return self::clean_color( $value );
@@ -368,6 +382,7 @@ final class Design {
 		);
 
 		$rules[] = self::rule( $s . ' .rapls-sitemap__list:not(.rapls-sitemap__list--depth-0)', array( 'margin-left' => $style['indent'] ) );
+		$rules[] = self::column_rules( $s, $style['columns'], $style['column_gap'] );
 		$rules[] = self::rule( $parent, array( 'margin-top' => $style['parent_spacing'] ) );
 
 		/* Links. */
@@ -400,6 +415,43 @@ final class Design {
 		$rules[] = self::marker_rules( $s, $child, $style['child_marker'], $style['child_marker_text'], $style['marker_color'] );
 
 		return implode( '', array_filter( $rules ) );
+	}
+
+	/**
+	 * The top-level list in columns, or nothing at all.
+	 *
+	 * Two declarations come as a pair with the count. A gap, because two
+	 * columns of links touching each other read as one column of nonsense, and
+	 * `break-inside` on the items, because a browser will otherwise split a
+	 * category and its children down the middle of the page. Both are emitted
+	 * only where the count is, so the rule that a token which was not set emits
+	 * nothing still holds.
+	 *
+	 * @param string $scope   Scope selector.
+	 * @param string $columns Column count, or ''.
+	 * @param string $gap     Gap length, or ''.
+	 * @return string
+	 */
+	private static function column_rules( string $scope, string $columns, string $gap ): string {
+		if ( '' === $columns ) {
+			return '';
+		}
+
+		$list = $scope . ' .rapls-sitemap__list--depth-0';
+
+		return self::rule(
+			$list,
+			array(
+				'column-count' => $columns,
+				'column-gap'   => '' !== $gap ? $gap : '2.5rem',
+			)
+		) . self::rule(
+			$list . ' > .rapls-sitemap__item',
+			array(
+				'break-inside'                => 'avoid',
+				'-webkit-column-break-inside' => 'avoid',
+			)
+		);
 	}
 
 	/**

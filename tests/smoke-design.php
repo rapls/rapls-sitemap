@@ -129,6 +129,24 @@ check( false !== strpos( $css, '.' . $scope ), 'every rule is scoped to it' );
 check( $scope === Design::scope_class( Design::sanitize( array( 'link_color' => '#c00' ) ) ), 'the scope class is deterministic, so the render cache still hits' );
 check( $scope !== Design::scope_class( Design::sanitize( array( 'link_color' => '#c01' ) ) ), 'and differs when the tokens differ' );
 
+/* --- columns -------------------------------------------------------------- */
+
+// A token rather than a preset: it composes with whichever design is on, which
+// is the whole point of the tokens sitting on top of them.
+$columns = Design::style_block( Design::sanitize( array( 'columns' => '3' ) ) );
+
+check( false !== strpos( $columns, 'column-count:3' ), 'a column count reaches the declaration' );
+check( false !== strpos( $columns, 'column-gap:2.5rem' ), 'and brings a gap with it — two columns of links touching read as one column of nonsense' );
+check( false !== strpos( $columns, 'break-inside:avoid' ), 'and stops a category being split down the middle of the page' );
+
+$gapped = Design::style_block( Design::sanitize( array( 'columns' => '2', 'column_gap' => '4rem' ) ) );
+check( false !== strpos( $gapped, 'column-gap:4rem' ), 'a gap of its own wins over the default' );
+
+check( '' === Design::style_block( Design::sanitize( array( 'column_gap' => '4rem' ) ) ), 'a gap with no columns is not a layout, so nothing is emitted' );
+check( '1' === Design::sanitize( array( 'columns' => '1' ) )['columns'], 'one column is a real answer on a design that would otherwise flow' );
+check( '' === Design::sanitize( array( 'columns' => '200' ) )['columns'], 'and a number nobody could read is no answer at all' );
+check( '' === Design::sanitize( array( 'columns' => '0' ) )['columns'], 'nor is none' );
+
 /* --- bullets ------------------------------------------------------------- */
 
 $css = Design::style_block( Design::sanitize( array( 'marker' => 'emoji', 'marker_text' => '🍀' ) ) );
