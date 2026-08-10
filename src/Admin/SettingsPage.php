@@ -649,10 +649,13 @@ final class SettingsPage {
 								<input type="checkbox" value="1"
 									name="<?php echo esc_attr( $name . '[exclude_noindex]' ); ?>"
 									<?php checked( ! empty( $settings['exclude_noindex'] ) ); ?> />
-								<?php echo esc_html__( 'Entries an SEO plugin has marked noindex', 'rapls-sitemap' ); ?>
+								<?php echo esc_html__( 'Entries individually marked noindex', 'rapls-sitemap' ); ?>
 							</label>
 							<p class="description">
 								<?php echo esc_html__( 'Yoast SEO, Rank Math, SEO SIMPLE PACK, SEOPress, The SEO Framework, All in One SEO and the Cocoon theme are read directly. WordPress records nothing about noindex itself, so anything else needs the rapls_sitemap/is_noindex filter. Reading the setting costs one extra query per render, and a second one where All in One SEO is active — it keeps this in a table of its own rather than in post meta.', 'rapls-sitemap' ); ?>
+							</p>
+							<p class="description">
+								<?php echo esc_html__( 'What is read is the setting on the entry itself. A default that applies to a whole post type, taxonomy or archive is not: those listings appear only because you chose them on this screen, and an SEO plugin\'s default — Yoast noindexes date archives out of the box — would otherwise empty a list you asked for.', 'rapls-sitemap' ); ?>
 							</p>
 							<p class="description">
 								<?php echo esc_html__( 'Categories, tags and authors are read too. A category is only dropped where the category itself is what is listed — where entries are grouped under category headings, dropping a heading would take indexable entries with it, so switch off "Link section and category headings" instead. Those two questions have filters of their own: rapls_sitemap/is_term_noindex and rapls_sitemap/is_user_noindex.', 'rapls-sitemap' ); ?>

@@ -95,6 +95,8 @@ final class TreeBuilder {
 			array() === $sections ? $this->from_source( $depth ) : $this->composed( $sections, $depth )
 		);
 
+		$roots = $this->within_budget( $roots );
+
 		/**
 		 * Filters the assembled tree before rendering.
 		 *
@@ -114,6 +116,89 @@ final class TreeBuilder {
 		return array_values( array_filter( $filtered, static function ( $node ) {
 			return $node instanceof Node;
 		} ) );
+	}
+
+	/**
+	 * How many nodes one sitemap may render, before anything is rendered.
+	 *
+	 * `max_entries` bounds each QUERY, which is what keeps the fetch from
+	 * exhausting memory. It is not a bound on the page: a post in ten
+	 * categories is ten entries once `duplicate_in_terms` has done its work, so
+	 * two thousand posts can become twenty thousand lines of HTML. This is the
+	 * ceiling on that, and it is a constant rather than a setting because it is
+	 * a limit on what a page can be rather than a preference about what to
+	 * show.
+	 *
+	 * Trimming says so, as everything that trims here does.
+	 */
+	private const NODE_BUDGET = 20000;
+
+	/**
+	 * Cut the tree to the node budget, and say so if it had to.
+	 *
+	 * Depth-first, so what survives is the top of the sitemap rather than an
+	 * arbitrary slice: a reader who loses the tail of the last category is
+	 * better off than one who loses every category's tail.
+	 *
+	 * @param Node[] $roots Assembled tree.
+	 * @return Node[]
+	 */
+	private function within_budget( array $roots ): array {
+		/**
+		 * Filters the maximum number of nodes one sitemap may render.
+		 *
+		 * @param int   $budget   Node ceiling; 0 removes it.
+		 * @param array $settings Effective settings.
+		 */
+		$budget = (int) apply_filters( Hooks::MAX_NODES, self::NODE_BUDGET, $this->settings );
+
+		if ( $budget <= 0 ) {
+			return $roots;
+		}
+
+		$left    = $budget;
+		$trimmed = $this->trim( $roots, $left );
+
+		if ( $left > 0 ) {
+			return $roots;
+		}
+
+		$trimmed[] = new Node(
+			0,
+			sprintf(
+				/* translators: %s: number of entries shown. */
+				__( 'This sitemap reached its size limit of %s entries. The rest are not listed.', 'rapls-sitemap' ),
+				number_format_i18n( $budget )
+			),
+			'',
+			'more'
+		);
+
+		return $trimmed;
+	}
+
+	/**
+	 * Take nodes until the budget runs out.
+	 *
+	 * @param Node[] $nodes Nodes at this level.
+	 * @param int    $left  Remaining budget, by reference.
+	 * @return Node[]
+	 */
+	private function trim( array $nodes, int &$left ): array {
+		$kept = array();
+
+		foreach ( $nodes as $node ) {
+			if ( $left <= 0 ) {
+				break;
+			}
+
+			--$left;
+
+			$node->children = $this->trim( $node->children, $left );
+			$kept[]         = $node;
+		}
+
+		return $kept;
 	}
 
 	/**
@@ -906,21 +991,9 @@ final class TreeBuilder {
 		$child_of = (int) $this->settings['child_of'];
 
 		if ( is_post_type_hierarchical( $post_type ) && $child_of > 0 ) {
-			// The branch has to be found before the cap can mean anything. A
-			// branch is worked out from the `post_parent` links, which means
-			// having them all: capping the query first would ask for the first
-			// N pages of the site and then look for one page's children among
-			// them, and on any site where that branch sorts late the answer
-			// would be "no children" rather than "here they are".
-			//
-			// So the whole type is fetched, narrowed, and only then bounded.
-			// This is the one place the query is unbounded, and it is the one
-			// where the scope is a page tree — the type `child_of` applies to
-			// at all, and the small one on essentially every site.
-			$branch = $this->descendants_of( $this->fetch( $post_type, false ), $child_of );
-
-			return $this->nest( $this->bounded( $branch, $post_type ) );
+			return $this->branch( $post_type, $child_of );
 		}
+
 
 		$posts = $this->fetch( $post_type );
 		if ( array() === $posts ) {
@@ -944,7 +1017,15 @@ final class TreeBuilder {
 	 * @param string $post_type Post type slug.
 	 * @return \WP_Post[]
 	 */
-	private function fetch( string $post_type, bool $bounded = true ): array {
+	private function fetch( string $post_type, bool $bounded = true, array $only_ids = array() ): array {
+		// The backstop. `build_post_type()` asks the same question, but every
+		// source that reaches for posts comes through here — `archives()` does,
+		// and whatever gets written next will too. One guard on the query
+		// itself is worth more than a guard on each caller.
+		if ( ! self::is_listable_post_type( $post_type ) ) {
+			return array();
+		}
+
 		$noindex = ! empty( $this->settings['exclude_noindex'] );
 		$max     = $bounded ? $this->cap() : 0;
 		$offset  = $bounded ? max( 0, (int) $this->settings['offset'] ) : 0;
@@ -1012,6 +1093,10 @@ final class TreeBuilder {
 		 * @param array  $args      Query args.
 		 * @param string $post_type Post type slug.
 		 */
+		if ( array() !== $only_ids ) {
+			$args['post__in'] = $only_ids;
+		}
+
 		$filtered = apply_filters( Hooks::QUERY_ARGS, $args, $post_type );
 		$args     = is_array( $filtered ) ? $filtered : $args;
 
@@ -1159,9 +1244,14 @@ final class TreeBuilder {
 	 * @return bool
 	 */
 	public static function is_listable_post_type( string $post_type ): bool {
-		$object = get_post_type_object( $post_type );
-
-		return is_object( $object ) && ! empty( $object->public );
+		// `is_post_type_viewable()` rather than `public`, because that is the
+		// question: `public => true, publicly_queryable => false` is a type
+		// whose single pages 404 on the front end, and linking to them from a
+		// sitemap is worse than leaving them out. `Cache::flush_for_post()`
+		// already asked it this way; the two now agree.
+		return function_exists( 'is_post_type_viewable' )
+			? (bool) is_post_type_viewable( $post_type )
+			: ! empty( get_post_type_object( $post_type )->public );
 	}
 
 	/**
@@ -1171,9 +1261,94 @@ final class TreeBuilder {
 	 * @return bool
 	 */
 	public static function is_listable_taxonomy( string $taxonomy ): bool {
+		if ( function_exists( 'is_taxonomy_viewable' ) ) {
+			return (bool) is_taxonomy_viewable( $taxonomy );
+		}
+
 		$object = get_taxonomy( $taxonomy );
 
 		return false !== $object && ! empty( $object->public );
+	}
+
+	/**
+	 * One page's descendants, found before anything is filtered out.
+	 *
+	 * Two passes, and they answer different questions.
+	 *
+	 * The first asks the shape of the tree: `id=>parent` for every page of the
+	 * type, with no display filters at all. It has to be every page, because a
+	 * branch is walked down `post_parent` links and a missing link breaks the
+	 * walk — and it has to be unfiltered, because a page in the middle of the
+	 * branch that is noindexed, password-protected or outside the date window
+	 * would otherwise take every page beneath it with it. Those are reasons to
+	 * hide one page, not reasons to lose its children.
+	 *
+	 * The second asks what to show: the ordinary fetch, narrowed to the IDs the
+	 * first pass found, with every filter and then the cap applied to the
+	 * branch rather than to the site.
+	 *
+	 * @param string $post_type Post type slug.
+	 * @param int    $child_of  Page whose descendants are wanted.
+	 * @return Node[]
+	 */
+	private function branch( string $post_type, int $child_of ): array {
+		if ( ! self::is_listable_post_type( $post_type ) ) {
+			return array();
+		}
+
+		$parents = get_posts(
+			array(
+				'post_type'              => $post_type,
+				'post_status'            => 'publish',
+				'posts_per_page'         => -1,
+				'fields'                 => 'id=>parent',
+				'no_found_rows'          => true,
+				'ignore_sticky_posts'    => true,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+				'suppress_filters'       => false,
+			)
+		);
+
+		if ( ! is_array( $parents ) || array() === $parents ) {
+			return array();
+		}
+
+		$ids = $this->descendant_ids( $parents, $child_of );
+		if ( array() === $ids ) {
+			return array();
+		}
+
+		return $this->nest( $this->bounded( $this->fetch( $post_type, false, $ids ), $post_type ) );
+	}
+
+	/**
+	 * The IDs under one page, from an id => parent map.
+	 *
+	 * @param array<int,int> $parents Post ID => parent ID.
+	 * @param int            $root    Page to descend from.
+	 * @return int[]
+	 */
+	private function descendant_ids( array $parents, int $root ): array {
+		$inside = array( $root => true );
+
+		// One pass per level of nesting: a page joins once its parent has.
+		do {
+			$added = false;
+
+			foreach ( $parents as $id => $parent ) {
+				if ( isset( $inside[ (int) $id ] ) || ! isset( $inside[ (int) $parent ] ) ) {
+					continue;
+				}
+
+				$inside[ (int) $id ] = true;
+				$added               = true;
+			}
+		} while ( $added );
+
+		unset( $inside[ $root ] );
+
+		return array_map( 'intval', array_keys( $inside ) );
 	}
 
 	/**
@@ -1362,11 +1537,6 @@ final class TreeBuilder {
 		// own entries instead of being buried under them.
 		$roots = $this->nest_terms( $terms, $nodes );
 
-		$by_id = array();
-		foreach ( $posts as $post ) {
-			$by_id[ (int) $post->ID ] = $post;
-		}
-
 		// With this off, the first term to claim a post keeps it — which is why
 		// the loop below checks `$claimed` before adding rather than only
 		// after. Terms are walked in the order get_terms returned them, so the
@@ -1380,7 +1550,11 @@ final class TreeBuilder {
 		$per_term = max( 0, (int) $this->settings['max_per_term'] );
 
 		// Membership is worked out once, from the posts, rather than once per
-		// term from the term. Asking each term what it holds is a query per
+		// term from the term — and the posts themselves are kept, in the order
+		// the query returned them, so each group can be walked directly.
+		// Keeping only the IDs meant walking every post inside every term to
+		// find them again: two thousand categories over two thousand posts is
+		// four million comparisons for an answer already in hand. Asking each term what it holds is a query per
 		// term unless something has cached it — a store with two thousand
 		// product categories would issue two thousand of them — and then
 		// walking every post inside every term is terms x posts comparisons on
@@ -1396,7 +1570,7 @@ final class TreeBuilder {
 			}
 
 			foreach ( $post_terms as $post_term ) {
-				$members[ (int) $post_term->term_id ][ (int) $post->ID ] = true;
+				$members[ (int) $post_term->term_id ][] = $post;
 			}
 		}
 
@@ -1415,11 +1589,9 @@ final class TreeBuilder {
 				continue;
 			}
 
-			foreach ( $posts as $post ) {
+			foreach ( $held as $post ) {
 				$id = (int) $post->ID;
-				if ( ! isset( $held[ $id ] ) ) {
-					continue;
-				}
+
 				if ( ! $duplicate && isset( $claimed[ $id ] ) ) {
 					continue;
 				}
@@ -1434,7 +1606,7 @@ final class TreeBuilder {
 					continue;
 				}
 
-				$node->add( $this->to_node( $by_id[ $id ] ) );
+				$node->add( $this->to_node( $post ) );
 				$shown++;
 			}
 
@@ -1519,10 +1691,6 @@ final class TreeBuilder {
 					}
 				)
 			);
-
-			if ( array() === $terms ) {
-				return array();
-			}
 		}
 
 		if ( null !== $only ) {
@@ -1534,10 +1702,13 @@ final class TreeBuilder {
 					}
 				)
 			);
+		}
 
-			if ( array() === $terms ) {
-				return array();
-			}
+		// Filtering can empty the list, and an empty list still owes the reader
+		// the note when the query stopped short: there IS more, and returning
+		// nothing at all would hide both facts at once.
+		if ( array() === $terms ) {
+			return $this->note_if_truncated( array(), self::term_key( $taxonomy ) );
 		}
 
 		$show_count = ! empty( $this->settings['show_count'] );
@@ -2077,12 +2248,23 @@ final class TreeBuilder {
 		// unfiltered list would keep an author whose only posts are in a type
 		// this sitemap excludes — a name linking to an archive with nothing on
 		// it that the reader is allowed to see.
-		$types = array_values(
+		$named = array_values(
 			array_diff(
 				array_map( 'strval', (array) $this->settings['post_types'] ),
 				array_map( 'strval', (array) $this->settings['exclude_types'] )
 			)
 		);
+
+		$types = array_values( array_filter( $named, array( self::class, 'is_listable_post_type' ) ) );
+
+		// Naming types and having none of them survive is not the same as
+		// naming none: `has_published_posts => true` means "any post type at
+		// all", so falling back to it here would answer a narrower question
+		// with a wider list — including, on a site with a private post type,
+		// who writes in it.
+		if ( array() === $types && array() !== $named ) {
+			return array();
+		}
 
 		$args = array(
 			'has_published_posts' => array() === $types ? true : $types,
@@ -2116,6 +2298,12 @@ final class TreeBuilder {
 
 		$users = get_users( $args );
 
+		// Decided here, on what the query returned, for the same reason the
+		// post listing decides it here: the extra row is the evidence that
+		// there was more, and filtering the rows away destroys the evidence
+		// without changing the fact.
+		$more = $cap > 0 && count( $users ) > $cap;
+
 		if ( ! empty( $this->settings['exclude_noindex'] ) ) {
 			$users = array_values(
 				array_filter(
@@ -2128,7 +2316,10 @@ final class TreeBuilder {
 		}
 
 		if ( $cap > 0 && count( $users ) > $cap ) {
-			$users                       = array_slice( $users, 0, $cap );
+			$users = array_slice( $users, 0, $cap );
+		}
+
+		if ( $more ) {
 			$this->truncated['authors'] = true;
 		}
 
@@ -2293,6 +2484,20 @@ final class TreeBuilder {
 	 * @return string
 	 */
 	private function excerpt( $post ): string {
+		// A password on a post is a statement that its content is not for
+		// everybody, and this reads `post_content` directly — the checks
+		// `get_the_excerpt()` makes never run. Worse, the answer would be
+		// cached and served to readers who never entered the password: this
+		// output is shared, so "the person rendering it had the cookie" is not
+		// a question that can be asked here. A protected post keeps its place
+		// in the list; only its text goes.
+		//
+		// Whether the post appears at all is `exclude_protected`, and that is a
+		// separate decision from this one.
+		if ( '' !== trim( (string) ( $post->post_password ?? '' ) ) ) {
+			return '';
+		}
+
 		$words = max( 1, (int) $this->settings['excerpt_length'] );
 
 		$raw = trim( (string) $post->post_excerpt );

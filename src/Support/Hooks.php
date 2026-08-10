@@ -43,6 +43,14 @@ final class Hooks {
 	public const DESIGNS = 'rapls_sitemap/designs';
 
 	/** Filters the cache lifetime in seconds (0 disables caching). */
+	/**
+	 * The ceiling on how many nodes one sitemap may render.
+	 *
+	 * Not a setting: it is the last guard against a page too large to be a
+	 * page, and a site that genuinely wants more can say so here.
+	 */
+	public const MAX_NODES = 'rapls_sitemap/max_nodes';
+
 	public const CACHE_TTL = 'rapls_sitemap/cache_ttl';
 
 	/**

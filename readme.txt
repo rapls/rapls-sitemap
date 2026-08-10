@@ -44,7 +44,7 @@ It is a maintained replacement for **PS Auto Sitemap** (closed in 2022) and **WP
 * Depth limit, and a "list only what is under this page" scope that a shortcode can resolve to the current page or to the page above it.
 * Exclude posts, categories or users by ID. Excluding a parent takes its children with it.
 * Exclude whole post types or taxonomies.
-* Leave out the sitemap's own page, password-protected entries, and entries an SEO plugin has marked noindex.
+* Leave out the sitemap's own page, password-protected entries, and entries individually marked noindex.
 * Limit by publication date, for a sitemap of one school year or one financial year. A category listing narrows with it, so a category holding nothing from that year is not listed either.
 * Entry caps: per list, per category, and a starting offset.
 
@@ -75,7 +75,9 @@ Both compatibility options are **off by default**, because answering to another 
 
 = noindex integrations =
 
-Entries marked noindex can be left out. These are read with no configuration: **Yoast SEO, Rank Math, SEO SIMPLE PACK, SEOPress, The SEO Framework, All in One SEO**, and the **Cocoon** theme (including its fallback to the Simplicity key it inherited).
+A password-protected entry never contributes an excerpt, whether or not you leave it out of the list. Its text is not for everybody, and this output is cached and shared.
+
+Entries **individually** marked noindex can be left out. A default that applies to a whole post type, taxonomy or archive is not read: those listings appear only because you chose them, and an SEO plugin's default — Yoast noindexes date archives out of the box — would otherwise empty a list you asked for. These are read with no configuration: **Yoast SEO, Rank Math, SEO SIMPLE PACK, SEOPress, The SEO Framework, All in One SEO**, and the **Cocoon** theme (including its fallback to the Simplicity key it inherited).
 
 **Categories and tags** are read too, where the term itself is what is listed: Yoast keeps that in one option rather than in term meta, while Rank Math, SEO SIMPLE PACK and Cocoon use term meta. `rapls_sitemap/is_term_noindex` extends it.
 

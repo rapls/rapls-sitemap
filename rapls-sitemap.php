@@ -20,7 +20,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'RAPLS_SITEMAP_VERSION', '0.1.0' );
-define( 'RAPLS_SITEMAP_FILE', __FILE__ );
 define( 'RAPLS_SITEMAP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'RAPLS_SITEMAP_URL', plugin_dir_url( __FILE__ ) );
 define( 'RAPLS_SITEMAP_BASENAME', plugin_basename( __FILE__ ) );

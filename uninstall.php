@@ -23,6 +23,8 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 $rapls_sitemap_options = array(
 	'rapls_sitemap_settings',
 	'rapls_sitemap_cache_salt',
+	// No longer written — nothing ever read it — but an install from before
+	// that still holds one, and uninstalling should leave nothing behind.
 	'rapls_sitemap_activated_at',
 	'rapls_sitemap_version',
 );

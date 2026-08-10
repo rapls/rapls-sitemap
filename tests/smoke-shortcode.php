@@ -83,7 +83,19 @@ check( array( 4, 8, 15 ) === $out['exclude_ids'], 'exclusions use the same loose
 /* --- the new per-placement attributes ------------------------------------ */
 
 check( 50 === Shortcode::apply_atts( $base, array( 'number' => '50' ) )['max_entries'], 'number caps the list for one placement' );
-check( 0 === Shortcode::apply_atts( $base, array( 'number' => '-5' ) )['max_entries'], 'a negative cap means no cap' );
+// A placement may narrow the site's cap and never lift it: that cap guards
+// against a query large enough to exhaust memory, and a placement is written by
+// anyone who can edit a post.
+$capped = array_merge( $base, array( 'max_entries' => 2000 ) );
+
+check( 500 === Shortcode::apply_atts( $capped, array( 'number' => '500' ) )['max_entries'], 'a placement can ask for fewer' );
+check( 2000 === Shortcode::apply_atts( $capped, array( 'number' => '5000' ) )['max_entries'], 'and cannot ask for more' );
+check( 2000 === Shortcode::apply_atts( $capped, array( 'number' => '0' ) )['max_entries'], 'nor lift the cap by asking for none' );
+
+// A site that has chosen no cap has nothing to narrow, so a placement may set
+// one — which is the only direction that makes the query smaller.
+$uncapped = array_merge( $base, array( 'max_entries' => 0 ) );
+check( 50 === Shortcode::apply_atts( $uncapped, array( 'number' => '50' ) )['max_entries'], 'where the site has no cap, a placement may impose one' );
 check( 10 === Shortcode::apply_atts( $base, array( 'offset' => '10' ) )['offset'], 'offset skips entries' );
 check( 5 === Shortcode::apply_atts( $base, array( 'per_category' => '5' ) )['max_per_term'], 'per_category caps each category' );
 check( false === Shortcode::apply_atts( $base, array( 'link_headings' => '0' ) )['link_headings'], 'headings can be unlinked per placement' );

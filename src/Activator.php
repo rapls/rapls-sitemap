@@ -28,7 +28,9 @@ final class Activator {
 		// renders — one page on most sites — while autoload would load them on
 		// every request, admin screens and REST calls included. They also hold
 		// the Additional CSS, which is the one field here with no natural size.
-		if ( false === get_option( Settings::OPTION ) ) {
+		$fresh = false === get_option( Settings::OPTION );
+
+		if ( $fresh ) {
 			add_option( Settings::OPTION, Settings::defaults(), '', false );
 		}
 
@@ -36,14 +38,17 @@ final class Activator {
 		// hash the same empty string across reinstalls.
 		update_option( Cache::SALT_OPTION, (string) wp_generate_uuid4(), false );
 
-		// Stamped here so `Plugin::maybe_upgrade()` has nothing to do on a fresh
-		// install. Without it the migration runs once on the first admin page
-		// load of every new site, deleting and re-adding the option it just
-		// created — a no-op with a window where the settings do not exist.
-		update_option( Plugin::VERSION_OPTION, RAPLS_SITEMAP_VERSION, false );
-
-		if ( false === get_option( 'rapls_sitemap_activated_at' ) ) {
-			add_option( 'rapls_sitemap_activated_at', gmdate( 'Y-m-d H:i:s' ), '', false );
+		// Stamped ONLY on a fresh install, so `Plugin::maybe_upgrade()` has
+		// nothing to do on a site that has nothing to migrate — without it the
+		// migration runs on the first admin page load of every new site,
+		// deleting and re-adding the option it just created.
+		//
+		// Never on an existing one. An update installed the ordinary way
+		// deactivates and reactivates the plugin, and stamping the new version
+		// here would tell maybe_upgrade() its work was already done — skipping
+		// the migration that very update shipped.
+		if ( $fresh ) {
+			update_option( Plugin::VERSION_OPTION, RAPLS_SITEMAP_VERSION, false );
 		}
 	}
 }

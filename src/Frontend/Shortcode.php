@@ -158,11 +158,8 @@ final class Shortcode {
 			}
 		}
 
-		// `number` reads better in a shortcode than `max_entries`, and it is
-		// what the plugins people are migrating from call it.
 		foreach (
 			array(
-				'number'         => 'max_entries',
 				'offset'         => 'offset',
 				'excerpt_length' => 'excerpt_length',
 				'per_category'   => 'max_per_term',
@@ -170,6 +167,26 @@ final class Shortcode {
 		) {
 			if ( isset( $atts[ $att ] ) ) {
 				$settings[ $key ] = max( 0, (int) $atts[ $att ] );
+			}
+		}
+
+		// `number` reads better in a shortcode than `max_entries`, and it is
+		// what the plugins people are migrating from call it — but it may only
+		// narrow the site's cap, never lift it. That cap guards against a query
+		// large enough to exhaust memory, not a preference, and a placement is
+		// written by anyone who can edit a post: `number="0"` would otherwise
+		// mean "fetch everything".
+		//
+		// A site that has chosen no cap is a different matter. There is nothing
+		// to narrow, so a placement may impose one.
+		if ( isset( $atts['number'] ) ) {
+			$asked = max( 0, (int) $atts['number'] );
+			$site  = max( 0, (int) $settings['max_entries'] );
+
+			if ( 0 === $site ) {
+				$settings['max_entries'] = $asked;
+			} elseif ( $asked > 0 ) {
+				$settings['max_entries'] = min( $asked, $site );
 			}
 		}
 

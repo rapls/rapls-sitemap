@@ -451,7 +451,7 @@ $run_uninstall = static function ( $multisite ) use ( &$deleted, &$network ) {
 };
 
 $single = $run_uninstall( false );
-foreach ( array( 'rapls_sitemap_settings', 'rapls_sitemap_cache_salt', 'rapls_sitemap_activated_at', 'rapls_sitemap_version' ) as $option ) {
+foreach ( array( 'rapls_sitemap_settings', 'rapls_sitemap_cache_salt', 'rapls_sitemap_version' ) as $option ) {
 	if ( false === strpos( $single, '0:' . $option ) ) {
 		$deleted[] = $option;
 	}

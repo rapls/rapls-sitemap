@@ -165,6 +165,16 @@ function get_posts( $args ) {
 		return array_map( function ( $post ) { return (int) $post->ID; }, $posts );
 	}
 
+	// The shape `child_of` asks for when it is working out the tree: every
+	// page's parent, and nothing else.
+	if ( isset( $args['fields'] ) && 'id=>parent' === $args['fields'] ) {
+		$map = array();
+		foreach ( $posts as $post ) {
+			$map[ (int) $post->ID ] = (int) $post->post_parent;
+		}
+		return $map;
+	}
+
 	return $posts;
 }
 
@@ -284,6 +294,9 @@ function apply_filters( $hook, $value ) {
 	}
 	if ( 'rapls_sitemap/tree' === $hook && $GLOBALS['rapls_tree_filter'] ) {
 		return call_user_func( $GLOBALS['rapls_tree_filter'], $value );
+	}
+	if ( 'rapls_sitemap/max_nodes' === $hook && null !== ( $GLOBALS['rapls_max_nodes'] ?? null ) ) {
+		return $GLOBALS['rapls_max_nodes'];
 	}
 	if ( 'rapls_sitemap/query_args' === $hook && $GLOBALS['rapls_query_args_filter'] ) {
 		$args = func_get_args();
@@ -667,6 +680,16 @@ $roots                            = ( new TreeBuilder( grouped( array( 'term_mod
 check( array( 'News' ) === titles( $roots ), 'terms_only lists categories and no posts' );
 check( array( 'Sub' ) === titles( $roots[0]->children ), 'terms_only still nests categories' );
 check( 0 === $GLOBALS['fixture_posts_fetched'], 'terms_only skips the post query entirely' );
+
+// The author listing answers for the post types it was given, and a private one
+// is not among them. Naming types and having none survive is not the same as
+// naming none: `has_published_posts => true` means "any post type at all".
+$GLOBALS['fixture_last_user_args'] = null;
+$roots = ( new TreeBuilder( tree_settings( array( 'source' => 'authors', 'post_types' => array( 'internal' ) ) ) ) )->build();
+check( array() === $roots, 'the author listing says nothing about who writes in a private post type' );
+
+( new TreeBuilder( tree_settings( array( 'source' => 'authors', 'post_types' => array( 'internal', 'post' ) ) ) ) )->build();
+check( array( 'post' ) === $GLOBALS['fixture_last_user_args']['has_published_posts'], 'and drops the private one from a mixed list' );
 
 // ...unless a publication window has been set. A window is a claim about what
 // the sitemap covers, and a category holding nothing from the year the page is
@@ -1519,6 +1542,66 @@ $GLOBALS['fixture_last_args'] = null;
 ( new TreeBuilder( tree_settings( array( 'source' => 'archives', 'post_types' => array( 'post' ), 'date_after' => '2026-01-01' ) ) ) )->build();
 check( isset( $GLOBALS['fixture_last_args']['date_query'] ), 'the archive listing inherits the window' );
 
+/* --- the ceiling on how large a page may be ------------------------------ */
+
+// max_entries bounds each QUERY, which is what keeps the fetch from exhausting
+// memory. It is not a bound on the page: a post in ten categories is ten
+// entries once duplicate_in_terms has done its work. The node budget is the
+// ceiling on that, and cutting says so like everything else that cuts here.
+$GLOBALS['rapls_max_nodes'] = 3;
+
+$roots = ( new TreeBuilder( tree_settings() ) )->build();
+
+// Three nodes plus the note. The budget counts every node in the tree, not just
+// the roots, so a page with children spends more than one.
+$counted = 0;
+$walk    = static function ( $nodes ) use ( &$walk, &$counted ) {
+	foreach ( $nodes as $node ) {
+		if ( 'more' !== $node->kind ) {
+			$counted++;
+		}
+		$walk( $node->children );
+	}
+};
+$walk( $roots );
+
+check( 3 === $counted, 'the tree is cut to the budget', (string) $counted );
+check( has_note( $roots ), 'and the cut is stated rather than left to be noticed' );
+
+$GLOBALS['rapls_max_nodes'] = 0;
+$roots = ( new TreeBuilder( tree_settings() ) )->build();
+check( ! has_note( $roots ), 'a budget of 0 removes the ceiling' );
+
+$GLOBALS['rapls_max_nodes'] = null;
+
+/* --- a password is a statement about the text ---------------------------- */
+
+// Post 13 has one. Its excerpt would come from post_content, and the checks
+// get_the_excerpt() makes never run here — worse, the answer would be cached
+// and served to readers who never entered the password. The entry keeps its
+// place; only its text goes. Whether it appears at all is exclude_protected,
+// which is a separate decision.
+$GLOBALS['fixture_posts'][0]->post_content = 'An ordinary post with words in it.';
+$GLOBALS['fixture_posts'][3]->post_content = 'The contract is worth thirty-five million yen.';
+
+$roots = ( new TreeBuilder( grouped( array( 'group_by_term' => false, 'show_excerpt' => true ) ) ) )->build();
+$protected = array_values( array_filter( $roots, static function ( $node ) { return 'Loose' === $node->title; } ) );
+
+check( array() !== $protected, 'a password-protected entry is still listed by default' );
+check( '' === $protected[0]->excerpt, 'and contributes no excerpt at all' );
+
+$open = array_values( array_filter( $roots, static function ( $node ) { return 'Newest' === $node->title; } ) );
+check( '' !== $open[0]->excerpt, 'while an ordinary entry still has one' );
+
+$dump = '';
+foreach ( $roots as $node ) {
+	$dump .= $node->title . '|' . $node->excerpt . "\n";
+}
+check( false === strpos( $dump, 'thirty-five million' ), 'and none of the protected body reaches the tree at all' );
+
+$GLOBALS['fixture_posts'][0]->post_content = '';
+$GLOBALS['fixture_posts'][3]->post_content = '';
+
 /* --- what a shortcode may list ------------------------------------------- */
 
 // `sanitize_key()` makes a slug safe to put in a query; it says nothing about
@@ -1553,6 +1636,21 @@ check( array() === titles( $roots ), 'a page with nothing under it lists nothing
 // branch root out of the result set on the very page this is most useful on.
 $roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 99 ) ) ) )->build();
 check( array( 'Orphan' ) === titles( $roots ), 'the branch root need not be in the result set itself' );
+
+// Finding the branch and deciding what to show are different questions, asked
+// with different queries. A page in the middle of the branch that is noindexed
+// is a reason to hide that page, not a reason to lose everything beneath it —
+// but the walk needs its post_parent link to get there.
+$was = array( $GLOBALS['fixture_meta'][2] ?? array(), $GLOBALS['fixture_meta'][3] ?? array() );
+
+$GLOBALS['fixture_meta'][2] = array( '_yoast_wpseo_meta-robots-noindex' => '1' );
+$GLOBALS['fixture_meta'][3] = array();
+
+$roots = ( new TreeBuilder( tree_settings( array( 'child_of' => 1, 'exclude_noindex' => true ) ) ) )->build();
+check( ! in_array( 'Child', titles( $roots ), true ), 'a noindexed page inside the branch is left out' );
+check( in_array( 'Grandchild', titles( $roots ), true ), 'while what hangs below it is still found' );
+
+list( $GLOBALS['fixture_meta'][2], $GLOBALS['fixture_meta'][3] ) = $was;
 
 // The branch has to be found before the cap can mean anything. Capping the
 // query first would ask for the first N pages of the site and then look for one
