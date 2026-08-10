@@ -655,7 +655,7 @@ final class SettingsPage {
 								<?php echo esc_html__( 'Yoast SEO, Rank Math, SEO SIMPLE PACK, SEOPress, The SEO Framework, All in One SEO and the Cocoon theme are read directly. WordPress records nothing about noindex itself, so anything else needs the rapls_sitemap/is_noindex filter. Reading the setting costs one extra query per render, and a second one where All in One SEO is active — it keeps this in a table of its own rather than in post meta.', 'rapls-sitemap' ); ?>
 							</p>
 							<p class="description">
-								<?php echo esc_html__( 'Categories and tags are read too, but only where the category itself is what is listed. Where entries are grouped under category headings, dropping a heading would take indexable entries with it — switch off "Link section and category headings" instead.', 'rapls-sitemap' ); ?>
+								<?php echo esc_html__( 'Categories, tags and authors are read too. A category is only dropped where the category itself is what is listed — where entries are grouped under category headings, dropping a heading would take indexable entries with it, so switch off "Link section and category headings" instead. Those two questions have filters of their own: rapls_sitemap/is_term_noindex and rapls_sitemap/is_user_noindex.', 'rapls-sitemap' ); ?>
 							</p>
 
 							<?php $this->exclusion_checkboxes( $name, $settings ); ?>

@@ -1674,6 +1674,53 @@ final class TreeBuilder {
 	}
 
 	/**
+	 * Has an SEO plugin marked this author's archive noindex?
+	 *
+	 * The per-author setting, not the site-wide "noindex author archives" one.
+	 * The distinction is the whole reason this exists: the site-wide switch is
+	 * a decision this screen has already made — an author listing appears only
+	 * because somebody ticked it — while a single author marked noindex is a
+	 * decision about that person, and a name in this list linking to an archive
+	 * search engines are told to ignore is the same mistake as listing a
+	 * noindexed post.
+	 *
+	 * Two sources, both read from the plugin itself. Cocoon has no per-author
+	 * setting; its own theme files were checked rather than assumed.
+	 *
+	 * @param int $user_id User ID.
+	 * @return bool
+	 */
+	private function is_user_noindex( int $user_id ): bool {
+		if ( 'on' === (string) get_user_meta( $user_id, 'wpseo_noindex_author', true ) ) {
+			return $this->filter_user_noindex( true, $user_id );
+		}
+
+		$rank_math = get_user_meta( $user_id, 'rank_math_robots', true );
+		if ( is_array( $rank_math ) && in_array( 'noindex', $rank_math, true ) ) {
+			return $this->filter_user_noindex( true, $user_id );
+		}
+
+		return $this->filter_user_noindex( false, $user_id );
+	}
+
+	/**
+	 * Let a site answer for the plugins this one does not read.
+	 *
+	 * @param bool $noindex What this plugin concluded.
+	 * @param int  $user_id User ID.
+	 * @return bool
+	 */
+	private function filter_user_noindex( bool $noindex, int $user_id ): bool {
+		/**
+		 * Filters whether an author's archive is treated as noindexed.
+		 *
+		 * @param bool $noindex Whether this plugin found it noindexed.
+		 * @param int  $user_id User ID.
+		 */
+		return (bool) apply_filters( Hooks::IS_USER_NOINDEX, $noindex, $user_id );
+	}
+
+	/**
 	 * Has an SEO plugin marked this term noindex?
 	 *
 	 * Only the term LISTING asks. Where posts are grouped under category
@@ -1705,8 +1752,20 @@ final class TreeBuilder {
 			return $this->filter_term_noindex( true, $term_id, $taxonomy );
 		}
 
+		// SEO SIMPLE PACK uses one key for posts and terms alike, and the same
+		// string of comma-separated values.
+		$ssp = (string) get_term_meta( $term_id, 'ssp_meta_robots', true );
+		if ( '' !== $ssp && false !== strpos( $ssp, 'noindex' ) ) {
+			return $this->filter_term_noindex( true, $term_id, $taxonomy );
+		}
+
 		// Cocoon writes 0 rather than deleting the row, the same as it does for
 		// posts, so this has to be a truth test on the value.
+		//
+		// `the_tag_noindex` for everything that is not a category is not a
+		// guess: Cocoon hooks its tag form onto `{$taxonomy}_edit_form_fields`
+		// for whichever taxonomy is being edited, so a custom taxonomy's terms
+		// get that same key written to them.
 		$cocoon = 'category' === $taxonomy ? 'the_category_noindex' : 'the_tag_noindex';
 		if ( ! empty( get_term_meta( $term_id, $cocoon, true ) ) ) {
 			return $this->filter_term_noindex( true, $term_id, $taxonomy );
@@ -1929,6 +1988,17 @@ final class TreeBuilder {
 		}
 
 		$users = get_users( $args );
+
+		if ( ! empty( $this->settings['exclude_noindex'] ) ) {
+			$users = array_values(
+				array_filter(
+					$users,
+					function ( $user ) {
+						return ! $this->is_user_noindex( (int) $user->ID );
+					}
+				)
+			);
+		}
 
 		if ( $cap > 0 && count( $users ) > $cap ) {
 			$users                       = array_slice( $users, 0, $cap );

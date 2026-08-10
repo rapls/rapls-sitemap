@@ -122,7 +122,9 @@ WordPress サイトに **読者向けの HTML サイトマップ**（サイト�
 
 いずれも**実際のプラグインのソースから確認したキー**です。推測でメタキーを読むことはしていません。誤ったキーを 1 つ書けば、noindex にしていないページが黙って目次から消えるためです。
 
-**カテゴリー・タグも読み取ります**（ターム自体を一覧にしている場合）。Yoast は 1 つのオプションに、Rank Math と Cocoon はタームメタに保存しており、3 つとも見ます。`rapls_sitemap/is_term_noindex` フィルターで追加できます。
+**カテゴリー・タグも読み取ります**（ターム自体を一覧にしている場合）。Yoast は 1 つのオプションに、Rank Math・SEO SIMPLE PACK・Cocoon はタームメタに保存しており、4 つとも見ます。`rapls_sitemap/is_term_noindex` フィルターで追加できます。
+
+**投稿者も読み取ります。** 利用者ごとの設定（Yoast と Rank Math）で、`rapls_sitemap/is_user_noindex` フィルターで追加できます。検索エンジンに無視するよう指示されたアーカイブへ名前をリンクさせるのは、noindex の記事を並べるのと同じ間違いだからです。
 
 記事をカテゴリー見出しの**下に**並べている場合には、あえて適用していません。そこで並んでいるのは記事であり、見出しを落とすとインデックス可能な記事まで一緒に消えるためです。その場合は「セクションとカテゴリーの見出しをリンクにする」をオフにしてください。これが「アーカイブが noindex なので読者を送らない」ための設定です。
 
@@ -196,6 +198,7 @@ add_filter( 'rapls_sitemap/query_args', function ( $args, $post_type ) {
 | `rapls_sitemap/output` | 完成した HTML、ノード配列、設定 |
 | `rapls_sitemap/is_noindex` | noindex かどうかの真偽値、投稿 ID |
 | `rapls_sitemap/is_term_noindex` | noindex かどうかの真偽値、ターム ID、タクソノミー |
+| `rapls_sitemap/is_user_noindex` | noindex かどうかの真偽値、ユーザー ID |
 | `rapls_sitemap/post_types` / `rapls_sitemap/taxonomies` | 設定画面に出す候補 |
 | `rapls_sitemap/designs` | デザインプリセットの一覧 |
 | `rapls_sitemap/cache_ttl` | キャッシュの保持秒数、設定 |

@@ -293,6 +293,13 @@ $GLOBALS['fixture_term_meta'] = array(
 	6 => array( 'the_tag_noindex' => 1 ),
 );
 
+$GLOBALS['fixture_user_meta'] = array();
+
+function get_user_meta( $id, $key, $single = false ) {
+	$meta = $GLOBALS['fixture_user_meta'][ (int) $id ][ $key ] ?? '';
+	return $single ? $meta : array( $meta );
+}
+
 function get_term_meta( $id, $key, $single = false ) {
 	$meta = $GLOBALS['fixture_term_meta'][ (int) $id ][ $key ] ?? '';
 	return $single ? $meta : array( $meta );
@@ -1383,9 +1390,32 @@ check( in_array( 'News', titles( $roots ), true ), 'and nothing is dropped while
 $roots = ( new TreeBuilder( grouped( array( 'exclude_noindex' => true ) ) ) )->build();
 check( in_array( 'News', titles( $roots ), true ), 'a noindexed category still heads its posts when they are what is listed' );
 
+$GLOBALS['fixture_term_meta'] = array( 5 => array( 'ssp_meta_robots' => 'noindex,nofollow' ) );
+$roots = ( new TreeBuilder( grouped( array( 'term_mode' => 'terms_only', 'exclude_noindex' => true ) ) ) )->build();
+check( ! in_array( 'News', titles( $roots ), true ), 'and SEO SIMPLE PACK uses one key for terms as well as posts' );
+
 $GLOBALS['fixture_term_meta'] = array();
 update_option( 'wpseo_taxonomy_meta', array() );
 rapls_forget_yoast_terms();
+
+/* --- authors an SEO plugin has marked noindex ---------------------------- */
+
+// The per-author setting, not the site-wide "noindex author archives" one. A
+// name linking to an archive search engines are told to ignore is the same
+// mistake as listing a noindexed post; the site-wide switch is a decision this
+// plugin's own screen has already made.
+$GLOBALS['fixture_user_meta'] = array( 3 => array( 'wpseo_noindex_author' => 'on' ) );
+$roots = ( new TreeBuilder( tree_settings( array( 'source' => 'authors', 'exclude_noindex' => true ) ) ) )->build();
+check( array( 'Yuki' ) === titles( $roots ), 'a Yoast noindexed author is left out' );
+
+$GLOBALS['fixture_user_meta'] = array( 1 => array( 'rank_math_robots' => array( 'noindex' ) ) );
+$roots = ( new TreeBuilder( tree_settings( array( 'source' => 'authors', 'exclude_noindex' => true ) ) ) )->build();
+check( array( 'Aoi' ) === titles( $roots ), 'and so is a Rank Math one' );
+
+$roots = ( new TreeBuilder( tree_settings( array( 'source' => 'authors' ) ) ) )->build();
+check( array( 'Aoi', 'Yuki' ) === titles( $roots ), 'while the setting being off lists everybody' );
+
+$GLOBALS['fixture_user_meta'] = array();
 
 /* --- the query_args filter, as the readme documents it ------------------- */
 

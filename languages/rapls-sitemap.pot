@@ -25,7 +25,7 @@ msgstr ""
 
 #. translators: %d: menu item ID.
 #. translators: %d: post ID.
-#: src/Sitemap/TreeBuilder.php:195 src/Sitemap/TreeBuilder.php:2068
+#: src/Sitemap/TreeBuilder.php:195 src/Sitemap/TreeBuilder.php:2138
 msgid "(no title) #%d"
 msgstr ""
 
@@ -248,12 +248,12 @@ msgstr ""
 msgid "Categories"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:658
-msgid "Categories and tags are read too, but only where the category itself is what is listed. Where entries are grouped under category headings, dropping a heading would take indexable entries with it — switch off \"Link section and category headings\" instead."
-msgstr ""
-
 #: assets/js/block.js:55
 msgid "Categories only"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:658
+msgid "Categories, tags and authors are read too. A category is only dropped where the category itself is what is listed — where entries are grouped under category headings, dropping a heading would take indexable entries with it, so switch off \"Link section and category headings\" instead. Those two questions have filters of their own: rapls_sitemap/is_term_noindex and rapls_sitemap/is_user_noindex."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:1124
@@ -462,7 +462,7 @@ msgid "Exclusions"
 msgstr ""
 
 #. translators: PHP date format for a monthly archive heading. Japanese uses Y年n月.
-#: src/Sitemap/TreeBuilder.php:2033
+#: src/Sitemap/TreeBuilder.php:2103
 msgid "F Y"
 msgstr ""
 
@@ -1270,7 +1270,7 @@ msgid "Windows ships no country flag glyphs, so these appear as two letters — 
 msgstr ""
 
 #. translators: PHP date format for a yearly archive heading. Japanese uses Y年.
-#: src/Sitemap/TreeBuilder.php:2021
+#: src/Sitemap/TreeBuilder.php:2091
 msgid "Y"
 msgstr ""
 

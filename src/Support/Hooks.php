@@ -63,6 +63,9 @@ final class Hooks {
 	 */
 	public const IS_TERM_NOINDEX = 'rapls_sitemap/is_term_noindex';
 
+	/** ...and about an author, which is a third storage location again. */
+	public const IS_USER_NOINDEX = 'rapls_sitemap/is_user_noindex';
+
 	/* Extension points (actions). */
 
 	/** Fires after the cached markup has been flushed. */

@@ -77,7 +77,9 @@ Both compatibility options are **off by default**, because answering to another 
 
 Entries marked noindex can be left out. These are read with no configuration: **Yoast SEO, Rank Math, SEO SIMPLE PACK, SEOPress, The SEO Framework, All in One SEO**, and the **Cocoon** theme (including its fallback to the Simplicity key it inherited).
 
-Categories and tags are read too, where the term itself is what is listed: Yoast keeps that in one option rather than in term meta, Rank Math and Cocoon in term meta, and all three are honoured. `rapls_sitemap/is_term_noindex` extends it.
+**Categories and tags** are read too, where the term itself is what is listed: Yoast keeps that in one option rather than in term meta, while Rank Math, SEO SIMPLE PACK and Cocoon use term meta. `rapls_sitemap/is_term_noindex` extends it.
+
+**Authors** are read as well — the per-author setting, from Yoast and Rank Math, extended by `rapls_sitemap/is_user_noindex`. A name linking to an archive search engines are told to ignore is the same mistake as listing a noindexed post.
 
 Where posts are grouped **under** category headings this is deliberately not applied. There the entries are the posts, and dropping a heading would take perfectly indexable posts with it — switch off **Link section and category headings** instead, which is the setting for "the archive is noindexed, do not send readers to it".
 
@@ -125,7 +127,7 @@ Append to `tax_query` rather than assigning it: the plugin puts your category ex
 
 A page with no such custom field is left out entirely, which is the point — but it does mean every page you want listed needs the field set.
 
-The other extension points are `rapls_sitemap/settings` (the whole configuration, before it is used), `rapls_sitemap/tree` (the assembled nodes, before rendering), `rapls_sitemap/output` (the finished HTML), `rapls_sitemap/is_noindex`, `rapls_sitemap/post_types`, `rapls_sitemap/taxonomies`, `rapls_sitemap/designs` and `rapls_sitemap/cache_ttl`.
+The other extension points are `rapls_sitemap/settings` (the whole configuration, before it is used), `rapls_sitemap/tree` (the assembled nodes, before rendering), `rapls_sitemap/output` (the finished HTML), the three noindex questions — `rapls_sitemap/is_noindex`, `rapls_sitemap/is_term_noindex` and `rapls_sitemap/is_user_noindex` — and `rapls_sitemap/post_types`, `rapls_sitemap/taxonomies`, `rapls_sitemap/designs` and `rapls_sitemap/cache_ttl`.
 
 = Multilingual =
 
