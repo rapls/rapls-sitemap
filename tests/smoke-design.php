@@ -250,6 +250,40 @@ foreach ( array_keys( $json['attributes'] ) as $attribute ) {
 check( array() === $no_control, sprintf( 'all %d block attributes have an editor control', count( $json['attributes'] ) ), implode( ', ', $no_control ) );
 check( array() === $no_mapping, 'and all of them are mapped onto settings in PHP', implode( ', ', $no_mapping ) );
 
+// Every attribute's default has to MEAN "not set", or a block dropped on a page
+// overrides the site settings before anybody touches it. Booleans are the trap:
+// `"default": false` is indistinguishable from "the author switched this off",
+// so a new block silently cancelled a published date the site had asked for.
+// Empty string is the inherit value; -1 is it for the three numbers where 0
+// already means something.
+$forcing = array();
+foreach ( $json['attributes'] as $attribute => $schema ) {
+	$default = $schema['default'] ?? null;
+
+	if ( 'string' === ( $schema['type'] ?? '' ) && '' === $default ) {
+		continue;
+	}
+
+	if ( in_array( $schema['type'] ?? '', array( 'integer', 'number' ), true ) && -1 === $default ) {
+		continue;
+	}
+
+	$forcing[] = $attribute;
+}
+
+check(
+	array() === $forcing,
+	'every block attribute defaults to a value meaning "use the site setting"',
+	implode( ', ', $forcing )
+);
+
+// ...and the switches are therefore selects. A ToggleControl cannot express the
+// third state, so one in this sidebar would be a switch that lies.
+check(
+	false === strpos( $block_js, 'ToggleControl' ),
+	'so the editor draws no toggle, which could only offer two of the three'
+);
+
 // block.json is the single declaration of the block's metadata. A copy in the
 // editor script wins over the JSON, so changing the icon there would do
 // nothing — the same reason Block::NAME was deleted.

@@ -57,7 +57,8 @@
 
 	// Every list below leads with an empty value meaning "inherit the site
 	// setting", so a block dropped on a page changes nothing until it is asked
-	// to. These mirror Settings::SOURCES, ::ORDERBY and ::LIST_TYPES.
+	// to — including the switches, which is what INHERIT_BOOL is for. These
+	// mirror Settings::SOURCES, ::ORDERBY and ::LIST_TYPES.
 	var SOURCES = [
 		{ value: '', label: __( 'Use the site default', 'rapls-sitemap' ) },
 		{ value: 'content', label: __( 'Posts and pages', 'rapls-sitemap' ) },
@@ -75,11 +76,13 @@
 		{ value: 'term_order', label: __( 'The order set by hand', 'rapls-sitemap' ) },
 	];
 
-	// The three exclusion switches are selects rather than toggles, and that is
+	// Every switch in this sidebar is a select rather than a toggle, and that is
 	// not a style choice. A toggle has no third state, so a block carrying one
-	// would force its own default onto every placement — and the default that
-	// would be forced for "leave out noindexed entries" is off, quietly undoing
-	// a site-wide decision on every page the block is dropped on.
+	// forces its own default onto every placement: drop a block on a page and
+	// the site's "show the published date" is silently off, because false is
+	// what the attribute defaults to. The exclusions made it worst — the default
+	// forced for "leave out noindexed entries" is off — but the surprise is the
+	// same everywhere, so the answer is.
 	var INHERIT_BOOL = [
 		{ value: '', label: __( 'Use the site default', 'rapls-sitemap' ) },
 		{ value: '1', label: __( 'On', 'rapls-sitemap' ) },
@@ -96,6 +99,7 @@
 		{ value: 'ID', label: __( 'ID', 'rapls-sitemap' ) },
 		{ value: 'comment_count', label: __( 'Comment count', 'rapls-sitemap' ) },
 		{ value: 'rand', label: __( 'Random', 'rapls-sitemap' ) },
+		{ value: 'meta', label: __( 'Custom field (named on the settings screen)', 'rapls-sitemap' ) },
 	];
 
 	var ORDER = [
@@ -139,11 +143,22 @@
 				} );
 			}
 
+			/**
+			 * A switch with three states, not two.
+			 *
+			 * A checkbox cannot say "leave this to the site setting", so a
+			 * block carrying one forces its own default onto every placement:
+			 * drop a block on a page and the site's "show the published date"
+			 * is silently off, because false is what the attribute defaults to.
+			 * An empty string is how every other attribute here says inherit,
+			 * and Shortcode::to_bool() already reads the '1' and the '0'.
+			 */
 			function toggle( label, key, help ) {
-				return el( components.ToggleControl, {
+				return el( components.SelectControl, {
 					label: label,
 					help: help,
-					checked: atts[ key ],
+					value: atts[ key ],
+					options: INHERIT_BOOL,
 					onChange: function ( value ) {
 						set( pair( key, value ) );
 					},

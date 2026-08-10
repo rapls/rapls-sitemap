@@ -105,10 +105,15 @@ final class Block {
 	/**
 	 * Map camelCase block attributes onto the shortcode's snake_case names.
 	 *
-	 * `postTypes`/`design` inherit the stored setting when empty, and `depth`
-	 * inherits when negative — an author who never opened the block sidebar
-	 * gets whatever the settings screen says. The two toggles always override,
-	 * because a checkbox has no third state to mean "inherit".
+	 * An author who never opened the block sidebar gets whatever the settings
+	 * screen says, and that is the whole rule: every attribute here inherits
+	 * when empty, and `depth`/`number`/`perCategory` inherit when negative
+	 * because 0 already means something for them.
+	 *
+	 * The switches are selects in the editor rather than toggles for exactly
+	 * this reason. A checkbox has no third state, so a block carrying one would
+	 * force its own default onto every placement — dropping a block on a page
+	 * would silently switch off a published date the site had asked for.
 	 *
 	 * @param array $attributes Block attributes.
 	 * @return array<string,mixed>
@@ -141,7 +146,6 @@ final class Block {
 			'termOrder'       => 'term_order',
 			'design'          => 'design',
 			'listType'        => 'list_type',
-			// Toggles always override.
 			'showHome'        => 'show_home',
 			'groupByTerm'     => 'group_by_term',
 			'nestTerms'       => 'nest_terms',

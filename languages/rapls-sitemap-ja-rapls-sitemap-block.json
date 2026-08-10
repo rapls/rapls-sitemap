@@ -1,5 +1,5 @@
 {
-    "translation-revision-date": "2026-08-10 05:35:10+0000",
+    "translation-revision-date": "2026-08-10 06:14:26+0000",
     "generator": "rapls-sitemap\/bin\/make-json.php",
     "domain": "messages",
     "locale_data": {
@@ -84,6 +84,9 @@
             ],
             "Content": [
                 "内容"
+            ],
+            "Custom field (named on the settings screen)": [
+                "カスタムフィールド (設定画面で指定したもの)"
             ],
             "Descending (newest, Z to A)": [
                 "降順 (新しい順、Z→A)"

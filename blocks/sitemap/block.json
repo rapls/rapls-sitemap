@@ -112,48 +112,48 @@
 			"default": ""
 		},
 		"showHome": {
-			"type": "boolean",
-			"default": true
+			"type": "string",
+			"default": ""
 		},
 		"groupByTerm": {
-			"type": "boolean",
-			"default": true
+			"type": "string",
+			"default": ""
 		},
 		"nestTerms": {
-			"type": "boolean",
-			"default": true
+			"type": "string",
+			"default": ""
 		},
 		"sectionHeadings": {
-			"type": "boolean",
-			"default": true
+			"type": "string",
+			"default": ""
 		},
 		"linkHeadings": {
-			"type": "boolean",
-			"default": true
+			"type": "string",
+			"default": ""
 		},
 		"linkParents": {
-			"type": "boolean",
-			"default": true
+			"type": "string",
+			"default": ""
 		},
 		"showDate": {
-			"type": "boolean",
-			"default": false
+			"type": "string",
+			"default": ""
 		},
 		"showExcerpt": {
-			"type": "boolean",
-			"default": false
+			"type": "string",
+			"default": ""
 		},
 		"showCount": {
-			"type": "boolean",
-			"default": false
+			"type": "string",
+			"default": ""
 		},
 		"nofollow": {
-			"type": "boolean",
-			"default": false
+			"type": "string",
+			"default": ""
 		},
 		"menuHeadings": {
-			"type": "boolean",
-			"default": true
+			"type": "string",
+			"default": ""
 		}
 	},
 	"editorScript": "rapls-sitemap-block"

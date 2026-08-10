@@ -6,9 +6,16 @@
  * typography, colour, and bullets on top. They are kept out of Settings so the
  * schema and its (fiddly, security-sensitive) sanitization live together.
  *
- * Everything ends up as CSS custom properties in an inline `style` attribute on
- * the sitemap wrapper, which means: no extra stylesheet, no cache to invalidate
- * separately, and a theme can still override any of it with ordinary CSS.
+ * Everything ends up as a small stylesheet scoped to a class named after a hash
+ * of the tokens themselves, printed above the sitemap it belongs to. Two
+ * placements with different settings therefore cannot bleed into each other,
+ * and identical ones share a class, so the render cache still hits.
+ *
+ * Custom properties were the obvious alternative and are the wrong tool here.
+ * CSS has no value meaning "leave the cascade alone", so `color: var(--x,
+ * inherit)` for an unset colour would quietly replace the theme's link colour
+ * with the surrounding text colour. A declaration that was never emitted cannot
+ * do that — which is why the rule below is that an unset token emits nothing.
  *
  * Nothing here is ever interpolated into CSS unvalidated. A value that does not
  * match its pattern is dropped, not escaped — a length is a length, and a

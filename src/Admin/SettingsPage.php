@@ -352,9 +352,20 @@ final class SettingsPage {
 		<div class="wrap">
 			<h1><?php echo esc_html__( 'Rapls Sitemap', 'rapls-sitemap' ); ?></h1>
 
-			<?php if ( isset( $_GET['rapls-import'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended ?>
+			<?php
+			// The value, not merely its presence: handle_import() redirects with
+			// a 0 when there was nothing to read, and a success notice over a
+			// screen that did not change is worse than no notice at all.
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$imported = isset( $_GET['rapls-import'] ) ? sanitize_key( wp_unslash( $_GET['rapls-import'] ) ) : '';
+			?>
+			<?php if ( '1' === $imported ) : ?>
 				<div class="notice notice-success is-dismissible">
 					<p><?php echo esc_html__( 'The PS Auto Sitemap settings were read in. Check them over before saving anything else — the design is the nearest match, not the same stylesheet.', 'rapls-sitemap' ); ?></p>
+				</div>
+			<?php elseif ( '' !== $imported ) : ?>
+				<div class="notice notice-warning is-dismissible">
+					<p><?php echo esc_html__( 'There was no PS Auto Sitemap configuration to read. Nothing on this screen was changed.', 'rapls-sitemap' ); ?></p>
 				</div>
 			<?php endif; ?>
 
