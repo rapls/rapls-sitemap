@@ -141,6 +141,24 @@ check( 3 === substr_count( $html, 'rapls-sitemap__label' ), 'all three become pl
 check( false !== strpos( $html, 'href="https://example.test/a"' ), 'the entries themselves still link' );
 check( false !== strpos( $html, 'href="https://example.test/"' ), 'and so does the front-page link' );
 
+/* --- entries that have entries under them -------------------------------- */
+
+// A section page that exists only to hold its children is a link to a page
+// nobody wants to read. Off, it becomes the heading it already was.
+$parent = new Node( 60, 'About us', 'https://example.test/about', 'post' );
+$parent->add( new Node( 61, 'Our history', 'https://example.test/history', 'post' ) );
+
+$settings                 = Settings::defaults();
+$settings['link_parents'] = false;
+$html                     = ( new Renderer( $settings ) )->render( array( $parent, $post_node ) );
+
+check( false === strpos( $html, 'href="https://example.test/about"' ), 'a parent entry stops linking' );
+check( false !== strpos( $html, 'href="https://example.test/history"' ), 'while the child it holds still links' );
+check( false !== strpos( $html, 'href="https://example.test/a"' ), 'and so does an entry with nothing under it' );
+
+$html = ( new Renderer( Settings::defaults() ) )->render( array( $parent ) );
+check( false !== strpos( $html, 'href="https://example.test/about"' ), 'and it links again by default' );
+
 /* --- heading elements ---------------------------------------------------- */
 
 $section         = new Node( 0, 'Pages', 'https://example.test/blog/', 'section' );

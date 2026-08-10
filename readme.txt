@@ -41,7 +41,7 @@ It is a maintained replacement for **PS Auto Sitemap** (closed in 2022) and **WP
 
 = Choosing what appears =
 
-* Depth limit, and a "list only what is under this page" scope that a shortcode can resolve to the current page.
+* Depth limit, and a "list only what is under this page" scope that a shortcode can resolve to the current page or to the page above it.
 * Exclude posts, categories or users by ID. Excluding a parent takes its children with it.
 * Exclude whole post types or taxonomies.
 * Leave out the sitemap's own page, password-protected entries, and entries an SEO plugin has marked noindex.
@@ -59,6 +59,7 @@ It is a maintained replacement for **PS Auto Sitemap** (closed in 2022) and **WP
 * Font size, line height, indent, link colour, underline behaviour and column count, layered on top of whichever preset is chosen.
 * Bullets as discs, circles, squares, emoji, or an icon class such as Font Awesome — set separately for top-level and nested items.
 * Section and category labels can be emitted as real `h2`–`h6` headings, which is what screen-reader users navigate by.
+* Entries that have entries under them can be printed as headings rather than links, for section pages that exist only to hold their children.
 * An Additional CSS box, gated on the `unfiltered_html` capability rather than on access to the settings screen.
 
 = Migrating from PS Auto Sitemap or WP Sitemap Page =
@@ -124,7 +125,14 @@ Several menus can appear in one sitemap with `sections="menu:global-nav,menu:foo
 
 = Can I list only the pages under one page? =
 
-Yes. Give **Limit to one branch** a page ID, or use `child_of="current"` in a shortcode, which resolves to whichever page it is placed on. A section landing page can then list its own children without naming an ID that differs between staging and production.
+Yes. Give **Limit to one branch** a page ID, or use one of two words in a shortcode:
+
+* `child_of="current"` resolves to whichever page it is placed on, so a section landing page lists its own children without naming an ID that differs between staging and production.
+* `child_of="parent"` resolves to the page above, so the same template on every page of a section lists that whole section — the reader sees where they are among their siblings rather than what is below them. On a page with no parent it means that page, which is the top of its own section.
+
+= Can a parent page be a heading instead of a link? =
+
+Yes. Switch off **Link entries that have entries under them** and any entry holding others is printed as plain text. Some section pages exist only to group their children, and a link to one is a link to a page nobody wants to read. It applies to navigation menu items with children too.
 
 = Can I make a sitemap for one year? =
 

@@ -147,6 +147,7 @@ final class Block {
 			'nestTerms'       => 'nest_terms',
 			'sectionHeadings' => 'section_headings',
 			'linkHeadings'    => 'link_headings',
+			'linkParents'     => 'link_parents',
 			'showDate'        => 'show_date',
 			'showExcerpt'     => 'show_excerpt',
 			'showCount'       => 'show_count',

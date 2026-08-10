@@ -239,6 +239,10 @@ final class Settings {
 			// Roles the author listing is limited to; empty is every role that
 			// has published something.
 			'author_roles'     => array(),
+			// An entry that has entries under it is printed as a heading rather
+			// than as a link. For a section landing page that exists only to
+			// hold its children, the link is a page nobody wants to read.
+			'link_parents'     => true,
 			// A menu item with no real destination — the `#` that holds open a
 			// dropdown — is printed as plain text rather than as a link that
 			// goes nowhere. Off restores the literal href.
@@ -460,6 +464,7 @@ final class Settings {
 				'legacy_shortcode',
 				'load_styles',
 				'menu_headings',
+				'link_parents',
 			) as $key
 		) {
 			$clean[ $key ] = ! empty( $input[ $key ] );
@@ -718,6 +723,17 @@ final class Settings {
 			$settings['child_of'] = self::current_post_id();
 		}
 
+		// `parent` is the same idea one level up: the same template on every
+		// page of a section lists that section, so a reader always sees where
+		// they are among their siblings rather than what is below them. A page
+		// with no parent IS the top of its section, so it stands in for one —
+		// otherwise the one page where the answer matters most would fall back
+		// to the whole site.
+		if ( 'parent' === $settings['child_of'] ) {
+			$parent               = self::current_parent_id();
+			$settings['child_of'] = $parent > 0 ? $parent : self::current_post_id();
+		}
+
 		$settings['child_of'] = max( 0, (int) $settings['child_of'] );
 
 		// Both of these are the current page's ID, and a listing that cannot use
@@ -731,6 +747,21 @@ final class Settings {
 		}
 
 		return $settings;
+	}
+
+	/**
+	 * The parent of the post the sitemap is being rendered inside.
+	 *
+	 * @return int Post ID, or 0 outside a post and for a top-level one.
+	 */
+	private static function current_parent_id(): int {
+		$id = self::current_post_id();
+
+		if ( $id <= 0 || ! function_exists( 'wp_get_post_parent_id' ) ) {
+			return 0;
+		}
+
+		return max( 0, (int) wp_get_post_parent_id( $id ) );
 	}
 
 	/**

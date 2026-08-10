@@ -304,6 +304,15 @@ final class Renderer {
 	 * @return bool
 	 */
 	private function unlinked( Node $node ): bool {
+		// An entry with entries under it, where the site has said those are
+		// headings. A section landing page that exists only to hold its
+		// children is a link to a page nobody wants to read — and a menu item
+		// whose children are the real destinations is the same thing.
+		if ( array() !== $node->children && 'post' === $node->kind
+			&& isset( $this->settings['link_parents'] ) && ! $this->settings['link_parents'] ) {
+			return true;
+		}
+
 		if ( ! isset( $this->settings['link_headings'] ) || $this->settings['link_headings'] ) {
 			return false;
 		}

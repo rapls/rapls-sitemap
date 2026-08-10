@@ -159,6 +159,8 @@ check( 0 === Shortcode::apply_atts( $base, array( 'child_of' => '-3' ) )['child_
 // here, and resolving it later is what keeps two pages from sharing one cache
 // entry. Settings::for_request() finishes the job.
 check( 'current' === Shortcode::apply_atts( $base, array( 'child_of' => 'Current' ) )['child_of'], 'child_of="current" survives folding, in any case' );
+check( 'parent' === Shortcode::apply_atts( $base, array( 'child_of' => 'PARENT' ) )['child_of'], 'and so does child_of="parent"' );
+check( false === Shortcode::apply_atts( $base, array( 'link_parents' => '0' ) )['link_parents'], 'parent entries can be made headings per placement' );
 check( 0 === Shortcode::apply_atts( $base, array( 'child_of' => 'nonsense' ) )['child_of'], 'and anything else is not a page ID' );
 
 /* --- caching is global, never per placement ----------------------------- */

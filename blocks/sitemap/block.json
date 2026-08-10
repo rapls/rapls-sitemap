@@ -131,6 +131,10 @@
 			"type": "boolean",
 			"default": true
 		},
+		"linkParents": {
+			"type": "boolean",
+			"default": true
+		},
 		"showDate": {
 			"type": "boolean",
 			"default": false

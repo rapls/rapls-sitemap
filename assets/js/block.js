@@ -216,7 +216,7 @@
 						} ),
 						el( components.TextControl, {
 							label: __( 'Limit to one branch', 'rapls-sitemap' ),
-							help: __( 'A page ID, or current for the page this block is on. Empty lists the whole site.', 'rapls-sitemap' ),
+							help: __( 'A page ID, current for the page this block is on, or parent for its siblings. Empty lists the whole site.', 'rapls-sitemap' ),
 							value: atts.childOf,
 							onChange: function ( value ) {
 								set( { childOf: value } );
@@ -304,6 +304,7 @@
 						select( __( 'List element', 'rapls-sitemap' ), 'listType', LIST_TYPES ),
 						toggle( __( 'Put a heading above each list', 'rapls-sitemap' ), 'sectionHeadings' ),
 						toggle( __( 'Link section and category headings to their archives', 'rapls-sitemap' ), 'linkHeadings' ),
+						toggle( __( 'Link entries that have entries under them', 'rapls-sitemap' ), 'linkParents' ),
 						toggle( __( 'Published date', 'rapls-sitemap' ), 'showDate' ),
 						toggle( __( 'Excerpt', 'rapls-sitemap' ), 'showExcerpt' ),
 						toggle( __( 'Entry count beside each category', 'rapls-sitemap' ), 'showCount' ),

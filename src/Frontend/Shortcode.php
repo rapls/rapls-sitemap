@@ -147,6 +147,7 @@ final class Shortcode {
 				'show_excerpt',
 				'show_count',
 				'menu_headings',
+				'link_parents',
 			) as $flag
 		) {
 			if ( isset( $atts[ $flag ] ) ) {
@@ -199,7 +200,11 @@ final class Shortcode {
 		if ( isset( $atts['child_of'] ) ) {
 			$child_of = trim( (string) $atts['child_of'] );
 
-			$settings['child_of'] = 'current' === strtolower( $child_of ) ? 'current' : max( 0, (int) $child_of );
+			$word = strtolower( $child_of );
+
+			$settings['child_of'] = in_array( $word, array( 'current', 'parent' ), true )
+				? $word
+				: max( 0, (int) $child_of );
 		}
 
 		foreach ( array( 'date_after', 'date_before' ) as $bound ) {

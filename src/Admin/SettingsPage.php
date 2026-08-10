@@ -466,9 +466,10 @@ final class SettingsPage {
 							<p class="description">
 								<?php
 								printf(
-									/* translators: %s: an example shortcode. */
-									esc_html__( 'In a shortcode this also takes %s, which is how a section landing page lists its own children without naming an ID that differs between staging and live.', 'rapls-sitemap' ),
-									'<code>child_of="current"</code>'
+									/* translators: 1: an example shortcode. 2: another example shortcode. */
+									esc_html__( 'In a shortcode this also takes %1$s, for a section landing page listing its own children without naming an ID that differs between staging and live, and %2$s, which lists the page\'s siblings instead — the same template on every page of a section then shows the reader where they are inside it.', 'rapls-sitemap' ),
+									'<code>child_of="current"</code>',
+									'<code>child_of="parent"</code>'
 								);
 								?>
 							</p>
@@ -726,6 +727,17 @@ final class SettingsPage {
 								</label>
 								<span class="description">
 									<?php echo esc_html__( 'Off leaves the text in place without linking it, for archives that are thin or noindexed.', 'rapls-sitemap' ); ?>
+								</span>
+							</p>
+							<p>
+								<label>
+									<input type="checkbox" value="1"
+										name="<?php echo esc_attr( $name . '[link_parents]' ); ?>"
+										<?php checked( ! empty( $settings['link_parents'] ) ); ?> />
+									<?php echo esc_html__( 'Link entries that have entries under them', 'rapls-sitemap' ); ?>
+								</label>
+								<span class="description">
+									<?php echo esc_html__( 'Off prints them as headings instead. For a section page that exists only to hold its children, the link goes to a page nobody wants to read.', 'rapls-sitemap' ); ?>
 								</span>
 							</p>
 							<p>

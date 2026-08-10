@@ -17,6 +17,14 @@ function taxonomy_exists( $taxonomy ) {
 	return in_array( $taxonomy, array( 'category', 'post_tag' ), true );
 }
 
+// Page 7 sits under page 3; page 3 is top-level. Only child_of="parent" reads
+// this, so it lives beside the current-post stub rather than in the bootstrap.
+$GLOBALS['rapls_parents'] = array( 7 => 3, 3 => 0 );
+
+function wp_get_post_parent_id( $id ) {
+	return $GLOBALS['rapls_parents'][ (int) $id ] ?? 0;
+}
+
 // The bootstrap's apply_filters hands the value back untouched, which is right
 // everywhere else. Settings::get() documents an invariant that has to hold
 // against whatever a filter returns, so this one actually calls something.
@@ -418,6 +426,21 @@ $out = Settings::for_request(
 );
 check( 7 === $out['child_of'], 'a composed sitemap keeps its branch whatever the source setting says' );
 check( 7 === $out['exclude_self'], 'and keeps the current page out of its own listing' );
+
+$GLOBALS['rapls_current_post'] = 7;
+// `parent` is the same idea one level up: the same template on every page of a
+// section lists that section, so a reader sees where they are among siblings.
+$GLOBALS['rapls_current_post'] = 7;
+check( 3 === Settings::for_request( array_merge( Settings::defaults(), array( 'child_of' => 'parent' ) ) )['child_of'], 'child_of="parent" becomes the page above' );
+
+// A page with no parent IS the top of its section, so it stands in for one.
+// Otherwise the one page where the answer matters most — the section landing
+// page — would fall back to listing the whole site.
+$GLOBALS['rapls_current_post'] = 3;
+check( 3 === Settings::for_request( array_merge( Settings::defaults(), array( 'child_of' => 'parent' ) ) )['child_of'], 'and on a top-level page it means that page' );
+
+$GLOBALS['rapls_current_post'] = 0;
+check( 0 === Settings::for_request( array_merge( Settings::defaults(), array( 'child_of' => 'parent' ) ) )['child_of'], 'off a singular page it scopes to nothing, as current does' );
 
 $GLOBALS['rapls_current_post'] = 7;
 check( 12 === Settings::for_request( array_merge( Settings::defaults(), array( 'child_of' => 12 ) ) )['child_of'], 'a literal ID is left alone' );
