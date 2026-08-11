@@ -25,7 +25,7 @@ msgstr ""
 
 #. translators: %d: menu item ID.
 #. translators: %d: post ID.
-#: src/Sitemap/TreeBuilder.php:386 src/Sitemap/TreeBuilder.php:2509
+#: src/Sitemap/TreeBuilder.php:372 src/Sitemap/TreeBuilder.php:2506
 msgid "(no title) #%d"
 msgstr ""
 
@@ -176,7 +176,7 @@ msgstr ""
 msgid "Applies to the post types and to the sections above. Only when more than one is listed — a single list needs no label to tell it apart."
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1854 src/Sitemap/TreeBuilder.php:838
+#: src/Admin/SettingsPage.php:1854 src/Sitemap/TreeBuilder.php:829
 msgid "Archives"
 msgstr ""
 
@@ -192,7 +192,7 @@ msgstr ""
 msgid "Ascending (oldest, A to Z)"
 msgstr ""
 
-#: src/Admin/SettingsPage.php:1631 src/Admin/SettingsPage.php:1853 src/Sitemap/TreeBuilder.php:831 assets/js/block.js:65
+#: src/Admin/SettingsPage.php:1631 src/Admin/SettingsPage.php:1853 src/Sitemap/TreeBuilder.php:822 assets/js/block.js:65
 msgid "Authors"
 msgstr ""
 
@@ -462,7 +462,7 @@ msgid "Exclusions"
 msgstr ""
 
 #. translators: PHP date format for a monthly archive heading. Japanese uses Y年n月.
-#: src/Sitemap/TreeBuilder.php:2474
+#: src/Sitemap/TreeBuilder.php:2471
 msgid "F Y"
 msgstr ""
 
@@ -699,7 +699,7 @@ msgstr ""
 msgid "Nature"
 msgstr ""
 
-#: src/Sitemap/TreeBuilder.php:855
+#: src/Sitemap/TreeBuilder.php:846
 msgid "Navigation menu"
 msgstr ""
 
@@ -800,7 +800,7 @@ msgid "On hover only"
 msgstr ""
 
 #. translators: %s: number of entries shown.
-#: src/Sitemap/TreeBuilder.php:1008
+#: src/Sitemap/TreeBuilder.php:999
 msgid "Only the first %s entries are listed."
 msgstr ""
 
@@ -1086,7 +1086,7 @@ msgid "The PS Auto Sitemap settings were read in. Check them over before saving 
 msgstr ""
 
 #: src/Admin/SettingsPage.php:400
-msgid "The author and archive listings ignore everything below except the entry cap and the design — they are built from who published and when, not from the content settings."
+msgid "The author and archive listings are built from who published and when, so the settings below reach them only where they make sense: both take the entry cap, the exclusions and the design, and the archive listing takes the publication window as well. Ordering and grouping belong to the entries, which those two do not list. Both are derived from posts, whatever this sitemap lists — a date archive shows posts, so a year taken from pages would link somewhere empty."
 msgstr ""
 
 #: assets/js/block.js:266
@@ -1130,7 +1130,7 @@ msgid "The number sets the output order — the lowest is listed first."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:438
-msgid "The number sets the output order — the lowest is listed first. The settings below apply inside every section that lists content; the author and archive sections read only the entry cap and the design."
+msgid "The number sets the output order — the lowest is listed first. The settings below apply inside every section that lists content; the author and archive sections take the exclusions, the cap and the design, but not the ordering or grouping that belong to entries they do not list."
 msgstr ""
 
 #: src/Admin/SettingsPage.php:1717 assets/js/block.js:76
@@ -1166,7 +1166,7 @@ msgid "This site still holds a PS Auto Sitemap configuration. Reading it in fill
 msgstr ""
 
 #. translators: %s: number of entries shown.
-#: src/Sitemap/TreeBuilder.php:189
+#: src/Sitemap/TreeBuilder.php:175
 msgid "This sitemap reached its size limit of %s entries. The rest are not listed."
 msgstr ""
 
@@ -1279,7 +1279,7 @@ msgid "Windows ships no country flag glyphs, so these appear as two letters — 
 msgstr ""
 
 #. translators: PHP date format for a yearly archive heading. Japanese uses Y年.
-#: src/Sitemap/TreeBuilder.php:2462
+#: src/Sitemap/TreeBuilder.php:2459
 msgid "Y"
 msgstr ""
 

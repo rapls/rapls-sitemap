@@ -119,20 +119,6 @@ final class TreeBuilder {
 	}
 
 	/**
-	 * Does a heading's number mean "entries this term holds"?
-	 *
-	 * In `terms_only` it does: nothing is listed under the term, so the number
-	 * is the term's own count, padded with its children's. Everywhere else it
-	 * means "entries listed under this heading", which is a number the tree
-	 * itself can answer.
-	 *
-	 * @return bool
-	 */
-	private function counts_the_term(): bool {
-		return 'terms_only' === (string) $this->settings['term_mode'];
-	}
-
-	/**
 	 * How many nodes one sitemap may render, before anything is rendered.
 	 *
 	 * `max_entries` bounds each QUERY, which is what keeps the fetch from
@@ -228,10 +214,10 @@ final class TreeBuilder {
 			// number of children as before, and the number over them would go
 			// on counting what used to be there.
 			//
-			// Not in `terms_only`, where the number means something else
-			// entirely — how many entries the category holds, not how many are
-			// listed under it, because nothing is listed under it.
-			if ( ( $below || count( $node->children ) !== $before ) && $node->count > 0 && ! $this->counts_the_term() ) {
+			// Unless the node says its number is not about what is under it —
+			// a category-only listing counts what the category holds, and
+			// re-counting that would replace a fact about the site with zero.
+			if ( ( $below || count( $node->children ) !== $before ) && $node->count > 0 && ! $node->preserve_count ) {
 				$node->count = $this->count_entries( $node->children );
 			}
 
@@ -522,16 +508,21 @@ final class TreeBuilder {
 			return null;
 		}
 
+		$posts = $this->fetch( $post_type );
+
+		// The post query is capped, so a category whose only entry inside the
+		// window sits past the cap is one this listing cannot see. It says so
+		// rather than simply not appearing — recorded against the TERM listing,
+		// which is what the reader is looking at, and recorded here rather than
+		// inside the loop: a page of entries that were all filtered out leaves
+		// nothing to loop over and everything to explain.
+		if ( ! empty( $this->truncated[ $post_type ] ) ) {
+			$this->truncated[ self::term_key( $taxonomy ) ] = true;
+		}
+
 		$keep = array();
 
-		foreach ( $this->fetch( $post_type ) as $post ) {
-			// The post query is capped, so a category whose only entry inside
-			// the window sits past the cap is one this listing cannot see. It
-			// says so rather than simply not appearing — recorded against the
-			// TERM listing, which is what the reader is looking at.
-			if ( ! empty( $this->truncated[ $post_type ] ) ) {
-				$this->truncated[ self::term_key( $taxonomy ) ] = true;
-			}
+		foreach ( $posts as $post ) {
 
 			$terms = get_the_terms( $post, $taxonomy );
 
@@ -1779,6 +1770,12 @@ final class TreeBuilder {
 
 			if ( $show_count ) {
 				$nodes[ $id ]->count = (int) $term->count;
+
+				// Nothing is listed under these, so the number is what the
+				// category holds. Marked on the node, because the builder that
+				// trims a composed sitemap is not this one and its own
+				// `term_mode` says nothing about this section.
+				$nodes[ $id ]->preserve_count = true;
 			}
 		}
 
@@ -1938,7 +1935,7 @@ final class TreeBuilder {
 	 * The taxonomy used for grouping and term exclusion on a post type.
 	 *
 	 * An explicit `taxonomy` setting wins, which is how a flat taxonomy such as
-	 * `post_tag` gets listed at all. Otherwise the first public hierarchical
+	 * `post_tag` gets listed at all. Otherwise the first viewable hierarchical
 	 * taxonomy is picked (`category` for `post`), and a post type with only
 	 * flat taxonomies is left ungrouped rather than grouped by something
 	 * arbitrary.
@@ -1961,7 +1958,7 @@ final class TreeBuilder {
 			if ( in_array( $taxonomy->name, $excluded, true ) ) {
 				continue;
 			}
-			if ( $taxonomy->public && $taxonomy->hierarchical ) {
+			if ( ! empty( $taxonomy->hierarchical ) && self::is_listable_taxonomy( $taxonomy->name ) ) {
 				return $taxonomy->name;
 			}
 		}

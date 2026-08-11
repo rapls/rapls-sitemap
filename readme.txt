@@ -34,8 +34,8 @@ It is a maintained replacement for **PS Auto Sitemap** (closed in 2022) and **WP
 * **Pages** in their parent/child hierarchy, to any depth you choose.
 * **Posts**, optionally grouped under their categories, with child categories nested.
 * **Categories, tags and custom taxonomies**, with or without the entries under them.
-* **Authors**, filtered by user ID and by role.
-* **Date archives**, by year and month.
+* **Authors**, filtered by user ID and by role. Derived from posts, whatever else this sitemap lists — an author archive shows posts, so a name taken from pages would link somewhere empty.
+* **Date archives**, by year and month, derived from posts for the same reason and inheriting the same exclusions and publication window as the entry listing.
 * **Navigation menus**, in the menu's order, with `#` placeholder items printed as headings rather than links that go nowhere.
 * **Custom post types and custom taxonomies**, alongside or instead of the built-in ones — public ones. A post type registered private is never listed, whatever asks for it, because that is content deliberately kept off the front end.
 

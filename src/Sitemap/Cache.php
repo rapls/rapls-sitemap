@@ -67,6 +67,12 @@ final class Cache {
 		add_action( 'user_register', array( $this, 'flush' ) );
 		add_action( 'deleted_user', array( $this, 'flush' ) );
 
+		// The author listing can be limited by role, and a role changes without
+		// the profile being saved — WP-CLI and plugins call these directly.
+		add_action( 'set_user_role', array( $this, 'flush' ) );
+		add_action( 'add_user_role', array( $this, 'flush' ) );
+		add_action( 'remove_user_role', array( $this, 'flush' ) );
+
 		// Menu lifecycle. Rearranging a menu writes nav_menu_item posts, so
 		// `save_post` catches most of it — but not a menu renamed or emptied
 		// from the Menus screen, which is exactly the edit somebody makes right

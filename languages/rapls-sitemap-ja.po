@@ -32,7 +32,7 @@ msgstr "(%s)"
 
 #. translators: %d: menu item ID.
 #. translators: %d: post ID.
-#: src/Sitemap/TreeBuilder.php:280 src/Sitemap/TreeBuilder.php:2456
+#: src/Sitemap/TreeBuilder.php:372 src/Sitemap/TreeBuilder.php:2506
 msgid "(no title) #%d"
 msgstr "(タイトルなし) #%d"
 
@@ -117,7 +117,7 @@ msgstr "post_tag のようなタクソノミーのスラッグを指定します
 msgid "A year heading in the date archives."
 msgstr "年別アーカイブの年の見出しです。"
 
-#: src/Admin/SettingsPage.php:1980 assets/js/block.js:36
+#: src/Admin/SettingsPage.php:1992 assets/js/block.js:36
 msgid "Accordion"
 msgstr "アコーディオン"
 
@@ -183,11 +183,11 @@ msgstr "外観"
 msgid "Applies to the post types and to the sections above. Only when more than one is listed — a single list needs no label to tell it apart."
 msgstr "投稿タイプと、上の「1つにまとめるセクション」の両方に効きます。2つ以上並ぶときだけ付きます。一覧が1つだけなら、見分けるための見出しは不要なためです。"
 
-#: src/Admin/SettingsPage.php:1854 src/Sitemap/TreeBuilder.php:724
+#: src/Admin/SettingsPage.php:1854 src/Sitemap/TreeBuilder.php:829
 msgid "Archives"
 msgstr "年月アーカイブ"
 
-#: src/Admin/SettingsPage.php:1986 assets/js/block.js:42
+#: src/Admin/SettingsPage.php:1998 assets/js/block.js:42
 msgid "Arrows"
 msgstr "矢印"
 
@@ -200,7 +200,7 @@ msgid "Ascending (oldest, A to Z)"
 msgstr "昇順 (古い順、A→Z)"
 
 #: src/Admin/SettingsPage.php:1631 src/Admin/SettingsPage.php:1853
-#: src/Sitemap/TreeBuilder.php:717 assets/js/block.js:65
+#: src/Sitemap/TreeBuilder.php:822 assets/js/block.js:65
 msgid "Authors"
 msgstr "投稿者"
 
@@ -212,7 +212,7 @@ msgstr "自動では最初の階層タクソノミー、つまりカテゴリー
 msgid "Bold"
 msgstr "太字"
 
-#: src/Admin/SettingsPage.php:1991 assets/js/block.js:47
+#: src/Admin/SettingsPage.php:2003 assets/js/block.js:47
 msgid "Book contents"
 msgstr "書籍の目次"
 
@@ -228,7 +228,7 @@ msgstr "両端とも含みます。どちらか一方だけの指定もできま
 msgid "Bullet colour"
 msgstr "記号の色"
 
-#: src/Admin/SettingsPage.php:1968 assets/js/block.js:24
+#: src/Admin/SettingsPage.php:1980 assets/js/block.js:24
 msgid "Bulleted list"
 msgstr "箇条書き"
 
@@ -236,7 +236,7 @@ msgstr "箇条書き"
 msgid "Bullets"
 msgstr "箇条書きの記号"
 
-#: src/Admin/SettingsPage.php:1977 assets/js/block.js:33
+#: src/Admin/SettingsPage.php:1989 assets/js/block.js:33
 msgid "Business"
 msgstr "ビジネス"
 
@@ -248,7 +248,7 @@ msgstr "コーヒーを1杯おごる"
 msgid "Cache lifetime"
 msgstr "キャッシュの有効期間"
 
-#: src/Admin/SettingsPage.php:1976 assets/js/block.js:32
+#: src/Admin/SettingsPage.php:1988 assets/js/block.js:32
 msgid "Cards"
 msgstr "カード"
 
@@ -284,7 +284,7 @@ msgstr "カテゴリー見出しの方向"
 msgid "Celebration"
 msgstr "お祝い"
 
-#: src/Admin/SettingsPage.php:1984 assets/js/block.js:40
+#: src/Admin/SettingsPage.php:1996 assets/js/block.js:40
 msgid "Checklist"
 msgstr "チェックリスト"
 
@@ -344,7 +344,7 @@ msgstr "コンマ区切りです。除外したページの子ページも一緒
 msgid "Comment count"
 msgstr "コメント数"
 
-#: src/Admin/SettingsPage.php:1969 assets/js/block.js:25
+#: src/Admin/SettingsPage.php:1981 assets/js/block.js:25
 msgid "Compact"
 msgstr "コンパクト"
 
@@ -388,7 +388,7 @@ msgstr "デザイン"
 msgid "Direction"
 msgstr "並び順の方向"
 
-#: src/Admin/SettingsPage.php:1970 assets/js/block.js:26
+#: src/Admin/SettingsPage.php:1982 assets/js/block.js:26
 msgid "Document tree"
 msgstr "ドキュメントツリー"
 
@@ -396,7 +396,7 @@ msgstr "ドキュメントツリー"
 msgid "Documents"
 msgstr "書類"
 
-#: src/Admin/SettingsPage.php:144 src/Admin/SettingsPage.php:1987
+#: src/Admin/SettingsPage.php:144 src/Admin/SettingsPage.php:1999
 #: assets/js/block.js:43
 msgid "Dots"
 msgstr "ドット"
@@ -471,7 +471,7 @@ msgid "Exclusions"
 msgstr "除外"
 
 #. translators: PHP date format for a monthly archive heading. Japanese uses Y年n月.
-#: src/Sitemap/TreeBuilder.php:2421
+#: src/Sitemap/TreeBuilder.php:2471
 msgid "F Y"
 msgstr "Y年n月"
 
@@ -504,7 +504,7 @@ msgstr "食べ物"
 msgid "Gap between columns"
 msgstr "段間"
 
-#: src/Admin/SettingsPage.php:1981 assets/js/block.js:37
+#: src/Admin/SettingsPage.php:1993 assets/js/block.js:37
 msgid "Grid"
 msgstr "グリッド"
 
@@ -540,7 +540,7 @@ msgstr "ハート"
 msgid "Hide the second level and deeper"
 msgstr "2階層目より下を非表示にする"
 
-#: src/Admin/SettingsPage.php:1983 assets/js/block.js:39
+#: src/Admin/SettingsPage.php:1995 assets/js/block.js:39
 msgid "Highlighter"
 msgstr "蛍光ペン"
 
@@ -581,7 +581,7 @@ msgstr "ブロックエディターで、右上のオプションメニュー (�
 msgid "Indent per level"
 msgstr "階層ごとの字下げ"
 
-#: src/Admin/SettingsPage.php:1971 assets/js/block.js:27
+#: src/Admin/SettingsPage.php:1983 assets/js/block.js:27
 msgid "Index"
 msgstr "索引"
 
@@ -673,7 +673,7 @@ msgstr "カテゴリーごとに投稿を表示"
 msgid "Load the bundled stylesheet"
 msgstr "付属のスタイルシートを読み込む"
 
-#: src/Admin/SettingsPage.php:1990 assets/js/block.js:46
+#: src/Admin/SettingsPage.php:2002 assets/js/block.js:46
 msgid "Magazine"
 msgstr "マガジン"
 
@@ -709,11 +709,11 @@ msgstr "名前"
 msgid "Nature"
 msgstr "自然"
 
-#: src/Sitemap/TreeBuilder.php:741
+#: src/Sitemap/TreeBuilder.php:846
 msgid "Navigation menu"
 msgstr "ナビゲーションメニュー"
 
-#: src/Admin/SettingsPage.php:1992 assets/js/block.js:48
+#: src/Admin/SettingsPage.php:2004 assets/js/block.js:48
 msgid "Neon"
 msgstr "ネオン"
 
@@ -745,7 +745,7 @@ msgstr "ほかの設定にかかわらず、常に除外するもの"
 msgid "News"
 msgstr "お知らせ"
 
-#: src/Admin/SettingsPage.php:1973 assets/js/block.js:29
+#: src/Admin/SettingsPage.php:1985 assets/js/block.js:29
 msgid "Newspaper columns"
 msgstr "段組み"
 
@@ -757,7 +757,7 @@ msgstr "絵文字なし"
 msgid "No entries yet."
 msgstr "表示できる項目がありません。"
 
-#: src/Admin/SettingsPage.php:1966 assets/js/block.js:22
+#: src/Admin/SettingsPage.php:1978 assets/js/block.js:22
 msgid "No style"
 msgstr "スタイルなし"
 
@@ -781,7 +781,7 @@ msgstr "カラム数"
 msgid "Number of entries"
 msgstr "記事数"
 
-#: src/Admin/SettingsPage.php:1975 assets/js/block.js:31
+#: src/Admin/SettingsPage.php:1987 assets/js/block.js:31
 msgid "Numbered"
 msgstr "連番"
 
@@ -810,7 +810,7 @@ msgid "On hover only"
 msgstr "ホバー時のみ"
 
 #. translators: %s: number of entries shown.
-#: src/Sitemap/TreeBuilder.php:894
+#: src/Sitemap/TreeBuilder.php:999
 msgid "Only the first %s entries are listed."
 msgstr "先頭の%s件のみ表示しています。"
 
@@ -830,7 +830,7 @@ msgstr "並び順"
 msgid "Ordered (ol)"
 msgstr "順序付き (ol)"
 
-#: src/Admin/SettingsPage.php:1974 assets/js/block.js:30
+#: src/Admin/SettingsPage.php:1986 assets/js/block.js:30
 msgid "Outlined boxes"
 msgstr "囲み枠"
 
@@ -842,7 +842,7 @@ msgstr "この画面の設定を PS Auto Sitemap の設定で上書きします�
 msgid "Page order"
 msgstr "ページの並び順"
 
-#: src/Admin/SettingsPage.php:1978 assets/js/block.js:34
+#: src/Admin/SettingsPage.php:1990 assets/js/block.js:34
 msgid "Panels"
 msgstr "パネル"
 
@@ -870,7 +870,7 @@ msgstr "絵文字を選ぶ"
 msgid "Pick automatically"
 msgstr "自動で選ぶ"
 
-#: src/Admin/SettingsPage.php:1988 assets/js/block.js:44
+#: src/Admin/SettingsPage.php:2000 assets/js/block.js:44
 msgid "Pills"
 msgstr "ピル"
 
@@ -976,11 +976,11 @@ msgstr "すべての設定を初期値に戻しますか?"
 msgid "Reviews help other people find the plugin. Thank you."
 msgstr "レビューは、このプラグインを他の方に見つけてもらう助けになります。ありがとうございます。"
 
-#: src/Admin/SettingsPage.php:1989 assets/js/block.js:45
+#: src/Admin/SettingsPage.php:2001 assets/js/block.js:45
 msgid "Ribbons"
 msgstr "リボン"
 
-#: src/Admin/SettingsPage.php:1972 assets/js/block.js:28
+#: src/Admin/SettingsPage.php:1984 assets/js/block.js:28
 msgid "Ruled rows"
 msgstr "罫線"
 
@@ -1024,7 +1024,7 @@ msgstr "ホームページへのリンクを表示"
 msgid "Show with each entry"
 msgstr "各項目に表示するもの"
 
-#: src/Admin/SettingsPage.php:1967 assets/js/block.js:23
+#: src/Admin/SettingsPage.php:1979 assets/js/block.js:23
 msgid "Simple"
 msgstr "シンプル"
 
@@ -1061,7 +1061,7 @@ msgstr "上の余白"
 msgid "Square"
 msgstr "四角"
 
-#: src/Admin/SettingsPage.php:1985 assets/js/block.js:41
+#: src/Admin/SettingsPage.php:1997 assets/js/block.js:41
 msgid "Sticky notes"
 msgstr "付箋"
 
@@ -1077,7 +1077,7 @@ msgstr "このプラグインを応援する"
 msgid "Taxonomies"
 msgstr "タクソノミー"
 
-#: src/Admin/SettingsPage.php:1993 assets/js/block.js:49
+#: src/Admin/SettingsPage.php:2005 assets/js/block.js:49
 msgid "Terminal"
 msgstr "ターミナル"
 
@@ -1098,8 +1098,8 @@ msgid "The PS Auto Sitemap settings were read in. Check them over before saving 
 msgstr "PS Auto Sitemap の設定を読み込みました。保存する前に内容をご確認ください。デザインは近いものを選んでおり、同じスタイルシートではありません。"
 
 #: src/Admin/SettingsPage.php:400
-msgid "The author and archive listings ignore everything below except the entry cap and the design — they are built from who published and when, not from the content settings."
-msgstr "投稿者一覧と年月アーカイブ一覧は、件数上限とデザイン以外の下の設定を参照しません。誰がいつ公開したかから組み立てるためです。"
+msgid "The author and archive listings are built from who published and when, so the settings below reach them only where they make sense: both take the entry cap, the exclusions and the design, and the archive listing takes the publication window as well. Ordering and grouping belong to the entries, which those two do not list. Both are derived from posts, whatever this sitemap lists — a date archive shows posts, so a year taken from pages would link somewhere empty."
+msgstr "投稿者一覧と年月アーカイブ一覧は、誰がいつ公開したかから組み立てます。そのため下の設定は、意味のあるものだけが効きます。件数上限・除外設定・デザインは両方に効き、公開期間はアーカイブ一覧にも効きます。並び順とグルーピングは項目に対する設定なので、項目を並べないこの 2 つには効きません。また、このサイトマップが何を並べていても、この 2 つは投稿から作ります。日付アーカイブが表示するのは投稿なので、固定ページから作った年は中身のないページへのリンクになるためです。"
 
 #: assets/js/block.js:266
 msgid "The author listing only."
@@ -1142,8 +1142,8 @@ msgid "The number sets the output order — the lowest is listed first."
 msgstr "数字は表示順です。小さいものから順に表示されます。"
 
 #: src/Admin/SettingsPage.php:438
-msgid "The number sets the output order — the lowest is listed first. The settings below apply inside every section that lists content; the author and archive sections read only the entry cap and the design."
-msgstr "数字は表示順です。小さいものから並びます。下の設定は、内容を並べるセクションの中でそのまま有効です。投稿者と年月アーカイブのセクションだけは、件数上限とデザインのほかは参照しません。"
+msgid "The number sets the output order — the lowest is listed first. The settings below apply inside every section that lists content; the author and archive sections take the exclusions, the cap and the design, but not the ordering or grouping that belong to entries they do not list."
+msgstr "数字は表示順です。小さいものから並びます。下の設定は、内容を並べるセクションの中でそのまま有効です。投稿者と年月アーカイブのセクションには、除外設定・件数上限・デザインは効きますが、並べない項目に対する設定である並び順とグルーピングは効きません。"
 
 #: src/Admin/SettingsPage.php:1717 assets/js/block.js:76
 msgid "The order set by hand"
@@ -1178,7 +1178,7 @@ msgid "This site still holds a PS Auto Sitemap configuration. Reading it in fill
 msgstr "このサイトには PS Auto Sitemap の設定が残っています。読み込むと、そこで指定済みの内容がこの画面に入ります。表示するリストとその順序、階層の深さ、除外するカテゴリーと記事、そして近いデザインです。"
 
 #. translators: %s: number of entries shown.
-#: src/Sitemap/TreeBuilder.php:170
+#: src/Sitemap/TreeBuilder.php:175
 msgid "This sitemap reached its size limit of %s entries. The rest are not listed."
 msgstr "このサイトマップは上限の %s 件に達しました。残りは表示していません。"
 
@@ -1190,7 +1190,7 @@ msgstr "何もチェックしなければ、上の「一覧の種類」で作る
 msgid "Tick nothing to list everyone who has published something."
 msgstr "何もチェックしなければ、記事を公開しているすべての利用者を表示します。"
 
-#: src/Admin/SettingsPage.php:1979 assets/js/block.js:35
+#: src/Admin/SettingsPage.php:1991 assets/js/block.js:35
 msgid "Timeline"
 msgstr "タイムライン"
 
@@ -1222,7 +1222,7 @@ msgstr "文字と記号"
 msgid "Underline"
 msgstr "下線"
 
-#: src/Admin/SettingsPage.php:1982 assets/js/block.js:38
+#: src/Admin/SettingsPage.php:1994 assets/js/block.js:38
 msgid "Underlined headings"
 msgstr "見出し下線"
 
@@ -1293,7 +1293,7 @@ msgid "Windows ships no country flag glyphs, so these appear as two letters — 
 msgstr "Windows は国旗の字形を持たないため、Windows の閲覧者には 🇯🇵 が JP のように2文字で表示されます。先頭の5つは通常の記号なので、どの環境でも表示されます。"
 
 #. translators: PHP date format for a yearly archive heading. Japanese uses Y年.
-#: src/Sitemap/TreeBuilder.php:2409
+#: src/Sitemap/TreeBuilder.php:2459
 msgid "Y"
 msgstr "Y年"
 
@@ -1332,6 +1332,12 @@ msgstr "独自の CSS"
 #: src/Admin/SettingsPage.php:406
 msgid "— Select —"
 msgstr "— 選択してください —"
+
+#~ msgid "The author and archive listings ignore everything below except the entry cap and the design — they are built from who published and when, not from the content settings."
+#~ msgstr "投稿者一覧と年月アーカイブ一覧は、件数上限とデザイン以外の下の設定を参照しません。誰がいつ公開したかから組み立てるためです。"
+
+#~ msgid "The number sets the output order — the lowest is listed first. The settings below apply inside every section that lists content; the author and archive sections read only the entry cap and the design."
+#~ msgstr "数字は表示順です。小さいものから並びます。下の設定は、内容を並べるセクションの中でそのまま有効です。投稿者と年月アーカイブのセクションだけは、件数上限とデザインのほかは参照しません。"
 
 #~ msgid "Entries an SEO plugin has marked noindex"
 #~ msgstr "SEO プラグインで noindex に設定された項目"

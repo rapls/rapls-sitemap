@@ -397,7 +397,7 @@ final class SettingsPage {
 								<?php endforeach; ?>
 							</select>
 							<p class="description">
-								<?php echo esc_html__( 'The author and archive listings ignore everything below except the entry cap and the design — they are built from who published and when, not from the content settings.', 'rapls-sitemap' ); ?>
+								<?php echo esc_html__( 'The author and archive listings are built from who published and when, so the settings below reach them only where they make sense: both take the entry cap, the exclusions and the design, and the archive listing takes the publication window as well. Ordering and grouping belong to the entries, which those two do not list. Both are derived from posts, whatever this sitemap lists — a date archive shows posts, so a year taken from pages would link somewhere empty.', 'rapls-sitemap' ); ?>
 							</p>
 							<p>
 								<label>
@@ -435,7 +435,7 @@ final class SettingsPage {
 								<?php echo esc_html__( 'Tick nothing for an ordinary sitemap built from the setting above. Tick two or more and one placement lists each of them in turn, under its own heading — which is the shape most sitemap pages have.', 'rapls-sitemap' ); ?>
 							</p>
 							<p class="description">
-								<?php echo esc_html__( 'The number sets the output order — the lowest is listed first. The settings below apply inside every section that lists content; the author and archive sections read only the entry cap and the design.', 'rapls-sitemap' ); ?>
+								<?php echo esc_html__( 'The number sets the output order — the lowest is listed first. The settings below apply inside every section that lists content; the author and archive sections take the exclusions, the cap and the design, but not the ordering or grouping that belong to entries they do not list.', 'rapls-sitemap' ); ?>
 							</p>
 						</td>
 					</tr>

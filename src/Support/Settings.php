@@ -254,7 +254,7 @@ final class Settings {
 			// its own sections is built from.
 			'sections'         => array(),
 			// Taxonomy used for grouping. Empty picks the post type's first
-			// public hierarchical taxonomy, which is `category` for posts.
+			// viewable hierarchical taxonomy, which is `category` for posts.
 			'taxonomy'         => '',
 			// How the category and tag headings are ordered; see TERM_ORDERBY.
 			'term_orderby'     => 'name',

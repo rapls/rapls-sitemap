@@ -94,6 +94,23 @@ final class Node {
 	public $count = -1;
 
 	/**
+	 * Whether `$count` survives the tree being cut.
+	 *
+	 * Two different numbers wear this property. Under a category heading with
+	 * entries listed below it, the count IS those entries, so cutting them has
+	 * to change it. In a category-only listing nothing is below the heading and
+	 * the count is what the category holds — a fact about the site, not about
+	 * the page, and re-counting it would replace it with zero.
+	 *
+	 * The node carries the answer because the code that cuts may be a different
+	 * builder entirely: a composed sitemap trims a category section it did not
+	 * build, and its own settings say nothing about how that section counts.
+	 *
+	 * @var bool
+	 */
+	public $preserve_count = false;
+
+	/**
 	 * @param int    $id    Source ID, or 0.
 	 * @param string $title Display text.
 	 * @param string $url   Destination URL, or ''.

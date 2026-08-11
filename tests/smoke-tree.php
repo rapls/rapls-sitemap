@@ -708,6 +708,26 @@ check( 1 === $GLOBALS['fixture_posts_fetched'], 'a window makes the category lis
 check( array( 'News' ) === titles( $roots ), 'and only the categories with something inside it are listed' );
 check( array() === $roots[0]->children, 'a child category whose entries are all outside the window goes too' );
 
+// The post query behind a windowed category listing is capped, so a category
+// whose only entry inside the window sits past the cap cannot be seen. Saying
+// so must not depend on there being anything left to loop over: entries that
+// were all filtered out leave nothing to walk and everything to explain.
+$was_meta = array( $GLOBALS['fixture_meta'][10] ?? array(), $GLOBALS['fixture_meta'][11] ?? array() );
+
+$GLOBALS['fixture_meta'][10] = array( '_yoast_wpseo_meta-robots-noindex' => '1' );
+$GLOBALS['fixture_meta'][11] = array( '_yoast_wpseo_meta-robots-noindex' => '1' );
+
+$emptied = ( new TreeBuilder( grouped( array(
+	'term_mode'       => 'terms_only',
+	'date_after'      => '2020-01-01',
+	'max_entries'     => 1,
+	'exclude_noindex' => true,
+) ) ) )->build();
+
+check( has_note( $emptied ), 'a windowed category listing says when the cap kept it from seeing everything' );
+
+list( $GLOBALS['fixture_meta'][10], $GLOBALS['fixture_meta'][11] ) = $was_meta;
+
 // The other direction: the child is inside and the parent holds nothing of its
 // own, which must not take the child down with it.
 $windowed = grouped( array( 'term_mode' => 'terms_only', 'date_after' => '2025-01-01', 'date_before' => '2025-12-31' ) );
@@ -1639,7 +1659,23 @@ check( $only[0]->count > 0, 'a category-only listing keeps the count it was give
 
 $GLOBALS['rapls_max_nodes'] = null;
 
+// A composed sitemap trims a section it did not build, and its own term_mode
+// says nothing about how that section counts. The meaning has to travel with
+// the node, or a category section inside a `sections` list loses its real
+// numbers to a builder that never asked for terms_only.
+$composed_counts = grouped( array( 'sections' => array( 'category' ), 'show_count' => true, 'section_headings' => false ) );
+
 $GLOBALS['rapls_max_nodes'] = null;
+$whole = ( new TreeBuilder( $composed_counts ) )->build();
+
+$GLOBALS['rapls_max_nodes'] = 1;
+$cut = ( new TreeBuilder( $composed_counts ) )->build();
+
+check( $whole[0]->count > 0, 'a composed category section carries the count the category holds', (string) $whole[0]->count );
+check( $whole[0]->count === $cut[0]->count, 'and keeps it when the budget cuts the section', $whole[0]->count . ' vs ' . $cut[0]->count );
+
+$GLOBALS['rapls_max_nodes'] = null;
+
 
 
 /* --- a password is a statement about the text ---------------------------- */
