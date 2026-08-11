@@ -180,8 +180,8 @@ msgid "Appearance"
 msgstr "外観"
 
 #: src/Admin/SettingsPage.php:727
-msgid "Applies to the post types and to the sections above. Only when more than one is listed — a single list needs no label to tell it apart."
-msgstr "投稿タイプと、上の「1つにまとめるセクション」の両方に効きます。2つ以上並ぶときだけ付きます。一覧が1つだけなら、見分けるための見出しは不要なためです。"
+msgid "Applies both to the post types listed and to the sections composed. Only when more than one is listed — a single list needs no label to tell it apart."
+msgstr "並べる投稿タイプと、組み合わせたセクションの両方に効きます。2つ以上並ぶときだけ付きます。一覧が1つだけなら、見分けるための見出しは不要なためです。"
 
 #: src/Admin/SettingsPage.php:1854 src/Sitemap/TreeBuilder.php:829
 msgid "Archives"
@@ -915,8 +915,8 @@ msgid "Print items with no destination as headings"
 msgstr "リンク先のない項目を見出しとして表示する"
 
 #: src/Admin/SettingsPage.php:1188
-msgid "Printed with the sitemap, after everything above, so it wins. Scope your rules to .rapls-sitemap to avoid affecting the rest of the page."
-msgstr "サイトマップと一緒に出力されます。上のすべての設定より後に読み込まれるため、こちらが優先されます。ページの他の部分に影響しないよう、.rapls-sitemap を起点に指定してください。"
+msgid "Printed with the sitemap, after everything else, so it wins. Scope your rules to .rapls-sitemap to avoid affecting the rest of the page."
+msgstr "サイトマップと一緒に出力されます。他のすべての設定より後に読み込まれるため、こちらが優先されます。ページの他の部分に影響しないよう、.rapls-sitemap を起点に指定してください。"
 
 #: src/Admin/SettingsPage.php:516
 msgid "Published between"
@@ -1098,8 +1098,8 @@ msgid "The PS Auto Sitemap settings were read in. Check them over before saving 
 msgstr "PS Auto Sitemap の設定を読み込みました。保存する前に内容をご確認ください。デザインは近いものを選んでおり、同じスタイルシートではありません。"
 
 #: src/Admin/SettingsPage.php:400
-msgid "The author and archive listings are built from who published and when, so the settings below reach them only where they make sense: both take the entry cap, the exclusions and the design, and the archive listing takes the publication window as well. Ordering and grouping belong to the entries, which those two do not list. Both are derived from posts, whatever this sitemap lists — a date archive shows posts, so a year taken from pages would link somewhere empty."
-msgstr "投稿者一覧と年月アーカイブ一覧は、誰がいつ公開したかから組み立てます。そのため下の設定は、意味のあるものだけが効きます。件数上限・除外設定・デザインは両方に効き、公開期間はアーカイブ一覧にも効きます。並び順とグルーピングは項目に対する設定なので、項目を並べないこの 2 つには効きません。また、このサイトマップが何を並べていても、この 2 つは投稿から作ります。日付アーカイブが表示するのは投稿なので、固定ページから作った年は中身のないページへのリンクになるためです。"
+msgid "The author and archive listings are built from who published and when, so the other settings reach them only where they make sense: both take the entry cap, the exclusions and the design, and the archive listing takes the publication window as well. Ordering and grouping belong to the entries, which those two do not list. Both are derived from posts, whatever this sitemap lists — a date archive shows posts, so a year taken from pages would link somewhere empty."
+msgstr "投稿者一覧と年月アーカイブ一覧は、誰がいつ公開したかから組み立てます。そのため他の設定は、意味のあるものだけが効きます。件数上限・除外設定・デザインは両方に効き、公開期間はアーカイブ一覧にも効きます。並び順とグルーピングは項目に対する設定なので、項目を並べないこの 2 つには効きません。また、このサイトマップが何を並べていても、この 2 つは投稿から作ります。日付アーカイブが表示するのは投稿なので、固定ページから作った年は中身のないページへのリンクになるためです。"
 
 #: assets/js/block.js:266
 msgid "The author listing only."
@@ -1142,8 +1142,8 @@ msgid "The number sets the output order — the lowest is listed first."
 msgstr "数字は表示順です。小さいものから順に表示されます。"
 
 #: src/Admin/SettingsPage.php:438
-msgid "The number sets the output order — the lowest is listed first. The settings below apply inside every section that lists content; the author and archive sections take the exclusions, the cap and the design, but not the ordering or grouping that belong to entries they do not list."
-msgstr "数字は表示順です。小さいものから並びます。下の設定は、内容を並べるセクションの中でそのまま有効です。投稿者と年月アーカイブのセクションには、除外設定・件数上限・デザインは効きますが、並べない項目に対する設定である並び順とグルーピングは効きません。"
+msgid "The number sets the output order — the lowest is listed first. The other settings apply inside every section that lists content; the author and archive sections take the exclusions, the cap and the design, but not the ordering or grouping that belong to entries they do not list."
+msgstr "数字は表示順です。小さいものから並びます。他の設定は、内容を並べるセクションの中でそのまま有効です。投稿者と年月アーカイブのセクションには、除外設定・件数上限・デザインは効きますが、並べない項目に対する設定である並び順とグルーピングは効きません。"
 
 #: src/Admin/SettingsPage.php:1717 assets/js/block.js:76
 msgid "The order set by hand"
@@ -1166,8 +1166,8 @@ msgid "There was no PS Auto Sitemap configuration to read. Nothing on this scree
 msgstr "読み込める PS Auto Sitemap の設定がありませんでした。この画面の設定は変更していません。"
 
 #: src/Admin/SettingsPage.php:1060
-msgid "These sit on top of the design above. Leave a box empty to keep whatever the design already does."
-msgstr "上で選んだデザインに追加で適用されます。空欄にした項目はデザイン側の指定がそのまま残ります。"
+msgid "These sit on top of the design chosen on the Basic tab. Leave a box empty to keep whatever the design already does."
+msgstr "「基本設定」タブで選んだデザインに追加で適用されます。空欄にした項目はデザイン側の指定がそのまま残ります。"
 
 #: src/Admin/SettingsPage.php:996
 msgid "This is how a true kana ordering is possible. Store the reading of each title in one field, name that field here, and entries sort by the reading instead of by the characters."
@@ -1183,8 +1183,8 @@ msgid "This sitemap reached its size limit of %s entries. The rest are not liste
 msgstr "このサイトマップは上限の %s 件に達しました。残りは表示していません。"
 
 #: src/Admin/SettingsPage.php:435
-msgid "Tick nothing for an ordinary sitemap built from the setting above. Tick two or more and one placement lists each of them in turn, under its own heading — which is the shape most sitemap pages have."
-msgstr "何もチェックしなければ、上の「一覧の種類」で作る通常のサイトマップになります。2つ以上チェックすると、1か所の設置でそれぞれを順に、見出しを付けて並べます。サイトマップページの多くはこの形です。"
+msgid "Tick nothing for an ordinary sitemap built from the single source chosen under \"What to list\". Tick two or more and one placement lists each of them in turn, under its own heading — which is the shape most sitemap pages have."
+msgstr "何もチェックしなければ、「表示する対象」で選んだ1つの種類から作る通常のサイトマップになります。2つ以上チェックすると、1か所の設置でそれぞれを順に、見出しを付けて並べます。サイトマップページの多くはこの形です。"
 
 #: src/Admin/SettingsPage.php:1674
 msgid "Tick nothing to list everyone who has published something."
@@ -1325,19 +1325,63 @@ msgstr "文字の大きさ、行間、リンクの色、下線、箇条書きの
 msgid "words"
 msgstr "語"
 
-#: src/Admin/SettingsPage.php:1170
-msgid "your own CSS"
-msgstr "独自の CSS"
-
 #: src/Admin/SettingsPage.php:406
 msgid "— Select —"
 msgstr "— 選択してください —"
+
+msgid "Everything here is optional. A panel opens itself when it holds something other than a default, so all of them closed means nothing on this tab has been changed."
+msgstr "ここにあるものはすべて任意の設定です。初期値以外が入っているパネルは自動で開くので、すべて閉じていればこのタブでは何も変更していないということです。"
+
+msgid "Basic"
+msgstr "基本設定"
+
+msgid "Every setting here has a working default, so choosing what to list is enough to finish. Everything else lives under Advanced."
+msgstr "ここにある設定にはすべて既定値があります。何を並べるかを選べば、それだけで完成です。残りは「詳細設定」タブにあります。"
+
+msgid "Composition"
+msgstr "構成"
+
+msgid "several lists in one placement, or one branch of the site"
+msgstr "1か所に複数の一覧を並べる、サイトの一部だけに絞る"
+
+msgid "What to leave out"
+msgstr "除外する項目"
+
+msgid "a publication window, people, protected and noindexed entries"
+msgstr "公開期間、投稿者、パスワード保護と noindex の項目"
+
+msgid "Grouping by category"
+msgstr "カテゴリーでまとめる"
+
+msgid "category headings, nesting, or the categories on their own"
+msgstr "カテゴリー見出し、入れ子、カテゴリーだけの一覧"
+
+msgid "What each entry shows"
+msgstr "各項目の表示"
+
+msgid "dates, excerpts, counts, headings, nofollow"
+msgstr "日付、抜粋、件数、見出し、nofollow"
+
+msgid "how entries and categories are sorted, the entry cap, custom fields"
+msgstr "項目とカテゴリーの並べ方、件数上限、カスタムフィールド"
+
+msgid "Custom CSS"
+msgstr "独自の CSS"
+
+msgid "style rules of your own, printed after everything else"
+msgstr "自分で書いたスタイル。他のすべての後に出力"
+
+msgid "Coming from another plugin"
+msgstr "他のプラグインからの移行"
+
+msgid "answer to WP Sitemap Page or PS Auto Sitemap as well"
+msgstr "WP Sitemap Page や PS Auto Sitemap にも応答する"
 
 #~ msgid "The author and archive listings ignore everything below except the entry cap and the design — they are built from who published and when, not from the content settings."
 #~ msgstr "投稿者一覧と年月アーカイブ一覧は、件数上限とデザイン以外の下の設定を参照しません。誰がいつ公開したかから組み立てるためです。"
 
 #~ msgid "The number sets the output order — the lowest is listed first. The settings below apply inside every section that lists content; the author and archive sections read only the entry cap and the design."
-#~ msgstr "数字は表示順です。小さいものから並びます。下の設定は、内容を並べるセクションの中でそのまま有効です。投稿者と年月アーカイブのセクションだけは、件数上限とデザインのほかは参照しません。"
+#~ msgstr "数字は表示順です。小さいものから並びます。他の設定は、内容を並べるセクションの中でそのまま有効です。投稿者と年月アーカイブのセクションだけは、件数上限とデザインのほかは参照しません。"
 
 #~ msgid "Entries an SEO plugin has marked noindex"
 #~ msgstr "SEO プラグインで noindex に設定された項目"

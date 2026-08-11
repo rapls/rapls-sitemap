@@ -12,6 +12,7 @@
 namespace RaplsSitemap\Admin;
 
 use RaplsSitemap\Frontend\Shortcode;
+use RaplsSitemap\Sitemap\TreeBuilder;
 use RaplsSitemap\Support\Design;
 use RaplsSitemap\Support\Hooks;
 use RaplsSitemap\Support\PsMigration;
@@ -380,490 +381,20 @@ final class SettingsPage {
 				<code>[<?php echo esc_html( Shortcode::TAG ); ?>]</code>
 			</p>
 
+			<?php self::tabs(); ?>
+
 			<form action="options.php" method="post">
 				<?php settings_fields( self::GROUP ); ?>
 
-				<table class="form-table" role="presentation">
-					<tr>
-						<th scope="row">
-							<label for="rapls-sitemap-source"><?php echo esc_html__( 'What to list', 'rapls-sitemap' ); ?></label>
-						</th>
-						<td>
-							<select id="rapls-sitemap-source" name="<?php echo esc_attr( $name . '[source]' ); ?>">
-								<?php foreach ( self::sources() as $slug => $text ) : ?>
-									<option value="<?php echo esc_attr( $slug ); ?>" <?php selected( $settings['source'], $slug ); ?>>
-										<?php echo esc_html( $text ); ?>
-									</option>
-								<?php endforeach; ?>
-							</select>
-							<p class="description">
-								<?php echo esc_html__( 'The author and archive listings are built from who published and when, so the settings below reach them only where they make sense: both take the entry cap, the exclusions and the design, and the archive listing takes the publication window as well. Ordering and grouping belong to the entries, which those two do not list. Both are derived from posts, whatever this sitemap lists — a date archive shows posts, so a year taken from pages would link somewhere empty.', 'rapls-sitemap' ); ?>
-							</p>
-							<p>
-								<label>
-									<?php echo esc_html__( 'Menu', 'rapls-sitemap' ); ?>
-									<select name="<?php echo esc_attr( $name . '[menu]' ); ?>">
-										<option value=""><?php echo esc_html__( '— Select —', 'rapls-sitemap' ); ?></option>
-										<?php foreach ( self::available_menus() as $menu ) : ?>
-											<option value="<?php echo esc_attr( (string) $menu->term_id ); ?>" <?php selected( (string) $settings['menu'], (string) $menu->term_id ); ?>>
-												<?php echo esc_html( $menu->name ); ?>
-											</option>
-										<?php endforeach; ?>
-									</select>
-								</label>
-							</p>
-							<p class="description">
-								<?php echo esc_html__( 'A menu is listed exactly as it was arranged, with its own labels — the order here is a decision somebody made, so it is not re-sorted. Only the exclusions, the depth limit and the entry cap apply to it.', 'rapls-sitemap' ); ?>
-							</p>
-							<label style="display:block">
-								<input type="checkbox" value="1"
-									name="<?php echo esc_attr( $name . '[menu_headings]' ); ?>"
-									<?php checked( ! empty( $settings['menu_headings'] ) ); ?> />
-								<?php echo esc_html__( 'Print items with no destination as headings', 'rapls-sitemap' ); ?>
-							</label>
-							<p class="description">
-								<?php echo esc_html__( 'A menu item whose link is "#" holds open a dropdown. In a table of contents it is a link that goes nowhere, so its label is printed as plain text instead.', 'rapls-sitemap' ); ?>
-							</p>
-						</td>
-					</tr>
+				<div class="rapls-pane rapls-pane--basic">
+					<?php $this->render_basic( $name, $settings ); ?>
+				</div>
 
-					<tr>
-						<th scope="row"><?php echo esc_html__( 'Sections in one sitemap', 'rapls-sitemap' ); ?></th>
-						<td>
-							<?php $this->section_checkboxes( $name, $settings ); ?>
-							<p class="description">
-								<?php echo esc_html__( 'Tick nothing for an ordinary sitemap built from the setting above. Tick two or more and one placement lists each of them in turn, under its own heading — which is the shape most sitemap pages have.', 'rapls-sitemap' ); ?>
-							</p>
-							<p class="description">
-								<?php echo esc_html__( 'The number sets the output order — the lowest is listed first. The settings below apply inside every section that lists content; the author and archive sections take the exclusions, the cap and the design, but not the ordering or grouping that belong to entries they do not list.', 'rapls-sitemap' ); ?>
-							</p>
-						</td>
-					</tr>
+				<div class="rapls-pane rapls-pane--advanced">
+					<?php $this->render_more( $name, $settings ); ?>
+				</div>
 
-					<tr>
-						<th scope="row"><?php echo esc_html__( 'Content to include', 'rapls-sitemap' ); ?></th>
-						<td>
-							<?php $this->post_type_checkboxes( $name, $settings ); ?>
-							<p class="description">
-								<?php echo esc_html__( 'The number sets the output order — the lowest is listed first.', 'rapls-sitemap' ); ?>
-							</p>
-						</td>
-					</tr>
-
-					<tr>
-						<th scope="row">
-							<label for="rapls-sitemap-depth"><?php echo esc_html__( 'Maximum depth', 'rapls-sitemap' ); ?></label>
-						</th>
-						<td>
-							<input type="number" min="0" max="10" step="1"
-								id="rapls-sitemap-depth"
-								name="<?php echo esc_attr( $name . '[depth]' ); ?>"
-								value="<?php echo esc_attr( (string) $settings['depth'] ); ?>" />
-							<p class="description"><?php echo esc_html__( '0 shows every level.', 'rapls-sitemap' ); ?></p>
-						</td>
-					</tr>
-
-					<tr>
-						<th scope="row">
-							<label for="rapls-sitemap-child-of"><?php echo esc_html__( 'Limit to one branch', 'rapls-sitemap' ); ?></label>
-						</th>
-						<td>
-							<input type="number" min="0" step="1" id="rapls-sitemap-child-of"
-								name="<?php echo esc_attr( $name . '[child_of]' ); ?>"
-								value="<?php echo esc_attr( (string) $settings['child_of'] ); ?>" />
-							<p class="description">
-								<?php echo esc_html__( 'A page ID. Only the pages filed under it are listed, and the page itself is not. 0 lists the whole site. Post types with no hierarchy are left out entirely, since a page branch is not a scope they have.', 'rapls-sitemap' ); ?>
-							</p>
-							<p class="description">
-								<?php
-								printf(
-									/* translators: 1: an example shortcode. 2: another example shortcode. */
-									esc_html__( 'In a shortcode this also takes %1$s, for a section landing page listing its own children without naming an ID that differs between staging and live, and %2$s, which lists the page\'s siblings instead — the same template on every page of a section then shows the reader where they are inside it.', 'rapls-sitemap' ),
-									'<code>child_of="current"</code>',
-									'<code>child_of="parent"</code>'
-								);
-								?>
-							</p>
-						</td>
-					</tr>
-
-					<tr>
-						<th scope="row">
-							<label for="rapls-sitemap-exclude-ids"><?php echo esc_html__( 'Exclude post IDs', 'rapls-sitemap' ); ?></label>
-						</th>
-						<td>
-							<input type="text" class="regular-text"
-								id="rapls-sitemap-exclude-ids"
-								name="<?php echo esc_attr( $name . '[exclude_ids]' ); ?>"
-								value="<?php echo esc_attr( implode( ', ', (array) $settings['exclude_ids'] ) ); ?>" />
-							<p class="description"><?php echo esc_html__( 'Comma separated. Children of an excluded page are excluded too.', 'rapls-sitemap' ); ?></p>
-						</td>
-					</tr>
-
-					<tr>
-						<th scope="row">
-							<label for="rapls-sitemap-exclude-terms"><?php echo esc_html__( 'Exclude category IDs', 'rapls-sitemap' ); ?></label>
-						</th>
-						<td>
-							<input type="text" class="regular-text"
-								id="rapls-sitemap-exclude-terms"
-								name="<?php echo esc_attr( $name . '[exclude_terms]' ); ?>"
-								value="<?php echo esc_attr( implode( ', ', (array) $settings['exclude_terms'] ) ); ?>" />
-						</td>
-					</tr>
-
-					<tr>
-						<th scope="row"><?php echo esc_html__( 'Published between', 'rapls-sitemap' ); ?></th>
-						<td>
-							<input type="text" class="regular-text" style="width:9em"
-								name="<?php echo esc_attr( $name . '[date_after]' ); ?>"
-								value="<?php echo esc_attr( (string) $settings['date_after'] ); ?>"
-								placeholder="2026-04-01" />
-							<span aria-hidden="true">–</span>
-							<input type="text" class="regular-text" style="width:9em"
-								name="<?php echo esc_attr( $name . '[date_before]' ); ?>"
-								value="<?php echo esc_attr( (string) $settings['date_before'] ); ?>"
-								placeholder="2027-03-31" />
-							<p class="description">
-								<?php echo esc_html__( 'Both ends are included, and either can stand on its own. Leave both empty to list everything. A school or a council listing one year at a time is what this is for.', 'rapls-sitemap' ); ?>
-							</p>
-							<p class="description">
-								<?php echo esc_html__( 'YYYY-MM-DD, YYYY-MM or YYYY. Anything else is read as no limit rather than as a date nobody meant — a typo widens the listing instead of emptying it.', 'rapls-sitemap' ); ?>
-							</p>
-						</td>
-					</tr>
-
-					<tr>
-						<th scope="row">
-							<label for="rapls-sitemap-exclude-users"><?php echo esc_html__( 'Exclude user IDs', 'rapls-sitemap' ); ?></label>
-						</th>
-						<td>
-							<input type="text" class="regular-text"
-								id="rapls-sitemap-exclude-users"
-								name="<?php echo esc_attr( $name . '[exclude_users]' ); ?>"
-								value="<?php echo esc_attr( implode( ', ', (array) $settings['exclude_users'] ) ); ?>" />
-							<p class="description">
-								<?php echo esc_html__( 'The author listing only. The account WordPress was installed with, or the agency that built the site, is on the user list without being anyone a reader should be sent to.', 'rapls-sitemap' ); ?>
-							</p>
-							<?php $this->role_checkboxes( $name, $settings ); ?>
-						</td>
-					</tr>
-
-					<tr>
-						<th scope="row"><?php echo esc_html__( 'Home link', 'rapls-sitemap' ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox" value="1"
-									name="<?php echo esc_attr( $name . '[show_home]' ); ?>"
-									<?php checked( ! empty( $settings['show_home'] ) ); ?> />
-								<?php echo esc_html__( 'Show a link to the front page first', 'rapls-sitemap' ); ?>
-							</label>
-							<p>
-								<input type="text" class="regular-text"
-									name="<?php echo esc_attr( $name . '[home_label]' ); ?>"
-									value="<?php echo esc_attr( (string) $settings['home_label'] ); ?>"
-									placeholder="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" />
-							</p>
-						</td>
-					</tr>
-
-					<tr>
-						<th scope="row"><?php echo esc_html__( 'Categories', 'rapls-sitemap' ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox" value="1"
-									name="<?php echo esc_attr( $name . '[group_by_term]' ); ?>"
-									<?php checked( ! empty( $settings['group_by_term'] ) ); ?> />
-								<?php echo esc_html__( 'Group posts under their category headings', 'rapls-sitemap' ); ?>
-							</label>
-							<p>
-								<label>
-									<input type="checkbox" value="1"
-										name="<?php echo esc_attr( $name . '[nest_terms]' ); ?>"
-										<?php checked( ! empty( $settings['nest_terms'] ) ); ?> />
-									<?php echo esc_html__( 'Nest child categories inside their parents', 'rapls-sitemap' ); ?>
-								</label>
-							</p>
-							<p>
-								<label>
-									<input type="checkbox" value="1"
-										name="<?php echo esc_attr( $name . '[duplicate_in_terms]' ); ?>"
-										<?php checked( ! empty( $settings['duplicate_in_terms'] ) ); ?> />
-									<?php echo esc_html__( 'List a post under every category it belongs to', 'rapls-sitemap' ); ?>
-								</label>
-								<span class="description">
-									<?php echo esc_html__( 'Off lists it once, under the first category that claims it.', 'rapls-sitemap' ); ?>
-								</span>
-							</p>
-							<p>
-								<label>
-									<?php echo esc_html__( 'Group by', 'rapls-sitemap' ); ?>
-									<select name="<?php echo esc_attr( $name . '[taxonomy]' ); ?>">
-										<option value="" <?php selected( $settings['taxonomy'], '' ); ?>>
-											<?php echo esc_html__( 'Pick automatically', 'rapls-sitemap' ); ?>
-										</option>
-										<?php foreach ( self::available_taxonomies() as $taxonomy ) : ?>
-											<option value="<?php echo esc_attr( $taxonomy->name ); ?>" <?php selected( $settings['taxonomy'], $taxonomy->name ); ?>>
-												<?php echo esc_html( $taxonomy->labels->name ); ?>
-											</option>
-										<?php endforeach; ?>
-									</select>
-								</label>
-								<span class="description">
-									<?php echo esc_html__( 'Automatic picks the first hierarchical taxonomy, which is Categories. A flat one such as Tags has to be chosen here.', 'rapls-sitemap' ); ?>
-								</span>
-							</p>
-							<fieldset style="margin-top:0.5em">
-								<label style="display:block">
-									<input type="radio" value="posts"
-										name="<?php echo esc_attr( $name . '[term_mode]' ); ?>"
-										<?php checked( 'posts', $settings['term_mode'] ); ?> />
-									<?php echo esc_html__( 'List the posts under each category', 'rapls-sitemap' ); ?>
-								</label>
-								<label style="display:block">
-									<input type="radio" value="terms_only"
-										name="<?php echo esc_attr( $name . '[term_mode]' ); ?>"
-										<?php checked( 'terms_only', $settings['term_mode'] ); ?> />
-									<?php echo esc_html__( 'List the categories only', 'rapls-sitemap' ); ?>
-								</label>
-							</fieldset>
-						</td>
-					</tr>
-
-					<tr>
-						<th scope="row"><?php echo esc_html__( 'Also leave out', 'rapls-sitemap' ); ?></th>
-						<td>
-							<label style="display:block">
-								<input type="checkbox" value="1"
-									name="<?php echo esc_attr( $name . '[exclude_current]' ); ?>"
-									<?php checked( ! empty( $settings['exclude_current'] ) ); ?> />
-								<?php echo esc_html__( 'The page holding the sitemap, from its own list', 'rapls-sitemap' ); ?>
-							</label>
-							<label style="display:block">
-								<input type="checkbox" value="1"
-									name="<?php echo esc_attr( $name . '[exclude_protected]' ); ?>"
-									<?php checked( ! empty( $settings['exclude_protected'] ) ); ?> />
-								<?php echo esc_html__( 'Password-protected entries', 'rapls-sitemap' ); ?>
-							</label>
-							<label style="display:block">
-								<input type="checkbox" value="1"
-									name="<?php echo esc_attr( $name . '[exclude_noindex]' ); ?>"
-									<?php checked( ! empty( $settings['exclude_noindex'] ) ); ?> />
-								<?php echo esc_html__( 'Entries individually marked noindex', 'rapls-sitemap' ); ?>
-							</label>
-							<p class="description">
-								<?php echo esc_html__( 'Yoast SEO, Rank Math, SEO SIMPLE PACK, SEOPress, The SEO Framework, All in One SEO and the Cocoon theme are read directly. WordPress records nothing about noindex itself, so anything else needs the rapls_sitemap/is_noindex filter. Reading the setting costs one extra query per render, and a second one where All in One SEO is active — it keeps this in a table of its own rather than in post meta.', 'rapls-sitemap' ); ?>
-							</p>
-							<p class="description">
-								<?php echo esc_html__( 'What is read is the setting on the entry itself. A default that applies to a whole post type, taxonomy or archive is not: those listings appear only because you chose them on this screen, and an SEO plugin\'s default — Yoast noindexes date archives out of the box — would otherwise empty a list you asked for.', 'rapls-sitemap' ); ?>
-							</p>
-							<p class="description">
-								<?php echo esc_html__( 'Categories, tags and authors are read too. A category is only dropped where the category itself is what is listed — where entries are grouped under category headings, dropping a heading would take indexable entries with it, so switch off "Link section and category headings" instead. Those two questions have filters of their own: rapls_sitemap/is_term_noindex and rapls_sitemap/is_user_noindex.', 'rapls-sitemap' ); ?>
-							</p>
-
-							<?php $this->exclusion_checkboxes( $name, $settings ); ?>
-						</td>
-					</tr>
-
-					<tr>
-						<th scope="row"><?php echo esc_html__( 'Links', 'rapls-sitemap' ); ?></th>
-						<td>
-							<label>
-								<input type="checkbox" value="1"
-									name="<?php echo esc_attr( $name . '[nofollow]' ); ?>"
-									<?php checked( ! empty( $settings['nofollow'] ) ); ?> />
-								<?php echo esc_html__( 'Add rel="nofollow" to every link', 'rapls-sitemap' ); ?>
-							</label>
-						</td>
-					</tr>
-
-					<tr>
-						<th scope="row"><?php echo esc_html__( 'Show with each entry', 'rapls-sitemap' ); ?></th>
-						<td>
-							<label style="display:block">
-								<input type="checkbox" value="1"
-									name="<?php echo esc_attr( $name . '[show_date]' ); ?>"
-									<?php checked( ! empty( $settings['show_date'] ) ); ?> />
-								<?php echo esc_html__( 'Published date', 'rapls-sitemap' ); ?>
-								<input type="text" style="width:9em;margin-left:0.5em"
-									name="<?php echo esc_attr( $name . '[date_format]' ); ?>"
-									value="<?php echo esc_attr( (string) $settings['date_format'] ); ?>"
-									placeholder="<?php echo esc_attr( (string) get_option( 'date_format' ) ); ?>"
-									aria-label="<?php echo esc_attr__( 'Date format', 'rapls-sitemap' ); ?>" />
-								<span class="description"><?php echo esc_html__( 'Empty uses the site’s own date format.', 'rapls-sitemap' ); ?></span>
-							</label>
-
-							<label style="display:block">
-								<input type="checkbox" value="1"
-									name="<?php echo esc_attr( $name . '[show_excerpt]' ); ?>"
-									<?php checked( ! empty( $settings['show_excerpt'] ) ); ?> />
-								<?php echo esc_html__( 'Excerpt', 'rapls-sitemap' ); ?>
-								<input type="number" min="1" max="200" style="width:6em;margin-left:0.5em"
-									name="<?php echo esc_attr( $name . '[excerpt_length]' ); ?>"
-									value="<?php echo esc_attr( (string) $settings['excerpt_length'] ); ?>"
-									aria-label="<?php echo esc_attr__( 'Excerpt length in words', 'rapls-sitemap' ); ?>" />
-								<span class="description"><?php echo esc_html__( 'words', 'rapls-sitemap' ); ?></span>
-							</label>
-
-							<label style="display:block">
-								<input type="checkbox" value="1"
-									name="<?php echo esc_attr( $name . '[show_count]' ); ?>"
-									<?php checked( ! empty( $settings['show_count'] ) ); ?> />
-								<?php echo esc_html__( 'Entry count beside each category', 'rapls-sitemap' ); ?>
-							</label>
-						</td>
-					</tr>
-
-					<tr>
-						<th scope="row"><?php echo esc_html__( 'Structure', 'rapls-sitemap' ); ?></th>
-						<td>
-							<label style="display:block">
-								<input type="checkbox" value="1"
-									name="<?php echo esc_attr( $name . '[section_headings]' ); ?>"
-									<?php checked( ! empty( $settings['section_headings'] ) ); ?> />
-								<?php echo esc_html__( 'Put a heading above each list', 'rapls-sitemap' ); ?>
-							</label>
-							<p class="description">
-								<?php echo esc_html__( 'Applies to the post types and to the sections above. Only when more than one is listed — a single list needs no label to tell it apart.', 'rapls-sitemap' ); ?>
-							</p>
-							<p>
-								<label>
-									<?php echo esc_html__( 'List element', 'rapls-sitemap' ); ?>
-									<select name="<?php echo esc_attr( $name . '[list_type]' ); ?>">
-										<option value="ul" <?php selected( $settings['list_type'], 'ul' ); ?>><?php echo esc_html__( 'Unordered (ul)', 'rapls-sitemap' ); ?></option>
-										<option value="ol" <?php selected( $settings['list_type'], 'ol' ); ?>><?php echo esc_html__( 'Ordered (ol)', 'rapls-sitemap' ); ?></option>
-									</select>
-								</label>
-							</p>
-							<p>
-								<label>
-									<input type="checkbox" value="1"
-										name="<?php echo esc_attr( $name . '[link_headings]' ); ?>"
-										<?php checked( ! empty( $settings['link_headings'] ) ); ?> />
-									<?php echo esc_html__( 'Link section and category headings to their archives', 'rapls-sitemap' ); ?>
-								</label>
-								<span class="description">
-									<?php echo esc_html__( 'Off leaves the text in place without linking it, for archives that are thin or noindexed.', 'rapls-sitemap' ); ?>
-								</span>
-							</p>
-							<p>
-								<label>
-									<input type="checkbox" value="1"
-										name="<?php echo esc_attr( $name . '[link_parents]' ); ?>"
-										<?php checked( ! empty( $settings['link_parents'] ) ); ?> />
-									<?php echo esc_html__( 'Link entries that have entries under them', 'rapls-sitemap' ); ?>
-								</label>
-								<span class="description">
-									<?php echo esc_html__( 'Off prints them as headings instead. For a section page that exists only to hold its children, the link goes to a page nobody wants to read.', 'rapls-sitemap' ); ?>
-								</span>
-							</p>
-							<p>
-								<label>
-									<?php echo esc_html__( 'Headings', 'rapls-sitemap' ); ?>
-									<select name="<?php echo esc_attr( $name . '[heading_level]' ); ?>">
-										<option value="" <?php selected( $settings['heading_level'], '' ); ?>>
-											<?php echo esc_html__( 'Plain text', 'rapls-sitemap' ); ?>
-										</option>
-										<?php foreach ( array( 'h2', 'h3', 'h4', 'h5', 'h6' ) as $level ) : ?>
-											<option value="<?php echo esc_attr( $level ); ?>" <?php selected( $settings['heading_level'], $level ); ?>>
-												<?php echo esc_html( strtoupper( $level ) ); ?>
-											</option>
-										<?php endforeach; ?>
-									</select>
-								</label>
-							</p>
-							<p class="description">
-								<?php echo esc_html__( 'Section and category labels can be real headings, which is how a screen reader user moves through the page. Pick the level that fits under whatever heading the page already has above the sitemap — a wrong level is a broken outline, so this stays plain text until you choose.', 'rapls-sitemap' ); ?>
-							</p>
-						</td>
-					</tr>
-
-					<tr>
-						<th scope="row">
-							<label for="rapls-sitemap-design"><?php echo esc_html__( 'Design', 'rapls-sitemap' ); ?></label>
-						</th>
-						<td>
-							<select id="rapls-sitemap-design" name="<?php echo esc_attr( $name . '[design]' ); ?>">
-								<?php foreach ( self::designs() as $slug => $label ) : ?>
-									<option value="<?php echo esc_attr( $slug ); ?>" <?php selected( $settings['design'], $slug ); ?>>
-										<?php echo esc_html( $label ); ?>
-									</option>
-								<?php endforeach; ?>
-							</select>
-							<p>
-								<label>
-									<input type="checkbox" value="1"
-										name="<?php echo esc_attr( $name . '[load_styles]' ); ?>"
-										<?php checked( ! empty( $settings['load_styles'] ) ); ?> />
-									<?php echo esc_html__( 'Load the bundled stylesheet', 'rapls-sitemap' ); ?>
-								</label>
-							</p>
-						</td>
-					</tr>
-
-					<tr>
-						<th scope="row">
-							<label for="rapls-sitemap-cache"><?php echo esc_html__( 'Cache lifetime', 'rapls-sitemap' ); ?></label>
-						</th>
-						<td>
-							<input type="number" min="0" step="60"
-								id="rapls-sitemap-cache"
-								name="<?php echo esc_attr( $name . '[cache_ttl]' ); ?>"
-								value="<?php echo esc_attr( (string) $settings['cache_ttl'] ); ?>" />
-							<p class="description">
-								<?php echo esc_html__( 'Seconds. The cache is cleared automatically when content changes; 0 disables it.', 'rapls-sitemap' ); ?>
-							</p>
-						</td>
-					</tr>
-
-					<tr>
-						<th scope="row"><?php echo esc_html__( 'Migration', 'rapls-sitemap' ); ?></th>
-						<td>
-							<p class="description" style="margin-bottom:0.75em">
-								<?php echo esc_html__( 'Both are off until you switch them on. Turn on the one matching the plugin you are coming from, and the sitemap page keeps working with nothing to edit.', 'rapls-sitemap' ); ?>
-							</p>
-
-							<label>
-								<input type="checkbox" value="1"
-									name="<?php echo esc_attr( $name . '[legacy_shortcode]' ); ?>"
-									<?php checked( ! empty( $settings['legacy_shortcode'] ) ); ?> />
-								<?php echo esc_html__( 'Also render where a WP Sitemap Page shortcode appears', 'rapls-sitemap' ); ?>
-							</label>
-							<p class="description" style="margin-bottom:0.75em">
-								<?php
-								printf(
-									/* translators: %s: the shortcode used by WP Sitemap Page. */
-									esc_html__( 'Answers to %s, including its only="..." attribute. Ignored while WP Sitemap Page itself is active.', 'rapls-sitemap' ),
-									'<code>[wp_sitemap_page]</code>'
-								);
-								?>
-							</p>
-
-							<label>
-								<input type="checkbox" value="1"
-									name="<?php echo esc_attr( $name . '[legacy_marker]' ); ?>"
-									<?php checked( ! empty( $settings['legacy_marker'] ) ); ?> />
-								<?php echo esc_html__( 'Also render where a PS Auto Sitemap comment marker appears', 'rapls-sitemap' ); ?>
-							</label>
-							<p class="description">
-								<?php
-								printf(
-									/* translators: %s: the HTML comment used by PS Auto Sitemap. */
-									esc_html__( 'Answers to %s, which that plugin left in the page content.', 'rapls-sitemap' ),
-									'<code>&lt;!-- SITEMAP CONTENT REPLACE POINT --&gt;</code>'
-								);
-								?>
-							</p>
-						</td>
-					</tr>
-				</table>
-
-				<?php
-				$this->render_ordering( $name, $settings );
-				$this->render_design( $name, $settings );
-				$this->render_advanced( $name, $settings );
-				submit_button();
-				?>
+				<?php submit_button(); ?>
 			</form>
 
 			<?php
@@ -876,14 +407,640 @@ final class SettingsPage {
 	}
 
 	/**
+	 * The two tabs.
+	 *
+	 * Radio buttons and a sibling selector, for the same reason the sections
+	 * collapse that way: no build step, and no state to keep in sync. They sit
+	 * outside the form, so nothing about which tab is open is ever posted, and
+	 * the hidden pane still submits every field it holds — a browser omits a
+	 * disabled control, not a hidden one, which is what makes one Save button
+	 * correct for both tabs.
+	 */
+	private static function tabs(): void {
+		?>
+		<input type="radio" class="rapls-tab-input" name="rapls-sitemap-tab" id="rapls-sitemap-tab-basic" checked />
+		<input type="radio" class="rapls-tab-input" name="rapls-sitemap-tab" id="rapls-sitemap-tab-advanced" />
+		<h2 class="nav-tab-wrapper rapls-tabs">
+			<label class="nav-tab rapls-tab--basic" for="rapls-sitemap-tab-basic">
+				<?php echo esc_html__( 'Basic', 'rapls-sitemap' ); ?>
+			</label>
+			<label class="nav-tab rapls-tab--advanced" for="rapls-sitemap-tab-advanced">
+				<?php echo esc_html__( 'Advanced', 'rapls-sitemap' ); ?>
+			</label>
+		</h2>
+		<?php
+	}
+
+	/**
+	 * The Basic tab.
+	 *
+	 * The eight answers a sitemap cannot be built without, in the order
+	 * somebody gives them: what to list, how deep, what to leave out, what it
+	 * looks like. A site that comes from PS Auto Sitemap finds every setting
+	 * that plugin had on this one screen, and nothing else.
+	 *
+	 * @param string              $name     Option name.
+	 * @param array<string,mixed> $settings Effective settings.
+	 */
+	private function render_basic( string $name, array $settings ): void {
+		?>
+		<p class="description rapls-pane__lead">
+			<?php echo esc_html__( 'Every setting here has a working default, so choosing what to list is enough to finish. Everything else lives under Advanced.', 'rapls-sitemap' ); ?>
+		</p>
+
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row">
+					<label for="rapls-sitemap-source"><?php echo esc_html__( 'What to list', 'rapls-sitemap' ); ?></label>
+				</th>
+				<td>
+					<select id="rapls-sitemap-source" name="<?php echo esc_attr( $name . '[source]' ); ?>">
+						<?php foreach ( self::sources() as $slug => $text ) : ?>
+							<option value="<?php echo esc_attr( $slug ); ?>" <?php selected( $settings['source'], $slug ); ?>>
+								<?php echo esc_html( $text ); ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+					<p class="description">
+						<?php echo esc_html__( 'The author and archive listings are built from who published and when, so the other settings reach them only where they make sense: both take the entry cap, the exclusions and the design, and the archive listing takes the publication window as well. Ordering and grouping belong to the entries, which those two do not list. Both are derived from posts, whatever this sitemap lists — a date archive shows posts, so a year taken from pages would link somewhere empty.', 'rapls-sitemap' ); ?>
+					</p>
+					<p>
+						<label>
+							<?php echo esc_html__( 'Menu', 'rapls-sitemap' ); ?>
+							<select name="<?php echo esc_attr( $name . '[menu]' ); ?>">
+								<option value=""><?php echo esc_html__( '— Select —', 'rapls-sitemap' ); ?></option>
+								<?php foreach ( self::available_menus() as $menu ) : ?>
+									<option value="<?php echo esc_attr( (string) $menu->term_id ); ?>" <?php selected( (string) $settings['menu'], (string) $menu->term_id ); ?>>
+										<?php echo esc_html( $menu->name ); ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+						</label>
+					</p>
+					<p class="description">
+						<?php echo esc_html__( 'A menu is listed exactly as it was arranged, with its own labels — the order here is a decision somebody made, so it is not re-sorted. Only the exclusions, the depth limit and the entry cap apply to it.', 'rapls-sitemap' ); ?>
+					</p>
+					<label style="display:block">
+						<input type="checkbox" value="1"
+							name="<?php echo esc_attr( $name . '[menu_headings]' ); ?>"
+							<?php checked( ! empty( $settings['menu_headings'] ) ); ?> />
+						<?php echo esc_html__( 'Print items with no destination as headings', 'rapls-sitemap' ); ?>
+					</label>
+					<p class="description">
+						<?php echo esc_html__( 'A menu item whose link is "#" holds open a dropdown. In a table of contents it is a link that goes nowhere, so its label is printed as plain text instead.', 'rapls-sitemap' ); ?>
+					</p>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row"><?php echo esc_html__( 'Content to include', 'rapls-sitemap' ); ?></th>
+				<td>
+					<?php $this->post_type_checkboxes( $name, $settings ); ?>
+					<p class="description">
+						<?php echo esc_html__( 'The number sets the output order — the lowest is listed first.', 'rapls-sitemap' ); ?>
+					</p>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row">
+					<label for="rapls-sitemap-depth"><?php echo esc_html__( 'Maximum depth', 'rapls-sitemap' ); ?></label>
+				</th>
+				<td>
+					<input type="number" min="0" max="10" step="1"
+						id="rapls-sitemap-depth"
+						name="<?php echo esc_attr( $name . '[depth]' ); ?>"
+						value="<?php echo esc_attr( (string) $settings['depth'] ); ?>" />
+					<p class="description"><?php echo esc_html__( '0 shows every level.', 'rapls-sitemap' ); ?></p>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row"><?php echo esc_html__( 'Home link', 'rapls-sitemap' ); ?></th>
+				<td>
+					<label>
+						<input type="checkbox" value="1"
+							name="<?php echo esc_attr( $name . '[show_home]' ); ?>"
+							<?php checked( ! empty( $settings['show_home'] ) ); ?> />
+						<?php echo esc_html__( 'Show a link to the front page first', 'rapls-sitemap' ); ?>
+					</label>
+					<p>
+						<input type="text" class="regular-text"
+							name="<?php echo esc_attr( $name . '[home_label]' ); ?>"
+							value="<?php echo esc_attr( (string) $settings['home_label'] ); ?>"
+							placeholder="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" />
+					</p>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row">
+					<label for="rapls-sitemap-exclude-ids"><?php echo esc_html__( 'Exclude post IDs', 'rapls-sitemap' ); ?></label>
+				</th>
+				<td>
+					<input type="text" class="regular-text"
+						id="rapls-sitemap-exclude-ids"
+						name="<?php echo esc_attr( $name . '[exclude_ids]' ); ?>"
+						value="<?php echo esc_attr( implode( ', ', (array) $settings['exclude_ids'] ) ); ?>" />
+					<p class="description"><?php echo esc_html__( 'Comma separated. Children of an excluded page are excluded too.', 'rapls-sitemap' ); ?></p>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row">
+					<label for="rapls-sitemap-exclude-terms"><?php echo esc_html__( 'Exclude category IDs', 'rapls-sitemap' ); ?></label>
+				</th>
+				<td>
+					<input type="text" class="regular-text"
+						id="rapls-sitemap-exclude-terms"
+						name="<?php echo esc_attr( $name . '[exclude_terms]' ); ?>"
+						value="<?php echo esc_attr( implode( ', ', (array) $settings['exclude_terms'] ) ); ?>" />
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row">
+					<label for="rapls-sitemap-design"><?php echo esc_html__( 'Design', 'rapls-sitemap' ); ?></label>
+				</th>
+				<td>
+					<select id="rapls-sitemap-design" name="<?php echo esc_attr( $name . '[design]' ); ?>">
+						<?php foreach ( self::designs() as $slug => $label ) : ?>
+							<option value="<?php echo esc_attr( $slug ); ?>" <?php selected( $settings['design'], $slug ); ?>>
+								<?php echo esc_html( $label ); ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+					<p>
+						<label>
+							<input type="checkbox" value="1"
+								name="<?php echo esc_attr( $name . '[load_styles]' ); ?>"
+								<?php checked( ! empty( $settings['load_styles'] ) ); ?> />
+							<?php echo esc_html__( 'Load the bundled stylesheet', 'rapls-sitemap' ); ?>
+						</label>
+					</p>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row">
+					<label for="rapls-sitemap-cache"><?php echo esc_html__( 'Cache lifetime', 'rapls-sitemap' ); ?></label>
+				</th>
+				<td>
+					<input type="number" min="0" step="60"
+						id="rapls-sitemap-cache"
+						name="<?php echo esc_attr( $name . '[cache_ttl]' ); ?>"
+						value="<?php echo esc_attr( (string) $settings['cache_ttl'] ); ?>" />
+					<p class="description">
+						<?php echo esc_html__( 'Seconds. The cache is cleared automatically when content changes; 0 disables it.', 'rapls-sitemap' ); ?>
+					</p>
+				</td>
+			</tr>
+		</table>
+		<?php
+	}
+
+	/**
+	 * The Advanced tab.
+	 *
+	 * Everything here is optional, which is why it is a tab rather than more of
+	 * the screen above: a long form reads as a list of decisions to make. Each
+	 * panel opens itself when it holds something other than a default, so a
+	 * setting somebody deliberately made is never behind a closed panel.
+	 *
+	 * @param string              $name     Option name.
+	 * @param array<string,mixed> $settings Effective settings.
+	 */
+	private function render_more( string $name, array $settings ): void {
+		?>
+		<p class="description rapls-pane__lead">
+			<?php echo esc_html__( 'Everything here is optional. A panel opens itself when it holds something other than a default, so all of them closed means nothing on this tab has been changed.', 'rapls-sitemap' ); ?>
+		</p>
+		<?php
+		self::open_section(
+			'composition',
+			__( 'Composition', 'rapls-sitemap' ),
+			__( 'several lists in one placement, or one branch of the site', 'rapls-sitemap' ),
+			self::configured( $settings, array( 'sections', 'child_of' ) )
+		);
+		?>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><?php echo esc_html__( 'Sections in one sitemap', 'rapls-sitemap' ); ?></th>
+				<td>
+					<?php $this->section_checkboxes( $name, $settings ); ?>
+					<p class="description">
+						<?php echo esc_html__( 'Tick nothing for an ordinary sitemap built from the single source chosen under "What to list". Tick two or more and one placement lists each of them in turn, under its own heading — which is the shape most sitemap pages have.', 'rapls-sitemap' ); ?>
+					</p>
+					<p class="description">
+						<?php echo esc_html__( 'The number sets the output order — the lowest is listed first. The other settings apply inside every section that lists content; the author and archive sections take the exclusions, the cap and the design, but not the ordering or grouping that belong to entries they do not list.', 'rapls-sitemap' ); ?>
+					</p>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row">
+					<label for="rapls-sitemap-child-of"><?php echo esc_html__( 'Limit to one branch', 'rapls-sitemap' ); ?></label>
+				</th>
+				<td>
+					<input type="number" min="0" step="1" id="rapls-sitemap-child-of"
+						name="<?php echo esc_attr( $name . '[child_of]' ); ?>"
+						value="<?php echo esc_attr( (string) $settings['child_of'] ); ?>" />
+					<p class="description">
+						<?php echo esc_html__( 'A page ID. Only the pages filed under it are listed, and the page itself is not. 0 lists the whole site. Post types with no hierarchy are left out entirely, since a page branch is not a scope they have.', 'rapls-sitemap' ); ?>
+					</p>
+					<p class="description">
+						<?php
+						printf(
+							/* translators: 1: an example shortcode. 2: another example shortcode. */
+							esc_html__( 'In a shortcode this also takes %1$s, for a section landing page listing its own children without naming an ID that differs between staging and live, and %2$s, which lists the page\'s siblings instead — the same template on every page of a section then shows the reader where they are inside it.', 'rapls-sitemap' ),
+							'<code>child_of="current"</code>',
+							'<code>child_of="parent"</code>'
+						);
+						?>
+					</p>
+				</td>
+			</tr>
+		</table>
+		<?php
+		self::close_section();
+
+		self::open_section(
+			'filters',
+			__( 'What to leave out', 'rapls-sitemap' ),
+			__( 'a publication window, people, protected and noindexed entries', 'rapls-sitemap' ),
+			self::configured( $settings, array( 'date_after', 'date_before', 'exclude_users', 'author_roles', 'exclude_current', 'exclude_protected', 'exclude_noindex', 'exclude_types', 'exclude_tax' ) )
+		);
+		?>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><?php echo esc_html__( 'Published between', 'rapls-sitemap' ); ?></th>
+				<td>
+					<input type="text" class="regular-text" style="width:9em"
+						name="<?php echo esc_attr( $name . '[date_after]' ); ?>"
+						value="<?php echo esc_attr( (string) $settings['date_after'] ); ?>"
+						placeholder="2026-04-01" />
+					<span aria-hidden="true">–</span>
+					<input type="text" class="regular-text" style="width:9em"
+						name="<?php echo esc_attr( $name . '[date_before]' ); ?>"
+						value="<?php echo esc_attr( (string) $settings['date_before'] ); ?>"
+						placeholder="2027-03-31" />
+					<p class="description">
+						<?php echo esc_html__( 'Both ends are included, and either can stand on its own. Leave both empty to list everything. A school or a council listing one year at a time is what this is for.', 'rapls-sitemap' ); ?>
+					</p>
+					<p class="description">
+						<?php echo esc_html__( 'YYYY-MM-DD, YYYY-MM or YYYY. Anything else is read as no limit rather than as a date nobody meant — a typo widens the listing instead of emptying it.', 'rapls-sitemap' ); ?>
+					</p>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row">
+					<label for="rapls-sitemap-exclude-users"><?php echo esc_html__( 'Exclude user IDs', 'rapls-sitemap' ); ?></label>
+				</th>
+				<td>
+					<input type="text" class="regular-text"
+						id="rapls-sitemap-exclude-users"
+						name="<?php echo esc_attr( $name . '[exclude_users]' ); ?>"
+						value="<?php echo esc_attr( implode( ', ', (array) $settings['exclude_users'] ) ); ?>" />
+					<p class="description">
+						<?php echo esc_html__( 'The author listing only. The account WordPress was installed with, or the agency that built the site, is on the user list without being anyone a reader should be sent to.', 'rapls-sitemap' ); ?>
+					</p>
+					<?php $this->role_checkboxes( $name, $settings ); ?>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row"><?php echo esc_html__( 'Also leave out', 'rapls-sitemap' ); ?></th>
+				<td>
+					<label style="display:block">
+						<input type="checkbox" value="1"
+							name="<?php echo esc_attr( $name . '[exclude_current]' ); ?>"
+							<?php checked( ! empty( $settings['exclude_current'] ) ); ?> />
+						<?php echo esc_html__( 'The page holding the sitemap, from its own list', 'rapls-sitemap' ); ?>
+					</label>
+					<label style="display:block">
+						<input type="checkbox" value="1"
+							name="<?php echo esc_attr( $name . '[exclude_protected]' ); ?>"
+							<?php checked( ! empty( $settings['exclude_protected'] ) ); ?> />
+						<?php echo esc_html__( 'Password-protected entries', 'rapls-sitemap' ); ?>
+					</label>
+					<label style="display:block">
+						<input type="checkbox" value="1"
+							name="<?php echo esc_attr( $name . '[exclude_noindex]' ); ?>"
+							<?php checked( ! empty( $settings['exclude_noindex'] ) ); ?> />
+						<?php echo esc_html__( 'Entries individually marked noindex', 'rapls-sitemap' ); ?>
+					</label>
+					<p class="description">
+						<?php echo esc_html__( 'Yoast SEO, Rank Math, SEO SIMPLE PACK, SEOPress, The SEO Framework, All in One SEO and the Cocoon theme are read directly. WordPress records nothing about noindex itself, so anything else needs the rapls_sitemap/is_noindex filter. Reading the setting costs one extra query per render, and a second one where All in One SEO is active — it keeps this in a table of its own rather than in post meta.', 'rapls-sitemap' ); ?>
+					</p>
+					<p class="description">
+						<?php echo esc_html__( 'What is read is the setting on the entry itself. A default that applies to a whole post type, taxonomy or archive is not: those listings appear only because you chose them on this screen, and an SEO plugin\'s default — Yoast noindexes date archives out of the box — would otherwise empty a list you asked for.', 'rapls-sitemap' ); ?>
+					</p>
+					<p class="description">
+						<?php echo esc_html__( 'Categories, tags and authors are read too. A category is only dropped where the category itself is what is listed — where entries are grouped under category headings, dropping a heading would take indexable entries with it, so switch off "Link section and category headings" instead. Those two questions have filters of their own: rapls_sitemap/is_term_noindex and rapls_sitemap/is_user_noindex.', 'rapls-sitemap' ); ?>
+					</p>
+
+					<?php $this->exclusion_checkboxes( $name, $settings ); ?>
+				</td>
+			</tr>
+		</table>
+		<?php
+		self::close_section();
+
+		self::open_section(
+			'grouping',
+			__( 'Grouping by category', 'rapls-sitemap' ),
+			__( 'category headings, nesting, or the categories on their own', 'rapls-sitemap' ),
+			self::configured( $settings, array( 'group_by_term', 'nest_terms', 'duplicate_in_terms', 'taxonomy', 'term_mode' ) )
+		);
+		?>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><?php echo esc_html__( 'Categories', 'rapls-sitemap' ); ?></th>
+				<td>
+					<label>
+						<input type="checkbox" value="1"
+							name="<?php echo esc_attr( $name . '[group_by_term]' ); ?>"
+							<?php checked( ! empty( $settings['group_by_term'] ) ); ?> />
+						<?php echo esc_html__( 'Group posts under their category headings', 'rapls-sitemap' ); ?>
+					</label>
+					<p>
+						<label>
+							<input type="checkbox" value="1"
+								name="<?php echo esc_attr( $name . '[nest_terms]' ); ?>"
+								<?php checked( ! empty( $settings['nest_terms'] ) ); ?> />
+							<?php echo esc_html__( 'Nest child categories inside their parents', 'rapls-sitemap' ); ?>
+						</label>
+					</p>
+					<p>
+						<label>
+							<input type="checkbox" value="1"
+								name="<?php echo esc_attr( $name . '[duplicate_in_terms]' ); ?>"
+								<?php checked( ! empty( $settings['duplicate_in_terms'] ) ); ?> />
+							<?php echo esc_html__( 'List a post under every category it belongs to', 'rapls-sitemap' ); ?>
+						</label>
+						<span class="description">
+							<?php echo esc_html__( 'Off lists it once, under the first category that claims it.', 'rapls-sitemap' ); ?>
+						</span>
+					</p>
+					<p>
+						<label>
+							<?php echo esc_html__( 'Group by', 'rapls-sitemap' ); ?>
+							<select name="<?php echo esc_attr( $name . '[taxonomy]' ); ?>">
+								<option value="" <?php selected( $settings['taxonomy'], '' ); ?>>
+									<?php echo esc_html__( 'Pick automatically', 'rapls-sitemap' ); ?>
+								</option>
+								<?php foreach ( self::available_taxonomies() as $taxonomy ) : ?>
+									<option value="<?php echo esc_attr( $taxonomy->name ); ?>" <?php selected( $settings['taxonomy'], $taxonomy->name ); ?>>
+										<?php echo esc_html( $taxonomy->labels->name ); ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+						</label>
+						<span class="description">
+							<?php echo esc_html__( 'Automatic picks the first hierarchical taxonomy, which is Categories. A flat one such as Tags has to be chosen here.', 'rapls-sitemap' ); ?>
+						</span>
+					</p>
+					<fieldset style="margin-top:0.5em">
+						<label style="display:block">
+							<input type="radio" value="posts"
+								name="<?php echo esc_attr( $name . '[term_mode]' ); ?>"
+								<?php checked( 'posts', $settings['term_mode'] ); ?> />
+							<?php echo esc_html__( 'List the posts under each category', 'rapls-sitemap' ); ?>
+						</label>
+						<label style="display:block">
+							<input type="radio" value="terms_only"
+								name="<?php echo esc_attr( $name . '[term_mode]' ); ?>"
+								<?php checked( 'terms_only', $settings['term_mode'] ); ?> />
+							<?php echo esc_html__( 'List the categories only', 'rapls-sitemap' ); ?>
+						</label>
+					</fieldset>
+				</td>
+			</tr>
+		</table>
+		<?php
+		self::close_section();
+
+		self::open_section(
+			'display',
+			__( 'What each entry shows', 'rapls-sitemap' ),
+			__( 'dates, excerpts, counts, headings, nofollow', 'rapls-sitemap' ),
+			self::configured( $settings, array( 'show_date', 'date_format', 'show_excerpt', 'excerpt_length', 'show_count', 'section_headings', 'list_type', 'link_headings', 'link_parents', 'heading_level', 'nofollow' ) )
+		);
+		?>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><?php echo esc_html__( 'Show with each entry', 'rapls-sitemap' ); ?></th>
+				<td>
+					<label style="display:block">
+						<input type="checkbox" value="1"
+							name="<?php echo esc_attr( $name . '[show_date]' ); ?>"
+							<?php checked( ! empty( $settings['show_date'] ) ); ?> />
+						<?php echo esc_html__( 'Published date', 'rapls-sitemap' ); ?>
+						<input type="text" style="width:9em;margin-left:0.5em"
+							name="<?php echo esc_attr( $name . '[date_format]' ); ?>"
+							value="<?php echo esc_attr( (string) $settings['date_format'] ); ?>"
+							placeholder="<?php echo esc_attr( (string) get_option( 'date_format' ) ); ?>"
+							aria-label="<?php echo esc_attr__( 'Date format', 'rapls-sitemap' ); ?>" />
+						<span class="description"><?php echo esc_html__( 'Empty uses the site’s own date format.', 'rapls-sitemap' ); ?></span>
+					</label>
+
+					<label style="display:block">
+						<input type="checkbox" value="1"
+							name="<?php echo esc_attr( $name . '[show_excerpt]' ); ?>"
+							<?php checked( ! empty( $settings['show_excerpt'] ) ); ?> />
+						<?php echo esc_html__( 'Excerpt', 'rapls-sitemap' ); ?>
+						<input type="number" min="1" max="200" style="width:6em;margin-left:0.5em"
+							name="<?php echo esc_attr( $name . '[excerpt_length]' ); ?>"
+							value="<?php echo esc_attr( (string) $settings['excerpt_length'] ); ?>"
+							aria-label="<?php echo esc_attr__( 'Excerpt length in words', 'rapls-sitemap' ); ?>" />
+						<span class="description"><?php echo esc_html__( 'words', 'rapls-sitemap' ); ?></span>
+					</label>
+
+					<label style="display:block">
+						<input type="checkbox" value="1"
+							name="<?php echo esc_attr( $name . '[show_count]' ); ?>"
+							<?php checked( ! empty( $settings['show_count'] ) ); ?> />
+						<?php echo esc_html__( 'Entry count beside each category', 'rapls-sitemap' ); ?>
+					</label>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row"><?php echo esc_html__( 'Structure', 'rapls-sitemap' ); ?></th>
+				<td>
+					<label style="display:block">
+						<input type="checkbox" value="1"
+							name="<?php echo esc_attr( $name . '[section_headings]' ); ?>"
+							<?php checked( ! empty( $settings['section_headings'] ) ); ?> />
+						<?php echo esc_html__( 'Put a heading above each list', 'rapls-sitemap' ); ?>
+					</label>
+					<p class="description">
+						<?php echo esc_html__( 'Applies both to the post types listed and to the sections composed. Only when more than one is listed — a single list needs no label to tell it apart.', 'rapls-sitemap' ); ?>
+					</p>
+					<p>
+						<label>
+							<?php echo esc_html__( 'List element', 'rapls-sitemap' ); ?>
+							<select name="<?php echo esc_attr( $name . '[list_type]' ); ?>">
+								<option value="ul" <?php selected( $settings['list_type'], 'ul' ); ?>><?php echo esc_html__( 'Unordered (ul)', 'rapls-sitemap' ); ?></option>
+								<option value="ol" <?php selected( $settings['list_type'], 'ol' ); ?>><?php echo esc_html__( 'Ordered (ol)', 'rapls-sitemap' ); ?></option>
+							</select>
+						</label>
+					</p>
+					<p>
+						<label>
+							<input type="checkbox" value="1"
+								name="<?php echo esc_attr( $name . '[link_headings]' ); ?>"
+								<?php checked( ! empty( $settings['link_headings'] ) ); ?> />
+							<?php echo esc_html__( 'Link section and category headings to their archives', 'rapls-sitemap' ); ?>
+						</label>
+						<span class="description">
+							<?php echo esc_html__( 'Off leaves the text in place without linking it, for archives that are thin or noindexed.', 'rapls-sitemap' ); ?>
+						</span>
+					</p>
+					<p>
+						<label>
+							<input type="checkbox" value="1"
+								name="<?php echo esc_attr( $name . '[link_parents]' ); ?>"
+								<?php checked( ! empty( $settings['link_parents'] ) ); ?> />
+							<?php echo esc_html__( 'Link entries that have entries under them', 'rapls-sitemap' ); ?>
+						</label>
+						<span class="description">
+							<?php echo esc_html__( 'Off prints them as headings instead. For a section page that exists only to hold its children, the link goes to a page nobody wants to read.', 'rapls-sitemap' ); ?>
+						</span>
+					</p>
+					<p>
+						<label>
+							<?php echo esc_html__( 'Headings', 'rapls-sitemap' ); ?>
+							<select name="<?php echo esc_attr( $name . '[heading_level]' ); ?>">
+								<option value="" <?php selected( $settings['heading_level'], '' ); ?>>
+									<?php echo esc_html__( 'Plain text', 'rapls-sitemap' ); ?>
+								</option>
+								<?php foreach ( array( 'h2', 'h3', 'h4', 'h5', 'h6' ) as $level ) : ?>
+									<option value="<?php echo esc_attr( $level ); ?>" <?php selected( $settings['heading_level'], $level ); ?>>
+										<?php echo esc_html( strtoupper( $level ) ); ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+						</label>
+					</p>
+					<p class="description">
+						<?php echo esc_html__( 'Section and category labels can be real headings, which is how a screen reader user moves through the page. Pick the level that fits under whatever heading the page already has above the sitemap — a wrong level is a broken outline, so this stays plain text until you choose.', 'rapls-sitemap' ); ?>
+					</p>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row"><?php echo esc_html__( 'Links', 'rapls-sitemap' ); ?></th>
+				<td>
+					<label>
+						<input type="checkbox" value="1"
+							name="<?php echo esc_attr( $name . '[nofollow]' ); ?>"
+							<?php checked( ! empty( $settings['nofollow'] ) ); ?> />
+						<?php echo esc_html__( 'Add rel="nofollow" to every link', 'rapls-sitemap' ); ?>
+					</label>
+				</td>
+			</tr>
+		</table>
+		<?php
+		self::close_section();
+
+		$this->render_ordering( $name, $settings );
+		$this->render_design( $name, $settings );
+		$this->render_custom_css( $name, $settings );
+
+		self::open_section(
+			'migration',
+			__( 'Coming from another plugin', 'rapls-sitemap' ),
+			__( 'answer to WP Sitemap Page or PS Auto Sitemap as well', 'rapls-sitemap' ),
+			self::configured( $settings, array( 'legacy_shortcode', 'legacy_marker' ) )
+		);
+		?>
+		<table class="form-table" role="presentation">
+			<tr>
+				<th scope="row"><?php echo esc_html__( 'Migration', 'rapls-sitemap' ); ?></th>
+				<td>
+					<p class="description" style="margin-bottom:0.75em">
+						<?php echo esc_html__( 'Both are off until you switch them on. Turn on the one matching the plugin you are coming from, and the sitemap page keeps working with nothing to edit.', 'rapls-sitemap' ); ?>
+					</p>
+
+					<label>
+						<input type="checkbox" value="1"
+							name="<?php echo esc_attr( $name . '[legacy_shortcode]' ); ?>"
+							<?php checked( ! empty( $settings['legacy_shortcode'] ) ); ?> />
+						<?php echo esc_html__( 'Also render where a WP Sitemap Page shortcode appears', 'rapls-sitemap' ); ?>
+					</label>
+					<p class="description" style="margin-bottom:0.75em">
+						<?php
+						printf(
+							/* translators: %s: the shortcode used by WP Sitemap Page. */
+							esc_html__( 'Answers to %s, including its only="..." attribute. Ignored while WP Sitemap Page itself is active.', 'rapls-sitemap' ),
+							'<code>[wp_sitemap_page]</code>'
+						);
+						?>
+					</p>
+
+					<label>
+						<input type="checkbox" value="1"
+							name="<?php echo esc_attr( $name . '[legacy_marker]' ); ?>"
+							<?php checked( ! empty( $settings['legacy_marker'] ) ); ?> />
+						<?php echo esc_html__( 'Also render where a PS Auto Sitemap comment marker appears', 'rapls-sitemap' ); ?>
+					</label>
+					<p class="description">
+						<?php
+						printf(
+							/* translators: %s: the HTML comment used by PS Auto Sitemap. */
+							esc_html__( 'Answers to %s, which that plugin left in the page content.', 'rapls-sitemap' ),
+							'<code>&lt;!-- SITEMAP CONTENT REPLACE POINT --&gt;</code>'
+						);
+						?>
+					</p>
+				</td>
+			</tr>
+		</table>
+		<?php
+		self::close_section();
+	}
+
+	/**
+	 * Has anything in this group of settings been changed from its default?
+	 *
+	 * Decides whether a panel opens itself. The comparison errs towards open:
+	 * two arrays holding the same values in a different order count as changed,
+	 * which opens a panel that did not need it rather than hiding a setting
+	 * somebody deliberately made — and a hidden setting is the one failure a
+	 * collapsing settings screen must not have.
+	 *
+	 * @param array<string,mixed> $settings Effective settings.
+	 * @param string[]            $keys     The keys that panel holds.
+	 * @return bool
+	 */
+	private static function configured( array $settings, array $keys ): bool {
+		$defaults = Settings::defaults();
+
+		foreach ( $keys as $key ) {
+			if ( array_key_exists( $key, $defaults ) && $settings[ $key ] !== $defaults[ $key ] ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * The ordering section.
 	 *
 	 * @param string              $name     Option name.
 	 * @param array<string,mixed> $settings Effective settings.
 	 */
 	private function render_ordering( string $name, array $settings ): void {
+		self::open_section(
+			'order',
+			__( 'Order', 'rapls-sitemap' ),
+			__( 'how entries and categories are sorted, the entry cap, custom fields', 'rapls-sitemap' ),
+			self::configured( $settings, array( 'orderby', 'order', 'term_orderby', 'term_order', 'max_entries', 'max_per_term', 'offset', 'sort_meta_key' ) )
+		);
 		?>
-		<h2><?php echo esc_html__( 'Order', 'rapls-sitemap' ); ?></h2>
 		<table class="form-table" role="presentation">
 			<tr>
 				<th scope="row">
@@ -1034,6 +1191,7 @@ final class SettingsPage {
 			</tr>
 		</table>
 		<?php
+		self::close_section();
 	}
 
 	/**
@@ -1057,7 +1215,7 @@ final class SettingsPage {
 
 		?>
 		<p class="description">
-			<?php echo esc_html__( 'These sit on top of the design above. Leave a box empty to keep whatever the design already does.', 'rapls-sitemap' ); ?>
+			<?php echo esc_html__( 'These sit on top of the design chosen on the Basic tab. Leave a box empty to keep whatever the design already does.', 'rapls-sitemap' ); ?>
 		</p>
 
 		<table class="form-table" role="presentation">
@@ -1158,16 +1316,20 @@ final class SettingsPage {
 	}
 
 	/**
-	 * The advanced section.
+	 * The custom-CSS section.
+	 *
+	 * Named for what it holds rather than "advanced", which is now the tab it
+	 * sits in — every panel in there is advanced, so one of them carrying the
+	 * word says nothing.
 	 *
 	 * @param string              $name     Option name.
 	 * @param array<string,mixed> $settings Effective settings.
 	 */
-	private function render_advanced( string $name, array $settings ): void {
+	private function render_custom_css( string $name, array $settings ): void {
 		self::open_section(
-			'advanced',
-			__( 'Advanced', 'rapls-sitemap' ),
-			__( 'your own CSS', 'rapls-sitemap' ),
+			'custom-css',
+			__( 'Custom CSS', 'rapls-sitemap' ),
+			__( 'style rules of your own, printed after everything else', 'rapls-sitemap' ),
 			'' !== trim( (string) $settings['custom_css'] )
 		);
 		?>
@@ -1185,7 +1347,7 @@ final class SettingsPage {
 					<textarea id="rapls-sitemap-css" class="large-text code" rows="10" spellcheck="false"
 						name="<?php echo esc_attr( $name . '[custom_css]' ); ?>"><?php echo esc_textarea( (string) $settings['custom_css'] ); ?></textarea>
 					<p class="description">
-						<?php echo esc_html__( 'Printed with the sitemap, after everything above, so it wins. Scope your rules to .rapls-sitemap to avoid affecting the rest of the page.', 'rapls-sitemap' ); ?>
+						<?php echo esc_html__( 'Printed with the sitemap, after everything else, so it wins. Scope your rules to .rapls-sitemap to avoid affecting the rest of the page.', 'rapls-sitemap' ); ?>
 					</p>
 
 					<?php
@@ -1929,12 +2091,13 @@ final class SettingsPage {
 	 * @return \WP_Taxonomy[]
 	 */
 	private static function available_taxonomies(): array {
-		// Viewable, not merely public — the same question TreeBuilder asks. A
-		// taxonomy offered here and refused there is a box that does nothing.
+		// Viewable, not merely public, and asked through the same function the
+		// tree asks — see available_post_types() for why the candidate list is
+		// unfiltered.
 		$taxonomies = array_filter(
-			get_taxonomies( array( 'public' => true ), 'objects' ),
+			get_taxonomies( array(), 'objects' ),
 			static function ( $taxonomy ) {
-				return ! function_exists( 'is_taxonomy_viewable' ) || is_taxonomy_viewable( $taxonomy );
+				return TreeBuilder::is_listable_taxonomy( $taxonomy->name );
 			}
 		);
 
@@ -1952,10 +2115,18 @@ final class SettingsPage {
 	 * @return \WP_Post_Type[]
 	 */
 	private static function available_post_types(): array {
+		// The candidate list is unfiltered on purpose. Narrowing it to
+		// `public => true` first looks like a harmless pre-filter, but the two
+		// questions disagree in both directions: `public => true,
+		// publicly_queryable => false` is a type whose pages 404, and
+		// `public => false, publicly_queryable => true` is a type that works.
+		// Pre-filtering therefore hid a type the tree would happily list. The
+		// predicate is TreeBuilder's own, so the screen and the renderer cannot
+		// come to answer this differently.
 		$types = array_filter(
-			get_post_types( array( 'public' => true ), 'objects' ),
+			get_post_types( array(), 'objects' ),
 			static function ( $type ) {
-				return ! function_exists( 'is_post_type_viewable' ) || is_post_type_viewable( $type );
+				return TreeBuilder::is_listable_post_type( $type->name );
 			}
 		);
 		unset( $types['attachment'] );

@@ -63,6 +63,12 @@ foreach ( array( 'wp_footer', 'wp_head', 'admin_notices', 'all_admin_notices', '
 
 // Users are in here because the author listing is built from display names: a
 // rename would otherwise sit in the cache until it expired, twelve hours later.
+// The three role hooks are separate from `profile_update` because the author
+// listing can be limited by role and WP-CLI changes one without a profile save;
+// `wp_update_comment_count` is here because `comment_count` is an offered
+// ordering that changes without the post being touched. Each of these is a
+// door that nothing else in the list covers, which is why the list is asserted
+// rather than remembered.
 foreach (
 	array(
 		'save_post',
@@ -73,6 +79,10 @@ foreach (
 		'profile_update',
 		'user_register',
 		'deleted_user',
+		'set_user_role',
+		'add_user_role',
+		'remove_user_role',
+		'wp_update_comment_count',
 	) as $hook
 ) {
 	check( isset( $hooks[ $hook ] ), sprintf( 'the cache flushes on %s', $hook ) );

@@ -7,6 +7,77 @@
  * `name`, so it is a control for the eye only and never reaches the option.
  */
 
+/* --- tabs ---------------------------------------------------------------- */
+
+/*
+ * Two radio buttons and a sibling selector, for the same reasons the sections
+ * collapse that way. They sit outside the form, so which tab is open is never
+ * posted, and the pane that is out of view is hidden with `display` — which a
+ * browser still submits. That is what makes one Save button correct for both
+ * tabs: a hidden field posts, a disabled one does not.
+ */
+
+.rapls-tab-input {
+	/* Moved out of sight rather than `display: none`, which would drop it out of
+	   the tab order and leave the labels unreachable from the keyboard. */
+	border: 0;
+	clip-path: inset( 50% );
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
+
+.rapls-tabs {
+	margin-bottom: 1.5em;
+}
+
+/* The tabs float, so the bar has to contain them or its own border rides up. */
+.rapls-tabs::after {
+	clear: both;
+	content: "";
+	display: table;
+}
+
+.rapls-tabs .nav-tab {
+	cursor: pointer;
+}
+
+/* WordPress marks the current tab by adding `nav-tab-active` in PHP, which CSS
+   cannot do. These are that class's declarations, driven by the radio. */
+#rapls-sitemap-tab-basic:checked ~ .rapls-tabs .rapls-tab--basic,
+#rapls-sitemap-tab-advanced:checked ~ .rapls-tabs .rapls-tab--advanced {
+	background: #f0f0f1;
+	border-bottom: 1px solid #f0f0f1;
+	color: #000;
+}
+
+/* The control itself is out of sight, so focus has to show on its label or a
+   keyboard user cannot tell where they are. */
+#rapls-sitemap-tab-basic:focus-visible ~ .rapls-tabs .rapls-tab--basic,
+#rapls-sitemap-tab-advanced:focus-visible ~ .rapls-tabs .rapls-tab--advanced {
+	box-shadow: 0 0 0 2px #2271b1;
+	outline: 2px solid transparent;
+}
+
+#rapls-sitemap-tab-basic:checked ~ form .rapls-pane--advanced,
+#rapls-sitemap-tab-advanced:checked ~ form .rapls-pane--basic {
+	display: none;
+}
+
+.rapls-pane__lead {
+	margin: 0 0 0.5em;
+	max-width: 64em;
+}
+
+/* The first panel of a tab already has the tab bar above it. */
+.rapls-pane > .rapls-section:first-child {
+	margin-top: 1em;
+}
+
 /* --- collapsible sections ------------------------------------------------ */
 
 .rapls-section {

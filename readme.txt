@@ -24,6 +24,7 @@ It is a maintained replacement for **PS Auto Sitemap** (closed in 2022) and **WP
 
 * **One placement, the whole page.** Pages, posts, categories, authors and date archives can be listed one after another, each under its own heading, from a single shortcode — the shape most sitemap pages actually have.
 * **Your navigation, as your team arranged it.** List a WordPress menu in the menu's own order with the menu's own labels. On a site with hundreds of pages, "the routes we decided on" is often a better table of contents than "everything we have published".
+* **Simple to start, deep when you need it.** The settings screen opens on a **Basic** tab holding the eight decisions a sitemap cannot be built without — what to list, how deep, what to leave out, what it looks like. Everything else is one tab away under **Advanced**, in panels that open themselves when they hold something other than a default, so nothing you configured is ever hidden behind a closed one.
 * **Nothing is hidden quietly.** Where a list stops short of the content, it says so in the output. Caps, exclusions and truncation are always visible to the reader.
 * **28 designs, no images.** Every preset is pure CSS with no sprites and no icon font, so they inherit your theme's colours and survive a dark background.
 * **Built for large sites.** One query per post type — grouping posts under their categories adds none — a configurable entry cap on all three queries, and a render cache that clears itself when content changes, including when you change your permalink structure.
@@ -149,7 +150,7 @@ Learn more: [Plugin details](https://raplsworks.com/plugins/rapls-sitemap/) | [S
 = Migrating from another sitemap plugin =
 
 1. Activate this plugin and deactivate the old one.
-2. Open **Settings → Rapls Sitemap → Migration** and switch on the option matching the plugin you came from.
+2. Open **Settings → Rapls Sitemap → Advanced → Coming from another plugin** and switch on the option matching the plugin you came from.
 3. If you came from PS Auto Sitemap, use **Import from PS Auto Sitemap** at the foot of the screen to read its stored settings in.
 4. Check the page, then adjust anything the import could only approximate.
 
@@ -226,8 +227,8 @@ The sitemap is a labelled `nav` landmark, and section and category labels can be
 
 == Screenshots ==
 
-1. Choosing what to list. Several sections can be listed one after another from a single placement.
-2. 28 design presets, and the type, colour and bullet settings that layer on top of them.
+1. The Basic tab: what to list, how deep, what to leave out, and which of the 28 designs to use.
+2. The Advanced tab. Everything optional, in panels that open themselves when they hold something other than a default.
 3. The output: pages in their hierarchy, posts under their categories.
 4. The block sidebar. Every placement can list something different.
 

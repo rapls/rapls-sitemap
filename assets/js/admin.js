@@ -260,9 +260,56 @@
 		wrapper.appendChild( button );
 	}
 
+	/* --- remembering the open tab ------------------------------------------- */
+
+	var TAB_KEY = 'raplsSitemapTab';
+
+	/**
+	 * Reopen whichever tab was last chosen.
+	 *
+	 * The tabs themselves are radio buttons and CSS; this only remembers which
+	 * one. It matters because saving leaves the screen through options.php and
+	 * comes back on the first tab, so somebody who changed something under
+	 * Advanced would be shown the tab they were not on and have to go looking
+	 * for their own change to confirm it saved.
+	 *
+	 * Session storage rather than a URL parameter: which tab is open is not
+	 * worth putting in a link, and a bookmark that reopens a tab is not the
+	 * behaviour anybody asked for. Wrapped because a browser in private mode can
+	 * refuse storage outright, and the tabs still work without it.
+	 */
+	function bindTabs() {
+		var tabs = document.querySelectorAll( '.rapls-tab-input' );
+
+		if ( ! tabs.length ) {
+			return;
+		}
+
+		try {
+			var saved = window.sessionStorage.getItem( TAB_KEY );
+
+			if ( saved ) {
+				var open = document.getElementById( saved );
+
+				if ( open && open.classList.contains( 'rapls-tab-input' ) ) {
+					open.checked = true;
+				}
+			}
+		} catch ( e ) {} // eslint-disable-line no-empty
+
+		tabs.forEach( function ( tab ) {
+			tab.addEventListener( 'change', function () {
+				try {
+					window.sessionStorage.setItem( TAB_KEY, tab.id );
+				} catch ( e ) {} // eslint-disable-line no-empty
+			} );
+		} );
+	}
+
 	/* --- wiring -------------------------------------------------------------- */
 
 	function init() {
+		bindTabs();
 		document.querySelectorAll( '.rapls-field--color' ).forEach( bindColour );
 		document.querySelectorAll( '.rapls-field--emoji' ).forEach( bindEmoji );
 

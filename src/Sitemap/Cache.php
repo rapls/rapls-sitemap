@@ -45,6 +45,14 @@ final class Cache {
 		add_action( 'trashed_post', array( $this, 'flush' ) );
 		add_action( 'untrashed_post', array( $this, 'flush' ) );
 
+		// Comment counts are an offered ordering, and a comment changes one
+		// without touching the post — so nothing above fires. Unconditional
+		// rather than gated on the saved `orderby`, because a shortcode or a
+		// block can ask for that ordering on one placement and the site setting
+		// knows nothing about it. The cost is a salt rotation per comment,
+		// which is one option write.
+		add_action( 'wp_update_comment_count', array( $this, 'flush' ) );
+
 		// Term lifecycle — headings and the exclusion filter depend on terms.
 		add_action( 'created_term', array( $this, 'flush' ) );
 		add_action( 'edited_term', array( $this, 'flush' ) );

@@ -38,20 +38,31 @@ function taxonomy_exists( $taxonomy ) {
 	return in_array( $taxonomy, array( 'category', 'post_tag' ), true );
 }
 
-function fake_object( $name, $singular, $plural ) {
+function fake_object( $name, $singular, $plural, $public = true, $queryable = null ) {
 	$object                        = new stdClass();
 	$object->name                  = $name;
+	$object->public                = $public;
+	$object->publicly_queryable    = null === $queryable ? $public : $queryable;
 	$object->labels                = new stdClass();
 	$object->labels->name          = $plural;
 	$object->labels->singular_name = $singular;
 	return $object;
 }
 
+/**
+ * The two registrations where `public` and `publicly_queryable` disagree.
+ *
+ * `hidden` has public pages while `broken` does not, which is the reverse of
+ * what each one's `public` flag says — the whole reason the screen asks
+ * `is_post_type_viewable()` rather than filtering the candidates on `public`.
+ */
 function get_post_types( $args = array(), $output = 'names' ) {
 	return array(
 		'post'       => fake_object( 'post', 'Post', 'Posts' ),
 		'page'       => fake_object( 'page', 'Page', 'Pages' ),
 		'attachment' => fake_object( 'attachment', 'Media', 'Media' ),
+		'hidden'     => fake_object( 'hidden', 'Hidden', 'Hidden things', false, true ),
+		'broken'     => fake_object( 'broken', 'Broken', 'Broken things', true, false ),
 	);
 }
 
@@ -59,7 +70,28 @@ function get_taxonomies( $args = array(), $output = 'names' ) {
 	return array(
 		'category' => fake_object( 'category', 'Category', 'Categories' ),
 		'post_tag' => fake_object( 'post_tag', 'Tag', 'Tags' ),
+		'shelved'  => fake_object( 'shelved', 'Shelf', 'Shelves', true, false ),
 	);
+}
+
+function get_post_type_object( $name ) {
+	$types = get_post_types();
+	return isset( $types[ $name ] ) ? $types[ $name ] : null;
+}
+
+function get_taxonomy( $name ) {
+	$taxonomies = get_taxonomies();
+	return isset( $taxonomies[ $name ] ) ? $taxonomies[ $name ] : false;
+}
+
+function is_post_type_viewable( $type ) {
+	$object = is_object( $type ) ? $type : get_post_type_object( $type );
+	return null !== $object && ! empty( $object->publicly_queryable );
+}
+
+function is_taxonomy_viewable( $taxonomy ) {
+	$object = is_object( $taxonomy ) ? $taxonomy : get_taxonomy( $taxonomy );
+	return false !== $object && null !== $object && ! empty( $object->publicly_queryable );
 }
 
 function wp_get_nav_menus( $args = array() ) {
@@ -269,6 +301,54 @@ check( false !== strpos( $html, 'name="rapls_sitemap_settings[sections][]" value
 check( false !== strpos( $html, 'name="rapls_sitemap_settings[menu_headings]"' ), 'the placeholder-heading toggle is on the page' );
 check( false !== strpos( $html, 'name="rapls_sitemap_settings[author_roles][]" value="author"' ), 'the author-role filter lists the site\'s roles' );
 check( false !== strpos( $html, 'name="rapls_sitemap_settings[exclude_users]"' ), 'and user exclusions have a field' );
+
+// What the screen offers is what the tree will list — asked through the same
+// predicate, so neither a box that does nothing nor a missing box for a type
+// that works can appear. Both directions matter: filtering the candidates on
+// `public` first would get each of these two backwards.
+check( false !== strpos( $html, 'value="hidden"' ), 'a type that is publicly queryable is offered even with public => false' );
+check( false === strpos( $html, 'value="broken"' ), 'and one whose pages 404 is not offered even with public => true' );
+check( false === strpos( $html, 'value="shelved"' ), 'the same question is asked of taxonomies' );
+check( false === strpos( $html, 'value="attachment"' ), 'media is left out whatever its flags say' );
+
+/* --- the two tabs ------------------------------------------------------- */
+
+// The tabs are radio buttons and CSS, so the test for them is the markup that
+// CSS reaches: two inputs and two panes, one of each per tab.
+check( false !== strpos( $html, 'id="rapls-sitemap-tab-basic"' ), 'the Basic tab has its radio' );
+check( false !== strpos( $html, 'id="rapls-sitemap-tab-advanced"' ), 'and so does Advanced' );
+check( 1 === substr_count( $html, 'rapls-pane rapls-pane--basic' ), 'the Basic pane is on the page exactly once' );
+check( 1 === substr_count( $html, 'rapls-pane rapls-pane--advanced' ), 'and so is the Advanced pane' );
+
+// The radios must sit outside the form: inside it they would post a value the
+// option knows nothing about, and the `~ form` selector that hides a pane
+// could not reach across.
+$before_form = substr( $html, 0, (int) strpos( $html, '<form ' ) );
+check( false !== strpos( $before_form, 'rapls-tab-input' ), 'and both sit outside the form, so neither posts' );
+
+// This is the check the split exists to keep honest. Moving eighteen rows into
+// two panes is exactly the edit that loses one silently: the screen still
+// renders, still saves, and one setting is simply no longer reachable.
+$no_control = array(
+	// Written by Settings::for_request() from `exclude_current`, never by a
+	// human — see the note on cascading in TreeBuilder::nest().
+	'exclude_self',
+	// Posted as `style[<token>_value]` + `style[<token>_unit]` pairs, which the
+	// split-length assertion above covers.
+	'style',
+);
+
+$missing = array();
+foreach ( array_keys( Settings::defaults() ) as $key ) {
+	if ( in_array( $key, $no_control, true ) ) {
+		continue;
+	}
+	if ( false === strpos( $html, 'rapls_sitemap_settings[' . $key . ']' ) ) {
+		$missing[] = $key;
+	}
+}
+
+check( array() === $missing, 'every setting still has a control somewhere on the screen', implode( ', ', $missing ) );
 
 // Sections nest, so counting a closing pair proves nothing. What matters is
 // that the page's divs balance overall — an unclosed section would swallow
