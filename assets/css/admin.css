@@ -1,10 +1,11 @@
 /*
  * Settings screen styling. Loaded only on this plugin's own screen.
  *
- * The collapsing is done with a checkbox and a sibling selector rather than
- * JavaScript — the family ships no build toolchain, and a disclosure widget is
- * one of the few things CSS genuinely does on its own. The checkbox carries no
- * `name`, so it is a control for the eye only and never reaches the option.
+ * Neither the tabs nor the collapsing needs JavaScript — the family ships no
+ * build toolchain, and both are things the platform already does. The panels
+ * are `<details>`, which brings its own role and keyboard handling; the tabs
+ * are two radio buttons outside the form, so nothing about which one is open
+ * ever reaches the option. Everything below is appearance.
  */
 
 /* --- tabs ---------------------------------------------------------------- */
@@ -80,41 +81,80 @@
 
 /* --- collapsible sections ------------------------------------------------ */
 
+/*
+ * `<details>` and `<summary>`, not a checkbox. A checkbox on a settings form
+ * reads as "on or off" to everybody who has ever used one, and eight of them
+ * down a tab read as eight more things to decide. A chevron reads as "there is
+ * more under here" and nothing else. The element also brings its own role and
+ * its own keyboard handling, neither of which had to be built.
+ */
+
 .rapls-section {
 	margin-top: 2em;
 }
 
-.rapls-section > .rapls-toggle {
-	margin: 0 0.4em 0 0;
-	vertical-align: middle;
+.rapls-section__summary {
+	cursor: pointer;
+	/* Both are needed: the standard property, and WebKit's own triangle. */
+	list-style: none;
+	padding: 0.15em 0 0.15em 1.5em;
+	position: relative;
+}
+
+.rapls-section__summary::-webkit-details-marker {
+	display: none;
+}
+
+/* Two borders of a square, rotated — no glyph, no font, and it takes the text
+   colour with it. */
+.rapls-section__summary::before {
+	border-bottom: 2px solid currentColor;
+	border-right: 2px solid currentColor;
+	content: "";
+	height: 0.42em;
+	left: 0.3em;
+	position: absolute;
+	top: 0.62em;
+	transform: rotate(-45deg);
+	width: 0.42em;
+}
+
+.rapls-section[open] > .rapls-section__summary::before {
+	top: 0.5em;
+	transform: rotate(45deg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.rapls-section__summary::before {
+		transition: transform 120ms ease;
+	}
+}
+
+/* The summary is what takes focus, so it is what has to show it. */
+.rapls-section__summary:focus-visible {
+	border-radius: 2px;
+	box-shadow: 0 0 0 2px #2271b1;
+	outline: 2px solid transparent;
 }
 
 .rapls-section__title {
-	display: inline-block;
+	display: inline;
+	font-size: 1.15em;
 	margin: 0;
 	padding: 0;
-	vertical-align: middle;
-}
-
-.rapls-section__title label {
-	cursor: pointer;
 }
 
 .rapls-section__hint {
 	color: #646970;
 	font-size: 13px;
 	font-style: normal;
+	font-weight: 400;
 	margin-left: 0.5em;
 }
 
-/* Scoped to the section, so one collapsed panel cannot hide the next one. */
-.rapls-section > .rapls-toggle:not(:checked) ~ .rapls-section__body {
-	display: none;
-}
-
-.rapls-section > .rapls-toggle:checked ~ .rapls-section__body {
+.rapls-section[open] > .rapls-section__body {
 	border-left: 3px solid #dcdcde;
-	margin-top: 0.5em;
+	margin: 0.5em 0 0 0.5em;
 	padding-left: 1.25em;
 }
 
@@ -170,7 +210,10 @@
 	width: 7em;
 }
 
+/* 22em is about 350px, which is wider than a phone in portrait. The width is
+   a preference; not overflowing the screen is not. */
 .rapls-field__icon {
+	max-width: 100%;
 	width: 22em;
 }
 
@@ -279,12 +322,12 @@
 	margin-top: 0.75em;
 }
 
-.rapls-section--help > .rapls-section__title {
+.rapls-section--help > .rapls-section__summary .rapls-section__title {
 	font-size: 13px;
 	font-weight: 600;
 }
 
-.rapls-section--help > .rapls-toggle:checked ~ .rapls-section__body {
+.rapls-section--help[open] > .rapls-section__body {
 	border-left-color: #e5e5e5;
 	padding-left: 1em;
 }
@@ -352,12 +395,17 @@
 	background: #fff;
 	border: 1px solid #c3c4c7;
 	border-radius: 4px;
+	/* The padding and border are inside the width, or the guard below would be
+	   overshot by exactly the amount it was meant to save. */
+	box-sizing: border-box;
 	box-shadow: 0 3px 12px rgba(0, 0, 0, 0.14);
 	left: 0;
 	padding: 0.5em 0.75em 0.75em;
 	position: absolute;
 	top: calc(100% + 4px);
-	width: 25em;
+	/* 25em is about 400px. On a phone the panel is absolutely positioned, so
+	   nothing would reflow around it — it would simply run off the screen. */
+	width: min( 25em, calc( 100vw - 2em ) );
 	z-index: 100;
 }
 
@@ -466,4 +514,31 @@
 .rapls-emoji__clear {
 	display: block;
 	margin-top: 0.75em;
+}
+
+/* --- narrow screens ------------------------------------------------------ */
+
+/*
+ * 782px is where WordPress itself switches the admin to its touch layout, so
+ * it is the breakpoint the rest of the screen is already using.
+ */
+@media (max-width: 782px) {
+
+	/* Title and hint side by side leaves the hint two or three words per line
+	   once the title has taken its share. Stacked, each gets the full width. */
+	.rapls-section__hint {
+		display: block;
+		margin: 0.2em 0 0;
+	}
+
+	/* The number-and-unit pairs are inline-flex and wrap as a group; without
+	   this the number field alone can still be wider than the screen. */
+	.rapls-field {
+		max-width: 100%;
+	}
+
+	.rapls-field input[type="number"],
+	.rapls-field__emoji {
+		max-width: 100%;
+	}
 }

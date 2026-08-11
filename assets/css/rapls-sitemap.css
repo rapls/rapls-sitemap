@@ -1,7 +1,7 @@
 /*
  * Sitemap design presets.
  *
- * Twelve presets, all original to this plugin and all pure CSS — no images, no
+ * Twenty-seven presets, all original to this plugin and all pure CSS — no images, no
  * sprites, no icon font. Ornaments are drawn with borders and pseudo-elements
  * in `currentColor`, so every preset inherits the theme's text colour and works
  * unchanged on a dark background. The "none" preset has no rules at all: it is
@@ -38,14 +38,25 @@
 	opacity: 0.7;
 }
 
-.rapls-sitemap__link:hover {
-	opacity: 0.75;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-.rapls-sitemap__link {
-		transition: opacity 120ms ease;
-	}
+/*
+ * Hover and keyboard focus underline rather than fade.
+ *
+ * `opacity` is the cheapest hover effect there is, and on a link it is the
+ * wrong one: it composites the theme's link colour towards whatever is behind
+ * it and takes the contrast ratio down with it. WordPress's own #2271b1 on
+ * white is 5.17:1; at 0.75 opacity it lands near 3.2:1, under the 4.5:1 floor.
+ * The link became harder to read at the moment the reader pointed at it.
+ *
+ * An underline adds an affordance instead of removing legibility, and it is
+ * what a browser's own link styling already does. A site that has set the
+ * underline token to "never" still wins here — that rule is scoped, so it is
+ * both more specific and printed later.
+ */
+.rapls-sitemap__link:hover,
+.rapls-sitemap__link:focus-visible {
+	text-decoration: underline;
+	text-decoration-thickness: 0.12em;
+	text-underline-offset: 0.15em;
 }
 
 /* --- simple: headings plus indentation, no ornament ---------------------- */
@@ -368,7 +379,6 @@
 
 .rapls-sitemap--neon .rapls-sitemap__item .rapls-sitemap__link:hover,
 .rapls-sitemap--neon .rapls-sitemap__item .rapls-sitemap__link:focus {
-	opacity: 1;
 	text-shadow: 0 0 0.5em currentColor;
 }
 
@@ -822,11 +832,14 @@
 	opacity: 0.8;
 }
 
-.rapls-sitemap--terminal .rapls-sitemap__item .rapls-sitemap__link:hover,
-.rapls-sitemap--terminal .rapls-sitemap__item .rapls-sitemap__link:focus {
-	opacity: 1;
-	text-decoration: underline;
-}
+/*
+ * Neither this preset nor Neon carries a hover rule of its own for the
+ * underline any more. Both used to say `opacity: 1` there, which existed only
+ * to cancel the shared `opacity: 0.75` fade — on a dark background that fade
+ * was the difference between readable and not. With the fade gone the
+ * declaration is dead, and the shared underline is the same answer at the same
+ * thickness as everywhere else.
+ */
 
 /* --- heading elements ----------------------------------------------------- */
 

@@ -415,19 +415,26 @@ final class SettingsPage {
 	 * the hidden pane still submits every field it holds — a browser omits a
 	 * disabled control, not a hidden one, which is what makes one Save button
 	 * correct for both tabs.
+	 *
+	 * The wrapper is a `div`, not the `h2` core's own tab bars use. Those are
+	 * links to other screens, and a heading is a fair description of one. These
+	 * two are a control that swaps what is shown on this screen, and "Basic
+	 * Advanced" is not a heading of anything — the radio group is what a screen
+	 * reader should meet here, and it is what it does meet. `nav-tab-wrapper`
+	 * stays, because core's stylesheet is what makes it look like a tab bar.
 	 */
 	private static function tabs(): void {
 		?>
 		<input type="radio" class="rapls-tab-input" name="rapls-sitemap-tab" id="rapls-sitemap-tab-basic" checked />
 		<input type="radio" class="rapls-tab-input" name="rapls-sitemap-tab" id="rapls-sitemap-tab-advanced" />
-		<h2 class="nav-tab-wrapper rapls-tabs">
+		<div class="nav-tab-wrapper rapls-tabs">
 			<label class="nav-tab rapls-tab--basic" for="rapls-sitemap-tab-basic">
 				<?php echo esc_html__( 'Basic', 'rapls-sitemap' ); ?>
 			</label>
 			<label class="nav-tab rapls-tab--advanced" for="rapls-sitemap-tab-advanced">
 				<?php echo esc_html__( 'Advanced', 'rapls-sitemap' ); ?>
 			</label>
-		</h2>
+		</div>
 		<?php
 	}
 
@@ -1446,9 +1453,23 @@ final class SettingsPage {
 	/**
 	 * Open a collapsible section.
 	 *
-	 * The checkbox has no `name`, so it is a disclosure control and nothing
-	 * more — it never posts, and a collapsed section still submits every field
-	 * inside it, which is what keeps collapsing safe on a settings form.
+	 * `<details>` rather than a nameless checkbox and a sibling selector. Both
+	 * collapse without JavaScript, but a checkbox in a settings form means "on
+	 * or off" to everybody who has ever used one, and eight of them down the
+	 * Advanced tab read as eight more things to decide rather than as eight
+	 * panels to open. `<summary>` is a disclosure control and says so — to the
+	 * eye through the chevron, to a screen reader through its own role, and to
+	 * the keyboard through Enter and Space, which the checkbox only got by
+	 * accident of being a checkbox.
+	 *
+	 * A closed `<details>` still submits every field inside it. The elements
+	 * are in the document and are not disabled; only rendering is suppressed.
+	 * That is the property the whole screen rests on, so `smoke-admin.php`
+	 * asserts it and it is checked in a real install before every release.
+	 *
+	 * The heading stays a real `h2` inside the summary — `<summary>` takes
+	 * heading content, and the panel titles are how a screen-reader user moves
+	 * through this screen.
 	 *
 	 * @param string $id       Unique id fragment.
 	 * @param string $title    Section heading.
@@ -1457,20 +1478,19 @@ final class SettingsPage {
 	 * @param string $modifier Extra class, e.g. for the quieter help panels.
 	 */
 	private static function open_section( string $id, string $title, string $hint, bool $expanded, string $modifier = '' ): void {
-		$input = 'rapls-sitemap-section-' . $id;
-
 		// The modifier goes through printf as an argument, not spliced into the
 		// format string — a stray `%` in a class name would otherwise be read
 		// as a conversion specification.
 		printf(
-			'<div class="%1$s">'
-				. '<input type="checkbox" class="rapls-toggle" id="%2$s" %3$s />'
-				. '<h2 class="rapls-section__title"><label for="%2$s">%4$s</label>'
+			'<details class="%1$s" id="%2$s"%3$s>'
+				. '<summary class="rapls-section__summary">'
+				. '<h2 class="rapls-section__title">%4$s'
 				. '<span class="rapls-section__hint">%5$s</span></h2>'
+				. '</summary>'
 				. '<div class="rapls-section__body">',
 			esc_attr( trim( 'rapls-section ' . $modifier ) ),
-			esc_attr( $input ),
-			checked( $expanded, true, false ),
+			esc_attr( 'rapls-sitemap-section-' . $id ),
+			$expanded ? ' open' : '',
 			esc_html( $title ),
 			esc_html( $hint )
 		);
@@ -1480,7 +1500,7 @@ final class SettingsPage {
 	 * Close a collapsible section.
 	 */
 	private static function close_section(): void {
-		echo '</div></div>';
+		echo '</div></details>';
 	}
 
 	/**

@@ -351,14 +351,33 @@ foreach ( array_keys( Settings::defaults() ) as $key ) {
 check( array() === $missing, 'every setting still has a control somewhere on the screen', implode( ', ', $missing ) );
 
 // Sections nest, so counting a closing pair proves nothing. What matters is
-// that the page's divs balance overall — an unclosed section would swallow
+// that the page's tags balance overall — an unclosed section would swallow
 // everything after it into a collapsed panel.
-$sections = substr_count( $html, '<div class="rapls-section' );
+//
+// The prefix is matched with the element name attached on purpose. The panels
+// used to be `<div class="rapls-section">`, and each still holds a
+// `<div class="rapls-section__body">` — so a bare `class="rapls-section` would
+// have gone on counting the bodies after the panels stopped being divs, and
+// this assertion would have passed while measuring the wrong thing.
+$sections = substr_count( $html, '<details class="rapls-section' );
 $opened   = preg_match_all( '/<div\b/', $html );
 $closed   = substr_count( $html, '</div>' );
 
 check( $sections >= 3, 'the collapsible sections are on the page', (string) $sections );
 check( $opened === $closed, 'and every div on the page is closed', "opened {$opened}, closed {$closed}" );
+check(
+	$sections === substr_count( $html, '</details>' ) && $sections === substr_count( $html, '<summary ' ),
+	'each one is a details with exactly one summary'
+);
+
+// The disclosure is the element's own, not a checkbox pressed into service. A
+// checkbox on a settings form reads as "on or off", which is what eight of them
+// down the Advanced tab looked like.
+check( false === strpos( $html, 'rapls-toggle' ), 'and no nameless checkbox is left standing in for it' );
+
+// A summary is a button to a screen reader; the heading inside it is how one
+// moves through this screen. Losing the h2 in the swap would have been silent.
+check( $sections === substr_count( $html, '<h2 class="rapls-section__title">' ), 'each panel title is still a real heading' );
 
 // Same for the two forms: the reset form must not end up inside the settings
 // form, which HTML forbids and browsers resolve by dropping one of them.
