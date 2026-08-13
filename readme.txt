@@ -1,4 +1,4 @@
-=== Rapls Sitemap – HTML Sitemap Page for Pages, Posts, Categories, Authors & Menus ===
+=== Rapls Sitemap ===
 
 Contributors: rapls
 Donate link: https://buymeacoffee.com/rapls

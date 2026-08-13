@@ -194,6 +194,88 @@ if ( file_exists( $zip ) ) {
 	check( array() === $leaked, 'and nothing .distignore excludes gets in', implode( ', ', $leaked ) );
 }
 
+/* --- the metadata WordPress.org reads at submission ---------------------- */
+
+/*
+ * The one mistake on this screen that cannot be undone.
+ *
+ * WordPress.org derives the plugin's slug from the `Plugin Name` header, and
+ * that slug is frozen the moment the plugin is approved. The text domain has to
+ * equal it, or translate.wordpress.org never serves the catalogue and Plugin
+ * Check reports a mismatch on every translated string in the plugin. That is
+ * not a hypothetical: checking this plugin under the folder name
+ * `rapls-sitemap-dist` produced 320 TextDomainMismatch errors and nothing else.
+ *
+ * So the header may be renamed for display — but only to something that still
+ * sanitises to the text domain. Everything else here is a field the directory
+ * either requires or truncates.
+ */
+$readme = (string) file_get_contents( $root . '/readme.txt' );
+$plugin = substr( (string) file_get_contents( $root . '/rapls-sitemap.php' ), 0, 1600 );
+
+/**
+ * One `Key: value` line out of a plugin header or a readme header block.
+ */
+function meta( $text, $key, $starred ) {
+	$pattern = $starred
+		? '/^\s\*\s' . preg_quote( $key, '/' ) . ':\s*(.+)$/m'
+		: '/^' . preg_quote( $key, '/' ) . ':\s*(.+)$/m';
+
+	return preg_match( $pattern, $text, $m ) ? trim( $m[1] ) : null;
+}
+
+$name  = (string) meta( $plugin, 'Plugin Name', true );
+$slug  = trim( preg_replace( '/[^a-z0-9]+/', '-', strtolower( $name ) ), '-' );
+$title = trim( (string) strtok( $readme, "\n" ), "= \t\r" );
+
+check( 'rapls-sitemap' === $slug, 'the plugin name still sanitises to the slug the directory would assign', $slug );
+check( $slug === meta( $plugin, 'Text Domain', true ), 'and the text domain is that same slug' );
+check( $title === $name, 'the readme title and the header name are the same string', "{$title} / {$name}" );
+
+// A version in three places, and a release is wrong if any one of them lags.
+check(
+	meta( $plugin, 'Version', true ) === meta( $readme, 'Stable tag', false ),
+	'the header version and the readme stable tag agree'
+);
+check(
+	false !== strpos( $plugin, "RAPLS_SITEMAP_VERSION', '" . meta( $plugin, 'Version', true ) . "'" ),
+	'and the version constant agrees with both'
+);
+
+foreach ( array( 'Requires at least', 'Requires PHP', 'License', 'License URI' ) as $field ) {
+	check(
+		meta( $plugin, $field, true ) === meta( $readme, $field, false ),
+		sprintf( '"%s" is the same in the header and the readme', $field )
+	);
+}
+
+// Fields the directory requires, and the two it silently truncates.
+foreach ( array( 'Contributors', 'Donate link', 'Tags', 'Tested up to' ) as $field ) {
+	check( null !== meta( $readme, $field, false ), sprintf( 'readme.txt declares "%s"', $field ) );
+}
+
+check( null !== meta( $plugin, 'Plugin URI', true ), 'the header points at the plugin\'s own page' );
+check( null === meta( $plugin, 'Update URI', true ), 'and does not claim its own update server' );
+
+$tags = array_filter( array_map( 'trim', explode( ',', (string) meta( $readme, 'Tags', false ) ) ) );
+check( count( $tags ) <= 5, 'at most five tags, because the directory reads no more', (string) count( $tags ) );
+
+// The short description is the first non-blank line under the header block.
+$lines = preg_split( '/\R/', $readme );
+$short = '';
+$blank = false;
+foreach ( $lines as $i => $line ) {
+	if ( $i > 5 && '' === trim( $line ) ) {
+		$blank = true;
+		continue;
+	}
+	if ( $blank && '' !== trim( $line ) ) {
+		$short = trim( $line );
+		break;
+	}
+}
+check( '' !== $short && strlen( $short ) <= 150, 'the short description fits the 150-character limit', (string) strlen( $short ) );
+
 /* --- README.md links point at things the public repository has ----------- */
 
 /*
