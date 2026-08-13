@@ -241,12 +241,6 @@ WPML と Polylang に対応しています。設定は不要です。どちら�
 
 `unfiltered_html` 権限を持つ利用者のみです。シングルサイトでは管理者、マルチサイトではネットワーク管理者に限られます。`manage_options`（設定画面を開ける権限）では編集できません。マルチサイトではサイト管理者もこの権限を持つためです。追加 CSS はそのまま出力されるので、WordPress が同種の用途に用意している権限に合わせています。
 
-## Documentation
-
-- [WordPress.org 提出チェックリスト](./docs/wordpress-org.md)
-- [スクリーンショット撮影 指示書](./docs/screenshots.md)
-- 内部設計とコーディング規約は [CLAUDE.md](./CLAUDE.md)
-
 ## Development
 
 ### Requirements

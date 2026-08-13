@@ -194,6 +194,48 @@ if ( file_exists( $zip ) ) {
 	check( array() === $leaked, 'and nothing .distignore excludes gets in', implode( ', ', $leaked ) );
 }
 
+/* --- README.md links point at things the public repository has ----------- */
+
+/*
+ * `README.md` is the GitHub front page, and this repository is public while
+ * `/docs/`, `/.claude/` and `CLAUDE.md` are not — `.gitignore` keeps them
+ * local. A link from the front page to any of them is a 404 for every reader
+ * and looks fine from here, where the file is sitting on disk. Existence is
+ * therefore the wrong question; `git check-ignore` is the right one.
+ *
+ * Skipped rather than failed where git is unavailable, so the suite still runs
+ * from an unpacked tarball.
+ */
+exec( 'command -v git >/dev/null 2>&1 && git -C ' . escapeshellarg( $root ) . ' rev-parse --git-dir 2>/dev/null', $ignored, $status );
+
+if ( 0 !== $status ) {
+	check( true, 'README links are checked against .gitignore (skipped: no git here)' );
+} else {
+	preg_match_all( '/\]\(\s*(\.\/[^)\s#]+|(?!\.\.\/\.\.\/)[A-Za-z0-9_][^):\s#]*)\s*\)/', (string) file_get_contents( $root . '/README.md' ), $links );
+
+	$broken = array();
+	foreach ( array_unique( $links[1] ) as $target ) {
+		$relative = ltrim( $target, './' );
+
+		// A path git ignores is not in the repository, whatever is on disk.
+		exec(
+			'git -C ' . escapeshellarg( $root ) . ' check-ignore -q ' . escapeshellarg( $relative ) . ' 2>/dev/null',
+			$out,
+			$ignores
+		);
+
+		if ( 0 === $ignores || ! file_exists( $root . '/' . $relative ) ) {
+			$broken[] = $target;
+		}
+	}
+
+	check(
+		array() === $broken,
+		'every relative link in README.md reaches a file the public repository has',
+		implode( ', ', $broken )
+	);
+}
+
 scrub( $tmp );
 
 summary();
