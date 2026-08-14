@@ -68,7 +68,7 @@ final class Block {
 		// The editor script's `wp.i18n.__()` calls read a Jed JSON payload, not
 		// the MO file — `bin/make-json.php` writes it next to the catalogue.
 		if ( function_exists( 'wp_set_script_translations' ) ) {
-			wp_set_script_translations( self::SCRIPT, 'rapls-sitemap', RAPLS_SITEMAP_DIR . 'languages' );
+			wp_set_script_translations( self::SCRIPT, 'rapls-sitemap' );
 		}
 
 		/*

@@ -93,10 +93,8 @@ final class Plugin {
 			add_action( 'admin_init', array( $this, 'maybe_upgrade' ) );
 		}
 
-		// Priority 0: block.json's title and description are translated at
-		// registration time, and the block registers on `init` too. Loading the
-		// catalogue any later would leave those two strings in English.
-		add_action( 'init', array( $this, 'load_textdomain' ), 0 );
+		// No load_plugin_textdomain(): translations for a WordPress.org-hosted
+		// plugin come from translate.wordpress.org and load just in time.
 	}
 
 	/**
@@ -152,19 +150,4 @@ final class Plugin {
 		update_option( self::VERSION_OPTION, RAPLS_SITEMAP_VERSION, false );
 	}
 
-	/**
-	 * Load translations.
-	 *
-	 * Plugin Check warns about this call, on the grounds that WordPress.org
-	 * loads a hosted plugin's translations by itself. That is true of language
-	 * packs from translate.wordpress.org; it is not true of the Japanese
-	 * catalogue this plugin *ships*, which is the one its own market reads.
-	 * The warning is accepted rather than silenced: an unnecessary call costs
-	 * one function invocation, and removing it would risk an English admin
-	 * screen on a Japanese site, which is the failure this plugin exists to
-	 * avoid. Revisit once the plugin is hosted and has language packs.
-	 */
-	public function load_textdomain(): void {
-		load_plugin_textdomain( 'rapls-sitemap', false, dirname( RAPLS_SITEMAP_BASENAME ) . '/languages' );
-	}
 }

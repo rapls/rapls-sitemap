@@ -169,7 +169,7 @@ if ( file_exists( $zip ) ) {
 	}
 	check( array() === $absent, 'the files WordPress needs are all in it', implode( ', ', $absent ) );
 
-	foreach ( array( 'src/', 'assets/', 'blocks/', 'languages/' ) as $dir ) {
+	foreach ( array( 'src/', 'assets/', 'blocks/' ) as $dir ) {
 		$found = false;
 		foreach ( $paths as $path ) {
 			if ( 0 === strpos( $path, 'rapls-sitemap/' . $dir ) ) {
@@ -182,8 +182,12 @@ if ( file_exists( $zip ) ) {
 
 	// .distignore exists to keep these out; a build that quietly stopped
 	// honouring it would publish the test suite and the assistant's notes.
+	// `languages/` is on this list, not the one above. A WordPress.org-hosted
+	// plugin gets its catalogue from translate.wordpress.org, and a bundled
+	// copy is never loaded — nothing calls load_plugin_textdomain() any more,
+	// so shipping one would be dead weight that looks editable.
 	$leaked = array();
-	foreach ( array( 'tests/', 'bin/', '.git', '.claude', 'CLAUDE.md', 'composer.json', '.distignore' ) as $excluded ) {
+	foreach ( array( 'tests/', 'bin/', '.git', '.claude', 'CLAUDE.md', 'composer.json', '.distignore', 'languages/' ) as $excluded ) {
 		foreach ( $paths as $path ) {
 			if ( false !== strpos( $path, '/' . $excluded ) ) {
 				$leaked[] = $excluded;

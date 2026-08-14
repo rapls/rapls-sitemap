@@ -566,8 +566,44 @@ foreach ( array( 1, 2, 3 ) as $site ) {
 check( array() === $network, 'and on every site of a network, not just the one it ran on', implode( ', ', $network ) );
 check( false === strpos( $multi, '0:rapls_sitemap_settings' ), 'without also acting outside a switched-to site' );
 
-Plugin::instance()->load_textdomain();
-check( 'rapls-sitemap' === $GLOBALS['rapls_textdomain'][0], 'the text domain is loaded from the bundled catalogue' );
-check( false !== strpos( $GLOBALS['rapls_textdomain'][1], 'languages' ), 'out of the languages directory' );
+/*
+ * Translations come from translate.wordpress.org, so the plugin must NOT call
+ * load_plugin_textdomain(). WordPress has loaded a hosted plugin's catalogue by
+ * itself since 4.6, and Plugin Check flags the call. The stub above records any
+ * call, so an empty record is the assertion.
+ *
+ * This is asserted rather than remembered because the call is one line, reads
+ * as obviously correct, and every other plugin in the family used to have it.
+ */
+/*
+ * Read through the tokenizer, not with strpos: the note in Plugin.php explaining
+ * why the call is gone contains the call's own name, and a plain search matches
+ * it. `bin/make-pot.php` solves the identical problem the identical way — a
+ * function name inside a comment or a string is not a call.
+ */
+$called = array();
+$files  = array( RAPLS_SITEMAP_DIR . 'rapls-sitemap.php' );
+foreach ( new RecursiveIteratorIterator( new RecursiveDirectoryIterator( RAPLS_SITEMAP_DIR . 'src' ) ) as $file ) {
+	if ( 'php' === $file->getExtension() ) {
+		$files[] = $file->getPathname();
+	}
+}
+foreach ( $files as $file ) {
+	foreach ( token_get_all( (string) file_get_contents( $file ) ) as $token ) {
+		if ( is_array( $token ) && T_STRING === $token[0] && 'load_plugin_textdomain' === $token[1] ) {
+			$called[] = basename( $file ) . ':' . $token[2];
+		}
+	}
+}
+
+check( array() === $called, 'nothing calls load_plugin_textdomain() anywhere in the plugin', implode( ', ', $called ) );
+check( ! method_exists( Plugin::class, 'load_textdomain' ), 'and the method that used to is gone' );
+
+// The script translations must not name a path either, for the same reason.
+check(
+	isset( $GLOBALS['rapls_script_translations'] ) && '' === $GLOBALS['rapls_script_translations'][2],
+	'wp_set_script_translations() names no local path, so the JSON comes from WordPress.org too',
+	var_export( $GLOBALS['rapls_script_translations'][2] ?? null, true )
+);
 
 summary();
