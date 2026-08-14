@@ -14,135 +14,76 @@ An HTML sitemap page for readers: pages, posts, categories, authors, archives an
 
 == Description ==
 
-**Rapls Sitemap builds the "table of contents" page your visitors use to find things** — your pages in their real hierarchy, your posts under their categories, and as much or as little else as you choose. Drop in the `[rapls_sitemap]` shortcode or the Sitemap block and the page builds itself, and keeps building itself as the site grows.
+**Rapls Sitemap builds the "table of contents" page your visitors use to find things** — your pages in their real hierarchy, your posts under their categories, and as much or as little else as you choose. Drop in the `[rapls_sitemap]` shortcode or the Sitemap block, and the page keeps building itself as the site grows.
 
-This is a *human-facing* sitemap. It is not the XML sitemap search engines read — WordPress produces that itself at `wp-sitemap.xml`, and this plugin deliberately stays out of its way.
+This is a *human-facing* sitemap, not the XML sitemap search engines read. WordPress produces that itself at `wp-sitemap.xml`, and this plugin stays out of its way.
 
-It is a maintained replacement for **PS Auto Sitemap** (closed in 2022) and **WP Sitemap Page**, written from scratch. Both plugins' documented interfaces are reproduced so an existing sitemap page keeps working without editing its content, and PS Auto Sitemap's stored settings can be read in with one button.
+It is a maintained replacement for **PS Auto Sitemap** (closed in 2022) and **WP Sitemap Page**, written from scratch. Both plugins' documented interfaces are reproduced, so an existing sitemap page keeps working without editing its content.
 
 = Why site owners pick Rapls Sitemap =
 
-* **One placement, the whole page.** Pages, posts, categories, authors and date archives can be listed one after another, each under its own heading, from a single shortcode — the shape most sitemap pages actually have.
-* **Your navigation, as your team arranged it.** List a WordPress menu in the menu's own order with the menu's own labels. On a site with hundreds of pages, "the routes we decided on" is often a better table of contents than "everything we have published".
-* **Simple to start, deep when you need it.** The settings screen opens on a **Basic** tab holding the eight decisions a sitemap cannot be built without — what to list, how deep, what to leave out, what it looks like. Everything else is one tab away under **Advanced**, in panels that open themselves when they hold something other than a default, so nothing you configured is ever hidden behind a closed one.
-* **Nothing is hidden quietly.** Where a list stops short of the content, it says so in the output. Caps, exclusions and truncation are always visible to the reader.
-* **28 designs, no images.** Every preset is pure CSS with no sprites and no icon font, so they inherit your theme's colours and survive a dark background.
-* **Built for large sites.** One query per post type — grouping posts under their categories adds none — a configurable entry cap on all three queries, and a render cache that clears itself when content changes, including when you change your permalink structure.
-* **No front-end credit link. Ever.** The plugin never prints a link to its author on your site.
+* **One placement, the whole page.** Pages, posts, categories, authors and date archives, one after another under their own headings, from a single shortcode.
+* **Simple to start, deep when you need it.** The settings screen opens on a **Basic** tab holding the eight decisions a sitemap cannot be built without. The rest is one tab away, in panels that open themselves when they hold anything but a default.
+* **A truncated list says so.** Where the entry cap cuts a list short, the output says it was cut.
+* **Built for large sites.** One query per post type, a cap on all three queries, and a render cache that clears itself on content changes.
+* **No front-end credit link, and no dashboard advertising.**
 
 = What it lists =
 
 * **Pages** in their parent/child hierarchy, to any depth you choose.
 * **Posts**, optionally grouped under their categories, with child categories nested.
-* **Categories, tags and custom taxonomies**, with or without the entries under them.
-* **Authors**, filtered by user ID and by role. Derived from posts, whatever else this sitemap lists — an author archive shows posts, so a name taken from pages would link somewhere empty.
-* **Date archives**, by year and month, derived from posts for the same reason and inheriting the same exclusions and publication window as the entry listing.
-* **Navigation menus**, in the menu's order, with `#` placeholder items printed as headings rather than links that go nowhere.
-* **Custom post types and custom taxonomies**, alongside or instead of the built-in ones — public ones. A post type registered private is never listed, whatever asks for it, because that is content deliberately kept off the front end.
+* **Categories, tags and taxonomies**, with or without the entries under them.
+* **Authors**, filtered by user ID and role, and **date archives** by year and month.
+* **Navigation menus**, with `#` placeholder items printed as headings rather than links that go nowhere.
+* **Custom post types and taxonomies**, as long as they are viewable on the front end. One that is not publicly queryable is never listed, whatever asks for it, because its pages would 404.
 
 = Choosing what appears =
 
-* Depth limit, and a "list only what is under this page" scope that a shortcode can resolve to the current page or to the page above it.
-* Exclude posts, categories or users by ID. Excluding a parent takes its children with it.
-* Exclude whole post types or taxonomies.
+* Depth limit, and a "only what is under this page" scope a shortcode can resolve to the current page or the one above.
+* Exclude posts, categories or users by ID, or whole post types and taxonomies. Excluding a parent takes its children with it.
 * Leave out the sitemap's own page, password-protected entries, and entries individually marked noindex.
-* Limit by publication date, for a sitemap of one school year or one financial year. A category listing narrows with it, so a category holding nothing from that year is not listed either.
+* Limit by publication date, for a sitemap of one school year. A category holding nothing from that year drops out with it.
 * Entry caps: per list, per category, and a starting offset.
 
-= Ordering =
+= Ordering and design =
 
-* Entries by date, title, ID, menu order, last modified, comment count, at random, or by a custom field — which is how you get a true kana order for Japanese titles.
-* Category headings by name, entry count, slug, ID, or the order set by hand with a term-ordering plugin. Entry-count ordering uses the count WordPress keeps, which can differ from the number shown beside a category once exclusions have been applied.
-
-= Design =
-
-* 27 CSS presets plus "no styling at all" for themes that would rather do it themselves.
-* Font size, line height, indent, link colour, underline behaviour and column count, layered on top of whichever preset is chosen.
-* Bullets as discs, circles, squares, emoji, or an icon class such as Font Awesome — set separately for top-level and nested items.
-* Section and category labels can be emitted as real `h2`–`h6` headings, which is what screen-reader users navigate by.
-* Entries that have entries under them can be printed as headings rather than links, for section pages that exist only to hold their children.
-* An Additional CSS box, gated on the `unfiltered_html` capability rather than on access to the settings screen.
+* Entries by date, title, ID, menu order, last modified, comment count, at random, or by a custom field — which is how you get a true kana order for Japanese titles. Category headings by name, count, slug, ID, or a hand-set order.
+* 27 CSS presets plus "no styling at all", for themes that would rather do it themselves.
+* Font size, line height, indent, link colour, underline and column count on top of the preset.
+* Bullets as discs, circles, squares, emoji, or an icon class such as Font Awesome, separately for top-level and nested items.
+* Section and category labels as real `h2`–`h6` headings, which screen-reader users navigate by.
+* An Additional CSS box, gated on `unfiltered_html` rather than on access to the settings screen.
 
 = Migrating from PS Auto Sitemap or WP Sitemap Page =
 
-You can switch without editing the content of your sitemap page. None of either plugin's code is used here — only their documented interfaces.
+You can switch without editing the content of your sitemap page. None of either plugin's code is used here, only their documented interfaces. Both options are **off by default**, because answering to another plugin's markup unasked is a surprise.
 
-Both compatibility options are **off by default**, because answering to another plugin's markup unasked is a surprise:
+* **From WP Sitemap Page** — recognises `[wp_sitemap_page]` and its `only` values. The shortcode is not claimed while WP Sitemap Page itself is active, so the two cannot fight over it.
+* **From PS Auto Sitemap** — recognises the `<!-- SITEMAP CONTENT REPLACE POINT -->` comment left in page content.
 
-* **From WP Sitemap Page** — recognises `[wp_sitemap_page]` and its `only` values, including custom post types. The shortcode is not claimed while WP Sitemap Page itself is active, so the two cannot fight over it.
-* **From PS Auto Sitemap** — recognises the `<!-- SITEMAP CONTENT REPLACE POINT -->` comment left in page content. That plugin's own "which page holds the sitemap" setting is not needed: the page is kept out of its own listing automatically.
-
-**PS Auto Sitemap's settings can be read in with one button.** Its options survive its deletion, so a site that ran it years ago still holds the answers its owner already gave: which lists to show and in what order, the depth, the excluded categories and posts, whether caching was on, and the nearest design. The old settings are read, never written, so the import can be repeated.
+**PS Auto Sitemap's settings can be read in with one button.** Its options survive its deletion, so a site that ran it years ago still holds the answers its owner gave. They are read, never written.
 
 = noindex integrations =
 
-A password-protected entry never contributes an excerpt, whether or not you leave it out of the list. Its text is not for everybody, and this output is cached and shared.
+Entries **individually** marked noindex can be left out, reading these with no setup: **Yoast SEO, Rank Math, SEO SIMPLE PACK, SEOPress, The SEO Framework, All in One SEO** and the **Cocoon** theme. Categories, tags and authors are read too, where the term or author is what is listed.
 
-Entries **individually** marked noindex can be left out. A default that applies to a whole post type, taxonomy or archive is not read: those listings appear only because you chose them, and an SEO plugin's default — Yoast noindexes date archives out of the box — would otherwise empty a list you asked for. These are read with no configuration: **Yoast SEO, Rank Math, SEO SIMPLE PACK, SEOPress, The SEO Framework, All in One SEO**, and the **Cocoon** theme (including its fallback to the Simplicity key it inherited).
+A default applying to a whole post type, taxonomy or archive is **not** read. Those listings appear only because you chose them, and an SEO plugin's default — Yoast noindexes date archives out of the box — would otherwise empty a list you asked for.
 
-**Categories and tags** are read too, where the term itself is what is listed: Yoast keeps that in one option rather than in term meta, while Rank Math, SEO SIMPLE PACK and Cocoon use term meta. `rapls_sitemap/is_term_noindex` extends it.
+A password-protected entry never contributes an excerpt, whether or not it stays in the list. Its text is not for everybody, and this output is cached and shared.
 
-**Authors** are read as well — the per-author setting, from Yoast and Rank Math, extended by `rapls_sitemap/is_user_noindex`. A name linking to an archive search engines are told to ignore is the same mistake as listing a noindexed post.
-
-Where posts are grouped **under** category headings this is deliberately not applied. There the entries are the posts, and dropping a heading would take perfectly indexable posts with it — switch off **Link section and category headings** instead, which is the setting for "the archive is noindexed, do not send readers to it".
-
-The site-wide archive settings an SEO plugin has — "noindex author archives", "disable date archives" — are not read either, and do not need to be: those listings appear only because you ticked them, so the decision has already been made on this screen.
-
-Every one of those was read from the plugin itself rather than guessed. Anything else can be added with the `rapls_sitemap/is_noindex` filter — this plugin does not read meta keys on a hunch, because a wrong guess hides a page nobody asked to hide.
-
-= Customising with filters =
-
-The settings cover what most sites need. Where they do not, `rapls_sitemap/query_args` hands you the query for one post type before it runs, so a few lines in a theme or a small plugin do the rest. It is passed the arguments and the post type slug.
-
-**WooCommerce: leave out products hidden from the catalog, and ones out of stock.** WooCommerce records both as terms in its private `product_visibility` taxonomy, so this is one clause:
-
-`add_filter( 'rapls_sitemap/query_args', function ( $args, $post_type ) {
-    if ( 'product' !== $post_type ) {
-        return $args;
-    }
-
-    $args['tax_query'][] = array(
-        'taxonomy' => 'product_visibility',
-        'field'    => 'slug',
-        'terms'    => array( 'exclude-from-catalog', 'outofstock' ),
-        'operator' => 'NOT IN',
-    );
-
-    return $args;
-}, 10, 2 );`
-
-Append to `tax_query` rather than assigning it: the plugin puts your category exclusions there, and replacing the array would drop them.
-
-**List only the pages somebody has flagged.** Useful where the sitemap is a curated index rather than everything:
-
-`add_filter( 'rapls_sitemap/query_args', function ( $args, $post_type ) {
-    if ( 'page' !== $post_type ) {
-        return $args;
-    }
-
-    $args['meta_query'][] = array(
-        'key'   => 'show_in_sitemap',
-        'value' => 'yes',
-    );
-
-    return $args;
-}, 10, 2 );`
-
-A page with no such custom field is left out entirely, which is the point — but it does mean every page you want listed needs the field set.
-
-If one of those filters makes the output depend on something this plugin cannot see — who is logged in, say — add what it varied on with `rapls_sitemap/cache_variant`, or set the cache lifetime to 0. Otherwise one entry is built for whoever arrives first and served to everybody.
-
-The other extension points are `rapls_sitemap/settings` (the whole configuration, before it is used), `rapls_sitemap/tree` (the assembled nodes, before rendering), `rapls_sitemap/output` (the finished HTML), the three noindex questions — `rapls_sitemap/is_noindex`, `rapls_sitemap/is_term_noindex` and `rapls_sitemap/is_user_noindex` — and `rapls_sitemap/post_types`, `rapls_sitemap/taxonomies`, `rapls_sitemap/designs` and `rapls_sitemap/cache_ttl`.
+= Extending it =
 
 = Multilingual =
 
-WPML and Polylang work with no configuration. Both narrow the post and term queries to the current language, and this plugin does not switch those filters off. The render cache keys on the locale, so one language is never served another's sitemap.
+WPML and Polylang work with no configuration. Both narrow the post and term queries to the current language, and this plugin does not switch those filters off. The render cache keys on the locale, so one language is never served another's.
 
-Learn more: [Plugin details](https://raplsworks.com/plugins/rapls-sitemap/) | [Source code (GitHub)](https://github.com/rapls/rapls-sitemap)
+Ten filters cover what the settings cannot reach, including `rapls_sitemap/query_args`, which hands you the query for one post type before it runs. Worked examples are on the plugin page.
+
+Learn more: [Plugin details and developer reference](https://raplsworks.com/plugins/rapls-sitemap/) | [Source code (GitHub)](https://github.com/rapls/rapls-sitemap)
 
 == Installation ==
 
-1. Upload the `rapls-sitemap` folder to `/wp-content/plugins/`, or install it from the Plugins screen.
+1. Install it from the Plugins screen, or upload the `rapls-sitemap` folder to `/wp-content/plugins/`.
 2. Activate it from the Plugins menu.
 3. Go to **Settings → Rapls Sitemap** and choose what to list.
 4. Put `[rapls_sitemap]` on the page that should hold the sitemap, or add the **Sitemap** block.
@@ -151,79 +92,46 @@ Learn more: [Plugin details](https://raplsworks.com/plugins/rapls-sitemap/) | [S
 
 1. Activate this plugin and deactivate the old one.
 2. Open **Settings → Rapls Sitemap → Advanced → Coming from another plugin** and switch on the option matching the plugin you came from.
-3. If you came from PS Auto Sitemap, use **Import from PS Auto Sitemap** at the foot of the screen to read its stored settings in.
-4. Check the page, then adjust anything the import could only approximate.
-
-Two things are read across rather than reproduced. The design is matched to the nearest preset, not recreated — these are original stylesheets. And PS Auto Sitemap's "divide" mode, which listed categories with a "show the posts in this category" link beside each one, becomes the category-only listing: there is no equivalent per-category drill-down here.
+3. From PS Auto Sitemap, use **Import from PS Auto Sitemap** at the foot of the screen.
+4. Check the page, then adjust what the import could only approximate: the design is matched to the nearest preset rather than recreated, and "divide" mode becomes the category-only listing.
 
 == Frequently Asked Questions ==
 
 = Is this the XML sitemap for search engines? =
 
-No. This builds the HTML page your visitors read. WordPress produces the XML sitemap itself at `wp-sitemap.xml`, and this plugin does not touch it.
+No. This builds the HTML page your visitors read. WordPress produces the XML sitemap itself at `wp-sitemap.xml`, untouched by this plugin.
 
 = Can one placement show pages, posts, categories and authors together? =
 
-Yes, and that is what most sitemap pages want. Tick the sections you need and they appear in order, each under its own heading. In a shortcode:
-
-`[rapls_sitemap sections="page,post,category,author,archive"]`
+Yes, and that is what most sitemap pages want. Tick the sections you need and they appear in order, each under its own heading: `[rapls_sitemap sections="page,post,category,author,archive"]`
 
 = Can I list a navigation menu instead? =
 
-Yes. Choose **A navigation menu** as the source, or name one in a shortcode:
-
-`[rapls_sitemap menu="global-nav"]`
-
-The menu is listed in its own order with its own labels — it is not re-sorted, because that order is a decision somebody made. Menu items linking to `#`, the placeholders that hold open a dropdown, are printed as plain headings rather than as links that go nowhere.
-
-Several menus can appear in one sitemap with `sections="menu:global-nav,menu:footer-nav"`.
+Yes. Choose **A navigation menu** as the source, or name one in a shortcode with `menu="global-nav"`. It is listed in its own order with its own labels, because that order is a decision somebody made. Several menus fit in one sitemap with `sections="menu:global-nav,menu:footer-nav"`.
 
 = Can I list only the pages under one page? =
 
-Yes. Give **Limit to one branch** a page ID, or use one of two words in a shortcode:
-
-* `child_of="current"` resolves to whichever page it is placed on, so a section landing page lists its own children without naming an ID that differs between staging and production.
-* `child_of="parent"` resolves to the page above, so the same template on every page of a section lists that whole section — the reader sees where they are among their siblings rather than what is below them. On a page with no parent it means that page, which is the top of its own section.
-
-= Can a parent page be a heading instead of a link? =
-
-Yes. Switch off **Link entries that have entries under them** and any entry holding others is printed as plain text. Some section pages exist only to group their children, and a link to one is a link to a page nobody wants to read. It applies to navigation menu items with children too.
+Yes. Give **Limit to one branch** a page ID, or use one of two words in a shortcode. `child_of="current"` resolves to whichever page it sits on, so a section landing page lists its own children without naming an ID that differs between staging and production. `child_of="parent"` resolves to the page above.
 
 = Can I make a sitemap for one year? =
 
-Yes. Set a publication window with `date_after` and `date_before`. Both ends are inclusive and either can stand alone, and the format is `YYYY`, `YYYY-MM` or `YYYY-MM-DD` — anything else, including a date that does not exist, is read as no limit rather than as a date nobody meant. The archive and category listings narrow with it, so a year or a category holding nothing inside the window is not listed at all.
+Yes. Set a publication window with `date_after` and `date_before`. Both ends are inclusive and either can stand alone. The format is `YYYY`, `YYYY-MM` or `YYYY-MM-DD`; anything else, including a date that does not exist, is read as no limit rather than a date nobody meant.
 
 = Will it cope with a large site? =
 
-Yes, within a cap you set. A sitemap asks for everything at once, so the entry cap exists to stop that query exhausting memory; it applies to the post, term and user queries alike and defaults to 2000. **A list that stops short always says so in the output** — a silently short sitemap would be worse than a slow one.
-
-= Are the settings per placement, or site-wide? =
-
-Most of them are both. The settings screen sets the site default, and a shortcode attribute or a block setting overrides it for one placement. Caching and stylesheet loading are site-wide only.
-
-= What is the number beside a category? =
-
-The number of entries actually listed under it, not the number the category holds. Exclusions, the noindex filter and the entry caps all change what is shown, and a category labelled "12" with eight entries under it is worse than no number at all. In category-only mode there is nothing listed, so the count is the category's own — including its children where they are nested.
-
-= Can I sort Japanese titles into kana order? =
-
-Only with a custom field holding the reading. Sorting by title uses the database collation, which is right for kana and Latin but not for kanji — nothing in WordPress records that 大阪 reads おおさか. Store the reading in a custom field, choose **Custom field** as the ordering, and name the field.
-
-= Can I use Font Awesome icons as bullets? =
-
-Yes. Choose **Icon class** for the bullet and enter a class such as `fa-solid fa-angle-right`. Dashicons and other icon fonts work the same way. The plugin does not bundle an icon font, so your theme or another plugin has to be loading one; where nothing is loaded the icon is simply absent and the sitemap is otherwise unaffected.
+Yes, within a cap you set. A sitemap asks for everything at once, so the cap exists to stop that query exhausting memory; it applies to the post, term and user queries alike and defaults to 2000. **A list that stops short always says so in the output** — a silently short sitemap would be worse than a slow one.
 
 = Who can edit the Additional CSS box? =
 
-Only users with `unfiltered_html`: administrators on a single site, network administrators on multisite. Not everyone who can open the settings screen, because on multisite that includes site administrators, and this field is printed verbatim. Users without the capability do not see the field, and saving the screen leaves the stored CSS untouched.
+Only users with `unfiltered_html`: administrators on a single site, network administrators on multisite. Not everyone who can open the settings screen, because on multisite that includes site administrators and this field prints verbatim.
 
 = Does it print a credit link on my site? =
 
-No. Nothing is ever output on the front end that links to the plugin or its author.
+No. Nothing linking to the plugin or its author is ever output on the front end.
 
 = Does it work with a screen reader? =
 
-The sitemap is a labelled `nav` landmark, and section and category labels can be output as real `h2`–`h6` headings rather than styled text. Screen-reader users move through a page by its headings, which matters more on a page whose purpose is structure than almost anywhere else. The heading level is a choice rather than a default, because the right level depends on the page the sitemap sits in.
+The sitemap is a labelled `nav` landmark, and section and category labels can be output as real `h2`–`h6` headings rather than styled text. Screen-reader users move through a page by its headings, which matters more here than almost anywhere.
 
 == Screenshots ==
 
@@ -236,9 +144,9 @@ The sitemap is a labelled `nav` landmark, and section and category labels can be
 
 = 0.1.0 =
 * Initial release.
-* Japanese translation included (admin screen and block editor).
+* Japanese translation included.
 
 == Upgrade Notice ==
 
 = 0.1.0 =
-First release.
+Initial release.

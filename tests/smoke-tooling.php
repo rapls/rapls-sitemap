@@ -276,6 +276,19 @@ foreach ( $lines as $i => $line ) {
 }
 check( '' !== $short && strlen( $short ) <= 150, 'the short description fits the 150-character limit', (string) strlen( $short ) );
 
+// The directory's own handbook: "a readme.txt file larger than 10k may result
+// in errors". Nothing warns you locally — the file just grows, and the parsing
+// goes strange on a page you cannot test until the plugin is live. Detail
+// belongs on the plugin's own site, which is what the readme links to.
+$readme_size = strlen( $readme );
+check( $readme_size < 10000, 'readme.txt stays under the directory\'s 10k limit', $readme_size . ' bytes' );
+
+// The LICENSE was copied from a sibling plugin and still said "Rapls Relay" on
+// its first line, which nothing in the build or the test suite looked at. GPL
+// asks for the name of the program it covers, and this one is shipped.
+$license = trim( (string) strtok( (string) file_get_contents( $root . '/LICENSE' ), "\n" ) );
+check( $license === $name, 'the LICENSE names this plugin and not a sibling', $license );
+
 /* --- README.md links point at things the public repository has ----------- */
 
 /*
