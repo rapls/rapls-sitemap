@@ -14,7 +14,7 @@ An HTML sitemap page for readers: pages, posts, categories, authors, archives an
 
 == Description ==
 
-**Rapls Sitemap builds the "table of contents" page your visitors use to find things** — your pages in their real hierarchy, your posts under their categories, and as much or as little else as you choose. Drop in the `[rapls_sitemap]` shortcode or the Sitemap block, and the page keeps building itself as the site grows.
+**Rapls Sitemap builds the "table of contents" page your visitors use to find things** — your pages in their real hierarchy, your posts under their categories, and as much or as little else as you choose. Drop in the `[rapls_sitemap]` shortcode or the Sitemap block, and the page keeps rebuilding itself as the site grows.
 
 This is a *human-facing* sitemap, not the XML sitemap search engines read. WordPress produces that itself at `wp-sitemap.xml`, and this plugin stays out of its way.
 
@@ -34,12 +34,12 @@ It is a maintained replacement for **PS Auto Sitemap** (closed in 2022) and **WP
 * **Posts**, optionally grouped under their categories, with child categories nested.
 * **Categories, tags and taxonomies**, with or without the entries under them.
 * **Authors**, filtered by user ID and role, and **date archives** by year and month.
-* **Navigation menus**, with `#` placeholder items printed as headings rather than links that go nowhere.
+* **Navigation menus**, with `#` placeholder items printed as headings rather than dead links.
 * **Custom post types and taxonomies**, as long as they are viewable on the front end. One that is not publicly queryable is never listed, whatever asks for it, because its pages would 404.
 
 = Choosing what appears =
 
-* Depth limit, and a "only what is under this page" scope a shortcode can resolve to the current page or the one above.
+* Depth limit, and a "list only what is under this page" scope, which a shortcode can resolve to the current page or the one above.
 * Exclude posts, categories or users by ID, or whole post types and taxonomies. Excluding a parent takes its children with it.
 * Leave out the sitemap's own page, password-protected entries, and entries individually marked noindex.
 * Limit by publication date, for a sitemap of one school year. A category holding nothing from that year drops out with it.
@@ -47,7 +47,7 @@ It is a maintained replacement for **PS Auto Sitemap** (closed in 2022) and **WP
 
 = Ordering and design =
 
-* Entries by date, title, ID, menu order, last modified, comment count, at random, or by a custom field — which is how you get a true kana order for Japanese titles. Category headings by name, count, slug, ID, or a hand-set order.
+* Entries by date, title, ID, menu order, last modified, comment count, at random, or by a custom field — which is how you get a true kana order for Japanese titles. Category headings by name, count, slug or ID.
 * 27 CSS presets plus "no styling at all", for themes that would rather do it themselves.
 * Font size, line height, indent, link colour, underline and column count on top of the preset.
 * Bullets as discs, circles, squares, emoji, or an icon class such as Font Awesome, separately for top-level and nested items.
@@ -59,9 +59,7 @@ It is a maintained replacement for **PS Auto Sitemap** (closed in 2022) and **WP
 You can switch without editing the content of your sitemap page. None of either plugin's code is used here, only their documented interfaces. Both options are **off by default**, because answering to another plugin's markup unasked is a surprise.
 
 * **From WP Sitemap Page** — recognises `[wp_sitemap_page]` and its `only` values. The shortcode is not claimed while WP Sitemap Page itself is active, so the two cannot fight over it.
-* **From PS Auto Sitemap** — recognises the `<!-- SITEMAP CONTENT REPLACE POINT -->` comment left in page content.
-
-**PS Auto Sitemap's settings can be read in with one button.** Its options survive its deletion, so a site that ran it years ago still holds the answers its owner gave. They are read, never written.
+* **From PS Auto Sitemap** — recognises the `<!-- SITEMAP CONTENT REPLACE POINT -->` comment left in page content, and its stored settings can be read in with one button. They are read, never written.
 
 = noindex integrations =
 
@@ -73,11 +71,11 @@ A password-protected entry never contributes an excerpt, whether or not it stays
 
 = Extending it =
 
+Developer filters cover what the settings cannot reach, including `rapls_sitemap/query_args`, which hands you the query for one post type before it runs. Worked examples are on the plugin page.
+
 = Multilingual =
 
 WPML and Polylang work with no configuration. Both narrow the post and term queries to the current language, and this plugin does not switch those filters off. The render cache keys on the locale, so one language is never served another's.
-
-Ten filters cover what the settings cannot reach, including `rapls_sitemap/query_args`, which hands you the query for one post type before it runs. Worked examples are on the plugin page.
 
 Learn more: [Plugin details and developer reference](https://raplsworks.com/plugins/rapls-sitemap/) | [Source code (GitHub)](https://github.com/rapls/rapls-sitemap)
 
@@ -111,7 +109,7 @@ Yes. Choose **A navigation menu** as the source, or name one in a shortcode with
 
 = Can I list only the pages under one page? =
 
-Yes. Give **Limit to one branch** a page ID, or use one of two words in a shortcode. `child_of="current"` resolves to whichever page it sits on, so a section landing page lists its own children without naming an ID that differs between staging and production. `child_of="parent"` resolves to the page above.
+Yes. Give **Limit to one branch** a page ID, or one of two words in a shortcode. `child_of="current"` resolves to whichever page it sits on, so one template works on staging and production alike. `child_of="parent"` resolves to the page above.
 
 = Can I make a sitemap for one year? =
 
@@ -119,7 +117,7 @@ Yes. Set a publication window with `date_after` and `date_before`. Both ends are
 
 = Will it cope with a large site? =
 
-Yes, within a cap you set. A sitemap asks for everything at once, so the cap exists to stop that query exhausting memory; it applies to the post, term and user queries alike and defaults to 2000. **A list that stops short always says so in the output** — a silently short sitemap would be worse than a slow one.
+Yes, within a cap you set. A sitemap asks for everything at once, so the cap exists to stop that query exhausting memory; it applies to the post, term and user queries alike and defaults to 2000. **A list that stops short always says so in the output**, because a silently short sitemap is worse than a slow one.
 
 = Who can edit the Additional CSS box? =
 
@@ -131,12 +129,12 @@ No. Nothing linking to the plugin or its author is ever output on the front end.
 
 = Does it work with a screen reader? =
 
-The sitemap is a labelled `nav` landmark, and section and category labels can be output as real `h2`–`h6` headings rather than styled text. Screen-reader users move through a page by its headings, which matters more here than almost anywhere.
+The sitemap is a labelled `nav` landmark, and section and category labels can be output as real `h2`–`h6` headings rather than styled text. Screen-reader users move through a page by its headings, which matters more here than almost anywhere else.
 
 == Screenshots ==
 
-1. The Basic tab: what to list, how deep, what to leave out, and which of the 28 designs to use.
-2. The Advanced tab. Everything optional, in panels that open themselves when they hold something other than a default.
+1. The Basic tab: what to list, how deep, what to leave out, and which design to use.
+2. The Advanced tab. Everything optional, in panels that open themselves when they hold anything but a default.
 3. The output: pages in their hierarchy, posts under their categories.
 4. The block sidebar. Every placement can list something different.
 

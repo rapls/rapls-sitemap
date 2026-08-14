@@ -411,4 +411,29 @@ check( array() === $missing['css'], sprintf( 'all %d presets have styles', count
 check( array() === $missing['admin'], 'every preset is offered on the settings screen', implode( ', ', $missing['admin'] ) );
 check( array() === $missing['js'], 'every preset is offered in the block sidebar', implode( ', ', $missing['js'] ) );
 
+/* --- the count nobody remembers to update ------------------------------- */
+
+/*
+ * `readme.txt` sells the presets by number, and the number kept going stale.
+ * The stylesheet header said "Twelve presets" through two rounds of additions,
+ * and `Settings::DESIGNS` said "the other twelve" until a submission audit
+ * caught it. Both of those comments now say nothing about the count, but the
+ * readme still needs to, because a directory listing is a shop window.
+ *
+ * So the readme's number is checked against the array rather than remembered.
+ * The "no styling at all" entry is `none`, which is why it is one fewer.
+ */
+$readme = (string) file_get_contents( dirname( __DIR__ ) . '/readme.txt' );
+$styled = count( Settings::DESIGNS ) - 1;
+
+check(
+	1 === preg_match( '/(\d+) CSS presets/', $readme, $m ),
+	'readme.txt states how many presets there are'
+);
+check(
+	isset( $m[1] ) && (int) $m[1] === $styled,
+	'and the number matches the presets that actually exist',
+	sprintf( 'readme says %s, DESIGNS has %d styled', $m[1] ?? '(none)', $styled )
+);
+
 summary();

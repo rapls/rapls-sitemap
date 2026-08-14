@@ -46,9 +46,14 @@ final class Settings {
 	 * Available design presets.
 	 *
 	 * `none` emits the structural markup with no bundled styling at all, for
-	 * themes that want to do the work themselves. The other twelve are original
-	 * CSS written for this plugin — no images, no sprites, so they inherit the
+	 * themes that want to do the work themselves. The others are original CSS
+	 * written for this plugin — no images, no sprites, so they inherit the
 	 * theme's colours through `currentColor` and survive a dark theme.
+	 *
+	 * The count is deliberately not written here. It said "twelve" for long
+	 * enough to outlive two rounds of new presets, and a number in a comment is
+	 * only ever as fresh as the last person who remembered it. The array below
+	 * is the count.
 	 */
 	public const DESIGNS = array(
 		'none',
