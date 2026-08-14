@@ -2,7 +2,7 @@
 
 Contributors: rapls
 Donate link: https://buymeacoffee.com/rapls
-Tags: html sitemap, sitemap, table of contents, site map page, navigation
+Tags: html sitemap, sitemap, table of contents, navigation, menu
 Requires at least: 6.3
 Tested up to: 7.0
 Stable tag: 0.1.0
