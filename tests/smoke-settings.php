@@ -288,49 +288,13 @@ check( false === $defaults['nofollow'], 'and links are followed by default' );
 // every sitemap render. WordPress 6.6 stops autoloading an option above 150 KB
 // on its own; this stays well under that on purpose.
 $huge = str_repeat( '.rapls-sitemap { color: red } ', 5000 );
-check( strlen( $huge ) > Settings::MAX_CSS_BYTES, 'the fixture is genuinely oversized' );
-check( Settings::MAX_CSS_BYTES === strlen( Settings::sanitize_css( $huge ) ), 'oversized CSS is cut to the ceiling' );
-check( Settings::MAX_CSS_BYTES < 150 * 1024, 'and the ceiling sits below the size at which WordPress stops autoloading' );
-
 $small = '.rapls-sitemap { color: red }';
-check( $small === Settings::sanitize_css( $small ), 'ordinary CSS is untouched by the ceiling' );
-
 /* --- headings ------------------------------------------------------------- */
 
 check( '' === Settings::defaults()['heading_level'], 'labels are plain text until a level is chosen' );
 check( 'h3' === Settings::sanitize( array( 'heading_level' => 'h3' ) )['heading_level'], 'a real level is kept' );
 check( '' === Settings::sanitize( array( 'heading_level' => 'h1' ) )['heading_level'], 'h1 is not offered — a page has one already' );
 check( '' === Settings::sanitize( array( 'heading_level' => 'div' ) )['heading_level'], 'and anything that is not a heading is rejected' );
-
-/* --- who may write CSS ----------------------------------------------------*/
-
-// `manage_options` is not enough: on a network every site administrator holds
-// it, and CSS is printed verbatim. unfiltered_html is the capability WordPress
-// already reserves for that, and reserves for super admins on multisite.
-check( 'unfiltered_html' === Settings::CSS_CAPABILITY, 'CSS editing is gated on unfiltered_html, not manage_options' );
-
-update_option( Settings::OPTION, array( 'custom_css' => '.rapls-sitemap { color: red }' ) );
-
-$GLOBALS['rapls_caps']['unfiltered_html'] = true;
-check(
-	'.rapls-sitemap { color: blue }' === Settings::sanitize( array( 'custom_css' => '.rapls-sitemap { color: blue }' ) )['custom_css'],
-	'someone with the capability can change it'
-);
-
-// A form field is forgeable, so the check has to hold at the save, not only at
-// the render — and it must not wipe what is already stored either.
-$GLOBALS['rapls_caps']['unfiltered_html'] = false;
-$clean = Settings::sanitize( array( 'custom_css' => 'body { display: none }' ) );
-check( false === strpos( $clean['custom_css'], 'display: none' ), 'a forged submission from someone without it is discarded' );
-check( '.rapls-sitemap { color: red }' === $clean['custom_css'], 'and the stored CSS survives their save untouched' );
-
-// The field is not rendered for them at all, so it never posts — absence must
-// preserve rather than reset, unlike every other key.
-$clean = Settings::sanitize( array( 'depth' => 3 ) );
-check( '.rapls-sitemap { color: red }' === $clean['custom_css'], 'an unsubmitted field keeps the stored CSS' );
-
-$GLOBALS['rapls_caps']['unfiltered_html'] = true;
-update_option( Settings::OPTION, array() );
 
 /* --- the nested style key -------------------------------------------------*/
 

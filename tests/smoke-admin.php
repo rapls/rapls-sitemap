@@ -273,7 +273,8 @@ check( '' !== $html, 'the settings screen renders without a fatal error' );
 check( false !== strpos( $html, 'option_page' ), 'the Settings API nonce fields are present' );
 check( false !== strpos( $html, 'rapls_sitemap_settings[design]' ), 'a design control is on the page' );
 check( false !== strpos( $html, 'rapls_sitemap_settings[style][font_size_value]' ), 'so is a split length control' );
-check( false !== strpos( $html, 'rapls_sitemap_settings[custom_css]' ), 'and the CSS field, for a user who may edit it' );
+check( false === strpos( $html, 'custom_css' ), 'no Additional CSS field — the directory does not permit storing arbitrary CSS' );
+check( false !== strpos( $html, 'rapls-sitemap__item--term' ), 'but the class reference that made it useful is still there' );
 check( false !== strpos( $html, 'rapls-sitemap__item--archive-month' ), 'the class reference lists every node kind' );
 check( false !== strpos( $html, 'buymeacoffee.com/rapls' ), 'the support panel is at the foot of the screen' );
 
@@ -383,16 +384,6 @@ check( $sections === substr_count( $html, '<h2 class="rapls-section__title">' ),
 // form, which HTML forbids and browsers resolve by dropping one of them.
 check( 2 === substr_count( $html, '<form ' ), 'the settings form and the reset form are both present' );
 check( 2 === substr_count( $html, '</form>' ), 'and both are closed' );
-
-// Someone without the capability sees an explanation instead of a textarea.
-$GLOBALS['rapls_caps']['unfiltered_html'] = false;
-ob_start();
-$page->render();
-$restricted = (string) ob_get_clean();
-$GLOBALS['rapls_caps']['unfiltered_html'] = true;
-
-check( false === strpos( $restricted, 'rapls_sitemap_settings[custom_css]' ), 'and no CSS field for a user who may not' );
-check( false !== strpos( $restricted, 'unfiltered_html' ), 'with the reason given rather than an empty space' );
 
 /* --- reading a PS Auto Sitemap configuration ---------------------------- */
 

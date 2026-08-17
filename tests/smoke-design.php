@@ -165,12 +165,6 @@ check( '' === Design::icon_class( Design::sanitize( array( 'marker' => 'disc' ) 
 
 /* --- additional CSS ------------------------------------------------------ */
 
-check( '.rapls-sitemap a { color: red }' === Settings::sanitize_css( '.rapls-sitemap a { color: red }' ), 'ordinary CSS passes through' );
-check( false === strpos( Settings::sanitize_css( 'a{} </style><script>alert(1)</script>' ), '</style' ), 'the style element cannot be closed' );
-check( false === strpos( Settings::sanitize_css( 'a{} <script>x' ), '<script' ), 'nor a script opened' );
-check( false !== strpos( Settings::sanitize_css( '.a > .b { color: red }' ), '>' ), 'the child combinator survives' );
-check( false !== strpos( Settings::sanitize_css( '@media (max-width: 40em) { .a { color: red } }' ), '@media' ), 'at-rules survive' );
-check( false === strpos( Settings::sanitize_css( 'a{} <!-- x -->' ), '<!--' ), 'comment delimiters are removed' );
 
 /* --- every emoji the picker offers must survive being saved -------------- */
 

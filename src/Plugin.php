@@ -122,7 +122,7 @@ final class Plugin {
 		/*
 		 * The settings used to autoload. They are read only where a sitemap
 		 * renders, so autoloading them spent bytes on every other request too —
-		 * including the Additional CSS, which has no natural size.
+		 * on every render.
 		 *
 		 * `update_option( $option, $same_value, false )` will not do this.
 		 * update_option() returns early when the serialized value is unchanged,

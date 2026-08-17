@@ -211,8 +211,12 @@ $settings['style'] = RaplsSitemap\Support\Design::sanitize(
 
 $html = ( new Renderer( $settings ) )->render( array( $flat ) );
 
-check( 0 === strpos( $html, '<style>' ), 'the token stylesheet is emitted ahead of the sitemap' );
-check( false !== strpos( $html, 'color:#c00' ), 'and carries the configured value' );
+// The tokens are attached with wp_add_inline_style() by Frontend\Styles, not
+// printed here: WordPress asks that CSS go through the enqueue API, and a style
+// element inside post content is one no theme or optimiser can see coming.
+// smoke-marker.php holds the other half of this.
+check( false === strpos( $html, '<style' ), 'the renderer emits no style element of its own' );
+check( false === strpos( $html, 'color:#c00' ), 'and no token declarations in the markup' );
 check( false !== strpos( $html, 'rapls-sitemap--t' ), 'the wrapper carries the scope class the stylesheet targets' );
 check( false !== strpos( $html, '<i class="rapls-sitemap__icon fa-solid fa-star" aria-hidden="true">' ), 'an icon bullet renders as a real element' );
 
@@ -228,30 +232,25 @@ $html = ( new Renderer( $settings ) )->render( array( $section, $note, $entry ) 
 check( 1 === substr_count( $html, '<i class' ), 'only the entry itself is given a bullet' );
 check( false === strpos( $html, 'item--section"><i' ), 'a section heading gets none' );
 check( false === strpos( $html, 'item--more"><i' ), 'and neither does the truncation note' );
-check( 1 === substr_count( $html, '<style>' ), 'one style element, not one per level' );
+check( 0 === substr_count( $html, '<style' ), 'and none at any nesting level' );
 
 // Untouched tokens must add nothing at all — a sitemap that was fine before
 // should render byte-identically after the feature landed.
 $plain = ( new Renderer( Settings::defaults() ) )->render( array( $flat ) );
-check( false === strpos( $plain, '<style>' ), 'unconfigured tokens emit no stylesheet' );
-check( false === strpos( $plain, 'rapls-sitemap--t' ), 'and no scope class' );
+check( false === strpos( $plain, 'rapls-sitemap--t' ), 'unconfigured tokens produce no scope class' );
 check( false === strpos( $plain, '<i ' ), 'and no icon element' );
 
-/* --- additional CSS stays out of the markup ------------------------------ */
+/* --- no CSS reaches the cached markup ------------------------------------ */
 
-// It is identical on every placement and can be kilobytes, while this markup
-// is cached per placement *and* per page. Embedding it would store a copy in
-// every cache entry and print a copy for every placement, so Frontend\Styles
-// hands it to WordPress instead. See smoke-marker.php for the other half.
-$settings               = Settings::defaults();
-$settings['custom_css'] = '.rapls-sitemap { border: 1px solid red }';
-$html                   = ( new Renderer( $settings ) )->render( array( $flat ) );
-
-check( false === strpos( $html, 'border: 1px solid red' ), 'the author CSS is not embedded in the cached markup' );
-
-// The token stylesheet is per placement and small, so that one stays inline.
+// This markup is cached per placement *and* per page, so anything embedded in
+// it is stored once per entry and printed once per placement. Nothing is: the
+// scope class travels with the markup, and the declarations it points at are
+// attached out in Frontend\Styles. See smoke-marker.php for that half.
+$settings          = Settings::defaults();
 $settings['style'] = RaplsSitemap\Support\Design::sanitize( array( 'link_color' => '#c00' ) );
 $html              = ( new Renderer( $settings ) )->render( array( $flat ) );
-check( false !== strpos( $html, 'color:#c00' ), 'but the per-placement design tokens still are' );
+
+check( false !== strpos( $html, 'rapls-sitemap--t' ), 'the scope class travels with the markup' );
+check( false === strpos( $html, 'color:#c00' ), 'but the declarations it points at do not' );
 
 summary();

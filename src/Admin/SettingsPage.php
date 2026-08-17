@@ -954,7 +954,7 @@ final class SettingsPage {
 
 		$this->render_ordering( $name, $settings );
 		$this->render_design( $name, $settings );
-		$this->render_custom_css( $name, $settings );
+		$this->render_css_classes( $name, $settings );
 
 		self::open_section(
 			'migration',
@@ -1323,50 +1323,37 @@ final class SettingsPage {
 	}
 
 	/**
-	 * The custom-CSS section.
+	 * The CSS class reference.
 	 *
-	 * Named for what it holds rather than "advanced", which is now the tab it
-	 * sits in — every panel in there is advanced, so one of them carrying the
-	 * word says nothing.
+	 * There used to be an Additional CSS box above this table. It was removed:
+	 * the directory does not permit a plugin to store and print arbitrary CSS,
+	 * and WordPress already ships a CSS editor with error checking in the
+	 * Customizer. What is left is the part that was actually hard to find —
+	 * the class names — because somebody writing those rules has the markup in
+	 * front of them but no way to see its classes without developer tools.
 	 *
 	 * @param string              $name     Option name.
 	 * @param array<string,mixed> $settings Effective settings.
 	 */
-	private function render_custom_css( string $name, array $settings ): void {
+	private function render_css_classes( string $name, array $settings ): void {
 		self::open_section(
-			'custom-css',
-			__( 'Custom CSS', 'rapls-sitemap' ),
-			__( 'style rules of your own, printed after everything else', 'rapls-sitemap' ),
-			'' !== trim( (string) $settings['custom_css'] )
+			'css-classes',
+			__( 'CSS class reference', 'rapls-sitemap' ),
+			__( 'the class names to target from your theme', 'rapls-sitemap' ),
+			false
 		);
 		?>
-		<table class="form-table" role="presentation">
-			<tr>
-				<th scope="row">
-					<label for="rapls-sitemap-css"><?php echo esc_html__( 'Additional CSS', 'rapls-sitemap' ); ?></label>
-				</th>
-				<td>
-					<?php if ( ! Settings::can_edit_css() ) : ?>
-						<p class="description">
-							<?php echo esc_html__( 'Editing CSS needs the unfiltered_html capability, which a network reserves for super administrators. Any CSS already saved keeps working; it is only shown here to those who may change it.', 'rapls-sitemap' ); ?>
-						</p>
-					<?php else : ?>
-					<textarea id="rapls-sitemap-css" class="large-text code" rows="10" spellcheck="false"
-						name="<?php echo esc_attr( $name . '[custom_css]' ); ?>"><?php echo esc_textarea( (string) $settings['custom_css'] ); ?></textarea>
-					<p class="description">
-						<?php echo esc_html__( 'Printed with the sitemap, after everything else, so it wins. Scope your rules to .rapls-sitemap to avoid affecting the rest of the page.', 'rapls-sitemap' ); ?>
-					</p>
-
-					<?php
-					self::open_section( 'css-help', __( 'Which classes can I target?', 'rapls-sitemap' ), '', false, 'rapls-section--help' );
-					self::render_css_reference();
-					self::close_section();
-					?>
-					<?php endif; ?>
-				</td>
-			</tr>
-		</table>
+		<p class="description">
+			<?php
+			printf(
+				/* translators: %s: the name of the WordPress screen that holds the Additional CSS field. */
+				esc_html__( 'Write your rules in %s, or in your theme. Scope them to .rapls-sitemap so they do not reach the rest of the page.', 'rapls-sitemap' ),
+				'<strong>' . esc_html__( 'Appearance → Customize → Additional CSS', 'rapls-sitemap' ) . '</strong>'
+			);
+			?>
+		</p>
 		<?php
+		self::render_css_reference();
 		self::close_section();
 	}
 

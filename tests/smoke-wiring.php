@@ -129,7 +129,6 @@ $covered_indirectly = array(
 	'TreeBuilder::is_listable_taxonomy'   => 'section() and primary_taxonomy(), in smoke-tree.php',
 	'Node::has_children'           => 'Renderer::item(), throughout smoke-renderer.php',
 	'Design::merge'                => 'Renderer::__construct(), throughout smoke-renderer.php',
-	'Settings::can_edit_css'       => 'Settings::sanitize(), in smoke-settings.php',
 );
 
 $suite = '';

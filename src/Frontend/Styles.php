@@ -13,7 +13,7 @@
 
 namespace RaplsSitemap\Frontend;
 
-use RaplsSitemap\Support\Settings;
+use RaplsSitemap\Support\Design;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -28,7 +28,7 @@ final class Styles {
 	public const HANDLE = 'rapls-sitemap';
 
 	/**
-	 * Handle the author's Additional CSS is attached to.
+	 * Handle the design tokens are attached to.
 	 *
 	 * Registered with no source, which is the documented way to hold inline
 	 * styles without also asking the browser for a file. It exists separately
@@ -39,11 +39,11 @@ final class Styles {
 	public const INLINE_HANDLE = 'rapls-sitemap-inline';
 
 	/**
-	 * Whether the Additional CSS has already been attached this request.
+	 * Scope classes whose token block has already been attached this request.
 	 *
-	 * @var bool
+	 * @var array<string,bool>
 	 */
-	private static $css_attached = false;
+	private static $attached = array();
 
 	/**
 	 * Hook registration.
@@ -75,7 +75,7 @@ final class Styles {
 	 * @param array<string,mixed> $settings Effective settings.
 	 */
 	public static function request( array $settings ): void {
-		self::request_custom_css( $settings );
+		self::request_tokens( $settings );
 
 		if ( empty( $settings['load_styles'] ) ) {
 			return;
@@ -95,24 +95,37 @@ final class Styles {
 	}
 
 	/**
-	 * Attach the author's Additional CSS, at most once per request.
+	 * Attach the design tokens, once per distinct set of them.
 	 *
-	 * It deliberately does not travel inside the rendered markup. That markup
-	 * is cached per placement and per page — `exclude_current` alone gives a
-	 * distinct entry for every page a sitemap appears on — so a stylesheet
-	 * embedded in it would be stored once per entry and printed once per
-	 * placement. Handing it to WordPress instead stores it nowhere and prints
-	 * it once, wherever late styles go.
+	 * These used to be printed as a `<style>` element inside the rendered
+	 * markup. WordPress asks that CSS go through `wp_add_inline_style()`
+	 * instead, and it is right to: a style element in post content is a style
+	 * element no theme, plugin or optimiser can see coming.
+	 *
+	 * The reason it was ever inline is still real, though, so this runs here
+	 * rather than in the renderer. The markup is cached per placement *and* per
+	 * page — `exclude_current` alone gives a distinct entry for every page a
+	 * sitemap appears on — so CSS embedded in it would be stored once per entry
+	 * and printed once per placement. Attaching it out here stores it nowhere
+	 * and prints it once.
+	 *
+	 * Keyed by the scope class rather than a plain "done" flag. Two placements
+	 * with different tokens each need their own block; two with the same tokens
+	 * need one between them. The scope class is a hash of the tokens, so it is
+	 * exactly that key.
 	 *
 	 * @param array<string,mixed> $settings Effective settings.
 	 */
-	private static function request_custom_css( array $settings ): void {
-		if ( self::$css_attached ) {
+	private static function request_tokens( array $settings ): void {
+		$style = Design::merge( isset( $settings['style'] ) ? $settings['style'] : array() );
+		$css   = Design::style_block( $style );
+
+		if ( '' === $css ) {
 			return;
 		}
 
-		$css = isset( $settings['custom_css'] ) ? (string) $settings['custom_css'] : '';
-		if ( '' === trim( $css ) ) {
+		$scope = Design::scope_class( $style );
+		if ( isset( self::$attached[ $scope ] ) ) {
 			return;
 		}
 
@@ -120,11 +133,9 @@ final class Styles {
 			return;
 		}
 
-		// Sanitized on save; re-run here because CSS can reach the option by
-		// other routes — a filter, an import, a direct update_option().
 		wp_enqueue_style( self::INLINE_HANDLE );
-		wp_add_inline_style( self::INLINE_HANDLE, Settings::sanitize_css( $css ) );
+		wp_add_inline_style( self::INLINE_HANDLE, $css );
 
-		self::$css_attached = true;
+		self::$attached[ $scope ] = true;
 	}
 }

@@ -24,22 +24,6 @@ final class Settings {
 	/** The one and only option name. */
 	public const OPTION = 'rapls_sitemap_settings';
 
-	/**
-	 * Capability required to edit the Additional CSS field.
-	 *
-	 * Not `manage_options`, which every site administrator holds — including,
-	 * on a network, administrators of individual sites. `unfiltered_html` is
-	 * the capability WordPress already reserves for "may write markup and
-	 * styles that get printed verbatim", and on multisite core grants it to
-	 * super admins only. Using it here means CSS editing follows the same rule
-	 * as everything else on the site that is printed unescaped.
-	 */
-	public const CSS_CAPABILITY = 'unfiltered_html';
-
-	/** Ceiling on the Additional CSS field, in bytes. */
-	public const MAX_CSS_BYTES = 65536;
-
-	/** Heading elements a section or category heading may be rendered as. */
 	public const HEADING_LEVELS = array( '', 'h2', 'h3', 'h4', 'h5', 'h6' );
 
 	/**
@@ -328,7 +312,6 @@ final class Settings {
 			// Typography, colour, and bullet overrides; see Support\Design.
 			'style'            => array(),
 			// Author-supplied CSS, printed with the sitemap.
-			'custom_css'       => '',
 			// Enqueue the bundled stylesheet. Off = theme supplies all styling.
 			'load_styles'      => true,
 			// Cached markup lifetime in seconds; 0 disables caching.
@@ -542,7 +525,6 @@ final class Settings {
 
 		$clean['style'] = Design::sanitize( isset( $input['style'] ) ? $input['style'] : array() );
 
-		$clean['custom_css'] = self::resolve_css( $input );
 
 		if ( isset( $input['cache_ttl'] ) ) {
 			$clean['cache_ttl'] = max( 0, (int) $input['cache_ttl'] );
@@ -573,77 +555,6 @@ final class Settings {
 		}
 
 		return $clean;
-	}
-
-	/**
-	 * May the current user edit the Additional CSS field?
-	 *
-	 * @return bool
-	 */
-	public static function can_edit_css(): bool {
-		return current_user_can( self::CSS_CAPABILITY );
-	}
-
-	/**
-	 * Decide what `custom_css` should be after a save.
-	 *
-	 * Two cases have to be kept apart, and getting them backwards would either
-	 * discard somebody's stylesheet or let the wrong person write one:
-	 *
-	 * - The field was not submitted. That means it was not rendered, because a
-	 *   textarea posts even when empty — so the stored CSS is preserved rather
-	 *   than reset to the default, which is what every other absent key does.
-	 * - It *was* submitted by someone without the capability. A form field can
-	 *   be forged, so the check lives here at the save rather than only at the
-	 *   render, and the submitted value is discarded.
-	 *
-	 * @param array<string,mixed> $input Raw input.
-	 * @return string
-	 */
-	private static function resolve_css( array $input ): string {
-		if ( isset( $input['custom_css'] ) && self::can_edit_css() ) {
-			return self::sanitize_css( (string) $input['custom_css'] );
-		}
-
-		$stored = get_option( self::OPTION, array() );
-
-		return ( is_array( $stored ) && isset( $stored['custom_css'] ) ) ? (string) $stored['custom_css'] : '';
-	}
-
-	/**
-	 * Make author-supplied CSS safe to print inside a `<style>` element.
-	 *
-	 * The one thing CSS must never be able to do here is leave its element, so
-	 * every `<` that starts a tag goes. `>` stays — it is the child combinator,
-	 * and stripping it would break ordinary selectors. Comment delimiters go
-	 * too, because `<!--` is the historical way out of a style block.
-	 *
-	 * This is a containment measure, not a CSS parser. Anyone who can reach
-	 * this field already holds `unfiltered_html` — see CSS_CAPABILITY, which is
-	 * deliberately not `manage_options`.
-	 *
-	 * @param string $css Raw CSS.
-	 * @return string
-	 */
-	public static function sanitize_css( string $css ): string {
-		$css = str_replace( array( '<!--', '-->' ), '', $css );
-
-		// Kills `</style`, `<script`, and anything else tag-shaped, while
-		// leaving `a > b` and `@media (max-width: 40em)` untouched.
-		$css = preg_replace( '#<\s*/?\s*[a-zA-Z!]#', '', $css );
-
-		$css = trim( (string) $css );
-
-		// The only field here with no natural size, and it lives in an option
-		// that is read on every sitemap render and shipped in every cache
-		// entry. 64 KB is far more than a sitemap's styling needs and well
-		// under the 150 KB at which WordPress 6.6 stops autoloading an option
-		// on its own.
-		if ( strlen( $css ) > self::MAX_CSS_BYTES ) {
-			$css = substr( $css, 0, self::MAX_CSS_BYTES );
-		}
-
-		return $css;
 	}
 
 	/**

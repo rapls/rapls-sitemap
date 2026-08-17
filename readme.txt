@@ -52,7 +52,7 @@ It is a maintained replacement for **PS Auto Sitemap** (closed in 2022) and **WP
 * Font size, line height, indent, link colour, underline and column count on top of the preset.
 * Bullets as discs, circles, squares, emoji, or an icon class such as Font Awesome, separately for top-level and nested items.
 * Section and category labels as real `h2`–`h6` headings, which screen-reader users navigate by.
-* An Additional CSS box, gated on `unfiltered_html` rather than on access to the settings screen.
+* A class reference on the settings screen, so you can target the markup from the Customizer's Additional CSS or your theme.
 
 = Migrating from PS Auto Sitemap or WP Sitemap Page =
 
@@ -77,7 +77,7 @@ Developer filters cover what the settings cannot reach, including `rapls_sitemap
 
 WPML and Polylang work with no configuration. Both narrow the post and term queries to the current language, and this plugin does not switch those filters off. The render cache keys on the locale, so one language is never served another's.
 
-Learn more: [Plugin details and developer reference](https://raplsworks.com/plugins/rapls-sitemap/) | [Source code (GitHub)](https://github.com/rapls/rapls-sitemap)
+Learn more: [Plugin details and developer reference](https://raplsworks.com/plugins/rapls-sitemap/)
 
 == Installation ==
 
@@ -118,10 +118,6 @@ Yes. Set a publication window with `date_after` and `date_before`. Both ends are
 = Will it cope with a large site? =
 
 Yes, within a cap you set. A sitemap asks for everything at once, so the cap exists to stop that query exhausting memory; it applies to the post, term and user queries alike and defaults to 2000. **A list that stops short always says so in the output**, because a silently short sitemap is worse than a slow one.
-
-= Who can edit the Additional CSS box? =
-
-Only users with `unfiltered_html`: administrators on a single site, network administrators on multisite. Not everyone who can open the settings screen, because on multisite that includes site administrators and this field prints verbatim.
 
 = Does it print a credit link on my site? =
 

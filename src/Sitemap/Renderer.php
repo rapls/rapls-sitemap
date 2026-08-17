@@ -69,25 +69,6 @@ final class Renderer {
 	}
 
 	/**
-	 * The token stylesheet and the author's CSS, ahead of the sitemap.
-	 *
-	 * These sit in the returned markup rather than in `wp_head` so they travel
-	 * with the cached HTML and appear only where a sitemap actually does. The
-	 * author's CSS comes last so it can override the tokens.
-	 *
-	 * @return string
-	 */
-	private function styles(): string {
-		// The design tokens only, which are per placement and a few hundred
-		// bytes. The author's Additional CSS is the same on every placement and
-		// can be kilobytes, so `Frontend\Styles` hands that to WordPress
-		// instead — keeping it out of every cache entry and printing it once.
-		$css = Design::style_block( $this->style );
-
-		return '' === $css ? '' : '<style>' . $css . '</style>';
-	}
-
-	/**
 	 * Render the whole sitemap.
 	 *
 	 * @param Node[] $roots Root nodes.
@@ -105,8 +86,6 @@ final class Renderer {
 				. $this->list( $roots, 0 )
 				. '</nav>';
 		}
-
-		$html = $this->styles() . $html;
 
 		/**
 		 * Filters the rendered markup.

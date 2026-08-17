@@ -27,7 +27,7 @@ final class Activator {
 		// Not autoloaded. The settings are read only where a sitemap actually
 		// renders — one page on most sites — while autoload would load them on
 		// every request, admin screens and REST calls included. They also hold
-		// the Additional CSS, which is the one field here with no natural size.
+		// on every render.
 		$fresh = false === get_option( Settings::OPTION );
 
 		if ( $fresh ) {

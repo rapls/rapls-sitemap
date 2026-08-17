@@ -125,10 +125,6 @@ msgstr "アコーディオン"
 msgid "Add rel=\"nofollow\" to every link"
 msgstr "すべてのリンクに rel=\"nofollow\" を付ける"
 
-#: src/Admin/SettingsPage.php:1177
-msgid "Additional CSS"
-msgstr "追加 CSS"
-
 #: src/Admin/SettingsPage.php:1169
 msgid "Advanced"
 msgstr "詳細設定"
@@ -400,10 +396,6 @@ msgstr "書類"
 #: assets/js/block.js:43
 msgid "Dots"
 msgstr "ドット"
-
-#: src/Admin/SettingsPage.php:1182
-msgid "Editing CSS needs the unfiltered_html capability, which a network reserves for super administrators. Any CSS already saved keeps working; it is only shown here to those who may change it."
-msgstr "CSS の編集には unfiltered_html 権限が必要です。マルチサイトではこの権限はネットワーク管理者のみに与えられます。すでに保存済みの CSS はそのまま動作します。編集できる人にだけ、ここに表示されます。"
 
 #: src/Admin/SettingsPage.php:1563
 msgid "Emoji"
@@ -914,10 +906,6 @@ msgstr "フィールドが空、または未設定の投稿は、除外される
 msgid "Print items with no destination as headings"
 msgstr "リンク先のない項目を見出しとして表示する"
 
-#: src/Admin/SettingsPage.php:1188
-msgid "Printed with the sitemap, after everything else, so it wins. Scope your rules to .rapls-sitemap to avoid affecting the rest of the page."
-msgstr "サイトマップと一緒に出力されます。他のすべての設定より後に読み込まれるため、こちらが優先されます。ページの他の部分に影響しないよう、.rapls-sitemap を起点に指定してください。"
-
 #: src/Admin/SettingsPage.php:516
 msgid "Published between"
 msgstr "公開期間"
@@ -1284,10 +1272,6 @@ msgstr "表示する対象"
 msgid "Whatever suits each list"
 msgstr "リストごとに最適な順序"
 
-#: src/Admin/SettingsPage.php:1192
-msgid "Which classes can I target?"
-msgstr "指定できるクラス一覧"
-
 #: src/Admin/SettingsPage.php:247
 msgid "Windows ships no country flag glyphs, so these appear as two letters — 🇯🇵 becomes JP — for visitors on Windows. The first five are ordinary symbols and are safe everywhere."
 msgstr "Windows は国旗の字形を持たないため、Windows の閲覧者には 🇯🇵 が JP のように2文字で表示されます。先頭の5つは通常の記号なので、どの環境でも表示されます。"
@@ -1365,17 +1349,23 @@ msgstr "日付、抜粋、件数、見出し、nofollow"
 msgid "how entries and categories are sorted, the entry cap, custom fields"
 msgstr "項目とカテゴリーの並べ方、件数上限、カスタムフィールド"
 
-msgid "Custom CSS"
-msgstr "独自の CSS"
-
-msgid "style rules of your own, printed after everything else"
-msgstr "自分で書いたスタイル。他のすべての後に出力"
-
 msgid "Coming from another plugin"
 msgstr "他のプラグインからの移行"
 
 msgid "answer to WP Sitemap Page or PS Auto Sitemap as well"
 msgstr "WP Sitemap Page や PS Auto Sitemap にも応答する"
+
+msgid "CSS class reference"
+msgstr "指定できるクラス一覧"
+
+msgid "the class names to target from your theme"
+msgstr "テーマから指定するためのクラス名"
+
+msgid "Appearance → Customize → Additional CSS"
+msgstr "外観 → カスタマイズ → 追加 CSS"
+
+msgid "Write your rules in %s, or in your theme. Scope them to .rapls-sitemap so they do not reach the rest of the page."
+msgstr "%s か、お使いのテーマに記述してください。ページの他の部分に影響しないよう、.rapls-sitemap を起点に指定してください。"
 
 #~ msgid "The author and archive listings ignore everything below except the entry cap and the design — they are built from who published and when, not from the content settings."
 #~ msgstr "投稿者一覧と年月アーカイブ一覧は、件数上限とデザイン以外の下の設定を参照しません。誰がいつ公開したかから組み立てるためです。"
