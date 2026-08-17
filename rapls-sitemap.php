@@ -3,7 +3,7 @@
  * Plugin Name:       Rapls Sitemap
  * Plugin URI:        https://raplsworks.com/plugins/rapls-sitemap/
  * Description:       An HTML sitemap page for readers: pages, posts, categories, authors, archives and navigation menus, from one shortcode or block.
- * Version:           0.1.0
+ * Version:           0.1.1
  * Requires at least: 6.3
  * Requires PHP:      7.4
  * Author:            Rapls
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'RAPLS_SITEMAP_VERSION', '0.1.0' );
+define( 'RAPLS_SITEMAP_VERSION', '0.1.1' );
 define( 'RAPLS_SITEMAP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'RAPLS_SITEMAP_URL', plugin_dir_url( __FILE__ ) );
 define( 'RAPLS_SITEMAP_BASENAME', plugin_basename( __FILE__ ) );
