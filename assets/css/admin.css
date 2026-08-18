@@ -158,6 +158,58 @@
 	padding-left: 1.25em;
 }
 
+/* --- the text-size slider -------------------------------------------------- */
+
+.rapls-scale {
+	/* Wide enough that five steps are five distinguishable places to stop, and
+	   narrow enough that the labels underneath do not sprawl. */
+	max-width: 26em;
+}
+
+.rapls-scale__slider {
+	display: block;
+	margin: 0;
+	width: 100%;
+}
+
+/* The labels sit under the track rather than in the `<datalist>`: browsers
+   draw datalist ticks as unlabelled notches, and several draw nothing. */
+.rapls-scale__ticks {
+	color: #646970;
+	display: flex;
+	font-size: 11px;
+	justify-content: space-between;
+	line-height: 1.4;
+	list-style: none;
+	margin: 0.25em 0 0;
+	padding: 0;
+}
+
+.rapls-scale__ticks li {
+	flex: 1 1 0;
+	text-align: center;
+}
+
+/* The thumb stops flush with each end of the track, so the outer two labels
+   line up with it only when they hug the edges too. */
+.rapls-scale__ticks li:first-child {
+	text-align: left;
+}
+
+.rapls-scale__ticks li:last-child {
+	text-align: right;
+}
+
+.rapls-scale__now {
+	display: inline-block;
+	font-weight: 600;
+	margin-top: 0.4em;
+}
+
+.rapls-scale__note code {
+	padding: 0 4px;
+}
+
 /* --- number-and-unit pairs ------------------------------------------------ */
 
 .rapls-field {
@@ -540,5 +592,11 @@
 	.rapls-field input[type="number"],
 	.rapls-field__emoji {
 		max-width: 100%;
+	}
+
+	/* Five labels at 11px fit a phone only just; the middle three lose their
+	   share first, so the ends keep the scale readable. */
+	.rapls-scale__ticks {
+		font-size: 10px;
 	}
 }

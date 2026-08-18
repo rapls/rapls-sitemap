@@ -107,6 +107,38 @@ check( false === strpos( Design::sanitize( array( 'marker_text' => 'a}b{c' ) )['
 check( 'fa-solid fa-angle-right' === Design::sanitize( array( 'marker_icon' => 'fa-solid fa-angle-right' ) )['marker_icon'], 'an icon class is kept' );
 check( '' === Design::sanitize( array( 'marker_icon' => 'x" onload="alert(1)' ) )['marker_icon'], 'an attribute break-out is rejected' );
 
+/* --- the text-size slider ------------------------------------------------- */
+
+// Five positions on the Basic tab, the middle one meaning "leave it alone".
+check( '1' === Design::sanitize( array( 'text_scale' => '1' ) )['text_scale'], 'a slider position is kept' );
+check( '5' === Design::sanitize( array( 'text_scale' => '5' ) )['text_scale'], 'at either end of the scale' );
+check( '' === Design::sanitize( array( 'text_scale' => '3' ) )['text_scale'], 'standard is stored as unset, not as a step' );
+check( '' === Design::sanitize( array( 'text_scale' => '9' ) )['text_scale'], 'a position off the scale is dropped' );
+check( '' === Design::sanitize( array( 'text_scale' => '2em' ) )['text_scale'], 'and so is a length — this control is not the box under Advanced' );
+
+// Standard has to leave the design alone as completely as an empty box does,
+// or dropping the slider onto the screen would restyle every existing site.
+$standard = Design::sanitize( array( 'text_scale' => '3' ) );
+check( ! Design::is_configured( $standard ), 'a slider nobody moved counts as unconfigured' );
+check( '' === Design::style_block( $standard ), 'and emits nothing at all' );
+
+$scaled = Design::style_block( Design::sanitize( array( 'text_scale' => '5' ) ) );
+check( false !== strpos( $scaled, 'font-size:1.35em' ), 'a step reaches the wrapper as a relative size' );
+
+// The whole of the priority rule: an exact length under Advanced wins, and it
+// wins by being the only declaration emitted rather than by coming second.
+$both = Design::style_block( Design::sanitize( array( 'text_scale' => '5', 'font_size' => '13px' ) ) );
+check( false !== strpos( $both, 'font-size:13px' ), 'the Advanced box wins over the slider' );
+check( false === strpos( $both, '1.35em' ), 'and the step it beat is not emitted at all' );
+check( 1 === substr_count( $both, 'font-size:' ), 'so the outcome never depends on source order' );
+
+// Two placements that differ only by slider position must not share a scope.
+check(
+	Design::scope_class( Design::sanitize( array( 'text_scale' => '1' ) ) )
+		!== Design::scope_class( Design::sanitize( array( 'text_scale' => '5' ) ) ),
+	'the slider is part of the scope class, so two sizes cannot bleed into each other'
+);
+
 /* --- enums --------------------------------------------------------------- */
 
 check( 'hover' === Design::sanitize( array( 'underline' => 'hover' ) )['underline'], 'a known underline mode is kept' );

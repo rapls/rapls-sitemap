@@ -273,6 +273,11 @@ check( '' !== $html, 'the settings screen renders without a fatal error' );
 check( false !== strpos( $html, 'option_page' ), 'the Settings API nonce fields are present' );
 check( false !== strpos( $html, 'rapls_sitemap_settings[design]' ), 'a design control is on the page' );
 check( false !== strpos( $html, 'rapls_sitemap_settings[style][font_size_value]' ), 'so is a split length control' );
+// The slider is the one design control on the Basic tab, and it posts into the
+// same token array as the Advanced boxes — a range input needs no script to do
+// that, which is what makes it a real control rather than an enhancement.
+check( false !== strpos( $html, 'rapls_sitemap_settings[style][text_scale]' ), 'the text-size slider is on the Basic tab' );
+check( false !== strpos( $html, 'type="range"' ), 'and it is a slider, which posts on its own with no script at all' );
 check( false === strpos( $html, 'custom_css' ), 'no Additional CSS field — the directory does not permit storing arbitrary CSS' );
 check( false !== strpos( $html, 'rapls-sitemap__item--term' ), 'but the class reference that made it useful is still there' );
 check( false !== strpos( $html, 'rapls-sitemap__item--archive-month' ), 'the class reference lists every node kind' );

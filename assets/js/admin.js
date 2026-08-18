@@ -306,10 +306,47 @@
 		} );
 	}
 
+	/* --- the text-size slider ------------------------------------------------ */
+
+	/**
+	 * Keep the readout beside the slider showing the step it is on.
+	 *
+	 * The slider posts its own value, so this changes nothing about what is
+	 * saved. The labels are read out of the list already on the page rather
+	 * than passed in separately, which keeps one set of strings translated
+	 * once.
+	 */
+	function bindScale() {
+		var slider = document.getElementById( 'rapls-sitemap-text-scale' );
+		var output = document.getElementById( 'rapls-sitemap-text-scale-now' );
+		var list = document.getElementById( 'rapls-sitemap-text-scale-labels' );
+
+		if ( ! slider || ! output || ! list ) {
+			return;
+		}
+
+		var labels = list.querySelectorAll( 'li' );
+
+		slider.addEventListener( 'input', function () {
+			var step = labels[ parseInt( slider.value, 10 ) - 1 ];
+
+			if ( ! step ) {
+				return;
+			}
+
+			output.textContent = step.textContent;
+
+			// A range input is announced as a bare number otherwise, which is
+			// the one thing about this control that carries no meaning.
+			slider.setAttribute( 'aria-valuetext', step.textContent );
+		} );
+	}
+
 	/* --- wiring -------------------------------------------------------------- */
 
 	function init() {
 		bindTabs();
+		bindScale();
 		document.querySelectorAll( '.rapls-field--color' ).forEach( bindColour );
 		document.querySelectorAll( '.rapls-field--emoji' ).forEach( bindEmoji );
 

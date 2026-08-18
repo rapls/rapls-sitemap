@@ -450,6 +450,7 @@ final class SettingsPage {
 	 * @param array<string,mixed> $settings Effective settings.
 	 */
 	private function render_basic( string $name, array $settings ): void {
+		$style = Design::merge( $settings['style'] );
 		?>
 		<p class="description rapls-pane__lead">
 			<?php echo esc_html__( 'Every setting here has a working default, so choosing what to list is enough to finish. Everything else lives under Advanced.', 'rapls-sitemap' ); ?>
@@ -585,6 +586,15 @@ final class SettingsPage {
 							<?php echo esc_html__( 'Load the bundled stylesheet', 'rapls-sitemap' ); ?>
 						</label>
 					</p>
+				</td>
+			</tr>
+
+			<tr>
+				<th scope="row">
+					<label for="rapls-sitemap-text-scale"><?php echo esc_html__( 'Text size', 'rapls-sitemap' ); ?></label>
+				</th>
+				<td>
+					<?php self::text_scale_field( $name . '[style]', $style ); ?>
 				</td>
 			</tr>
 
@@ -1217,7 +1227,10 @@ final class SettingsPage {
 			'design',
 			__( 'Typography and bullets', 'rapls-sitemap' ),
 			__( 'font size, line height, link colour, underline, bullets', 'rapls-sitemap' ),
-			Design::is_configured( $style )
+			// `text_scale` posts into this same token array, but its control is
+			// the slider on the Basic tab — opening this panel for it would
+			// open a panel with nothing in it to see.
+			Design::is_configured( array_merge( $style, array( 'text_scale' => '' ) ) )
 		);
 
 		?>
@@ -1234,7 +1247,7 @@ final class SettingsPage {
 					self::length_field( $field, 'line_height', __( 'Line height', 'rapls-sitemap' ), $style, true );
 					self::length_field( $field, 'indent', __( 'Indent per level', 'rapls-sitemap' ), $style );
 					?>
-					<p class="description"><?php echo esc_html__( 'Leave a number blank to keep what the design does.', 'rapls-sitemap' ); ?></p>
+					<p class="description"><?php echo esc_html__( 'Leave a number blank to keep what the design does. A font size here is exact, so it overrules the "Text size" slider on the Basic tab.', 'rapls-sitemap' ); ?></p>
 				</td>
 			</tr>
 
@@ -1552,6 +1565,83 @@ final class SettingsPage {
 			?>
 		</form>
 		<?php
+	}
+
+	/**
+	 * The text-size slider: five positions, the middle one meaning "leave it".
+	 *
+	 * A range input needs no JavaScript to post its value, so this is a real
+	 * control on its own — the script only keeps the readout beside it in step.
+	 * The tick labels are printed as text rather than left to the `<datalist>`,
+	 * which browsers draw as unlabelled notches, or as nothing at all.
+	 *
+	 * When the Advanced box is filled in this slider cannot do anything, and
+	 * the screen says so rather than leaving somebody dragging a control with
+	 * no effect.
+	 *
+	 * @param string               $field Option name plus `[style]`.
+	 * @param array<string,string> $style Current tokens.
+	 */
+	private static function text_scale_field( string $field, array $style ): void {
+		$steps    = self::text_scales();
+		$stored   = (string) $style['text_scale'];
+		$current  = isset( $steps[ $stored ] ) ? $stored : '3';
+		$override = (string) $style['font_size'];
+		?>
+		<div class="rapls-scale">
+			<input type="range" min="1" max="5" step="1" class="rapls-scale__slider"
+				id="rapls-sitemap-text-scale"
+				name="<?php echo esc_attr( $field . '[text_scale]' ); ?>"
+				value="<?php echo esc_attr( $current ); ?>"
+				list="rapls-sitemap-text-scale-ticks"
+				aria-describedby="rapls-sitemap-text-scale-now"
+				aria-valuetext="<?php echo esc_attr( $steps[ $current ] ); ?>" />
+			<datalist id="rapls-sitemap-text-scale-ticks">
+				<?php foreach ( $steps as $value => $label ) : ?>
+					<option value="<?php echo esc_attr( (string) $value ); ?>" label="<?php echo esc_attr( $label ); ?>"></option>
+				<?php endforeach; ?>
+			</datalist>
+			<ul class="rapls-scale__ticks" id="rapls-sitemap-text-scale-labels" aria-hidden="true">
+				<?php foreach ( $steps as $label ) : ?>
+					<li><?php echo esc_html( $label ); ?></li>
+				<?php endforeach; ?>
+			</ul>
+			<output class="rapls-scale__now" id="rapls-sitemap-text-scale-now" for="rapls-sitemap-text-scale"><?php echo esc_html( $steps[ $current ] ); ?></output>
+		</div>
+		<?php if ( '' !== $override ) : ?>
+			<p class="description rapls-scale__note">
+				<?php
+				printf(
+					/* translators: %s is the length set under Advanced, for example 18px. */
+					esc_html__( 'This slider is doing nothing: the "Font size" box under Advanced is set to %s, and an exact size wins over a step. Clear that box to use the slider.', 'rapls-sitemap' ),
+					'<code>' . esc_html( $override ) . '</code>'
+				);
+				?>
+			</p>
+		<?php else : ?>
+			<p class="description">
+				<?php echo esc_html__( 'Standard leaves the text at whatever the theme and the design already do. The "Font size" box under Advanced takes an exact length and overrules this.', 'rapls-sitemap' ); ?>
+			</p>
+		<?php endif; ?>
+		<?php
+	}
+
+	/**
+	 * The slider's five positions, in order.
+	 *
+	 * The keys are the values that post; the middle one is stored as '' — see
+	 * Design::SCALES.
+	 *
+	 * @return array<string,string>
+	 */
+	private static function text_scales(): array {
+		return array(
+			'1' => __( 'Smallest', 'rapls-sitemap' ),
+			'2' => __( 'Small', 'rapls-sitemap' ),
+			'3' => __( 'Standard', 'rapls-sitemap' ),
+			'4' => __( 'Large', 'rapls-sitemap' ),
+			'5' => __( 'Largest', 'rapls-sitemap' ),
+		);
 	}
 
 	/**

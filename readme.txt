@@ -5,7 +5,7 @@ Donate link: https://buymeacoffee.com/rapls
 Tags: html sitemap, sitemap, table of contents, navigation, menu
 Requires at least: 6.3
 Tested up to: 7.0
-Stable tag: 0.1.1
+Stable tag: 0.1.2
 Requires PHP: 7.4
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -49,7 +49,8 @@ It is a maintained replacement for **PS Auto Sitemap** (closed in 2022) and **WP
 
 * Entries by date, title, ID, menu order, last modified, comment count, at random, or by a custom field — which is how you get a true kana order for Japanese titles. Category headings by name, count, slug or ID.
 * 27 CSS presets plus "no styling at all", for themes that would rather do it themselves.
-* Font size, line height, indent, link colour, underline and column count on top of the preset.
+* A five-step text size slider on the Basic tab, for the one appearance question every site has.
+* Font size, line height, indent, link colour, underline and column count on top of the preset; an exact font size overrules the slider.
 * Bullets as discs, circles, squares, emoji, or an icon class such as Font Awesome, separately for top-level and nested items.
 * Section and category labels as real `h2`–`h6` headings, which screen-reader users navigate by.
 * A class reference on the settings screen, so you can target the markup from the Customizer's Additional CSS or your theme.
@@ -136,11 +137,14 @@ The sitemap is a labelled `nav` landmark, and section and category labels can be
 
 == Changelog ==
 
+= 0.1.2 =
+* Text size is now a five-step slider on the Basic tab. An exact font size under Advanced still overrules it.
+
 = 0.1.1 =
 * Initial release.
 * Japanese translation included.
 
 == Upgrade Notice ==
 
-= 0.1.1 =
-Initial release.
+= 0.1.2 =
+Nothing changes on an existing site until you move the new slider.

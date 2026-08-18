@@ -51,6 +51,25 @@ final class Design {
 	public const MARKERS = array( 'default', 'none', 'disc', 'circle', 'square', 'emoji', 'icon' );
 
 	/**
+	 * The five positions of the Basic tab's text-size slider.
+	 *
+	 * A relative unit on purpose: the slider says "a little larger than this
+	 * theme", not "16 pixels". A site that wants an absolute size has the
+	 * `font_size` box under Advanced, which wins — see base_font_size().
+	 *
+	 * Step 3 maps to the empty string because standard means *no declaration*,
+	 * exactly as an empty box does everywhere else here. That is what keeps a
+	 * slider nobody moved from overriding the design it sits on top of.
+	 */
+	public const SCALES = array(
+		'1' => '0.8em',
+		'2' => '0.9em',
+		'3' => '',
+		'4' => '1.15em',
+		'5' => '1.35em',
+	);
+
+	/**
 	 * The complete token schema with its defaults.
 	 *
 	 * An empty string always means "leave it to the preset", never "set it to
@@ -60,7 +79,9 @@ final class Design {
 	 */
 	public static function defaults(): array {
 		return array(
-			/* Typography. */
+			/* Typography. The slider on the Basic tab and the box under
+			   Advanced answer the same question; `font_size` wins. */
+			'text_scale'        => '',
 			'font_size'         => '',
 			'line_height'       => '',
 			'indent'            => '',
@@ -104,6 +125,7 @@ final class Design {
 	 */
 	private static function kinds(): array {
 		return array(
+			'text_scale'        => 'scale',
 			'font_size'         => 'length',
 			'line_height'       => 'number_or_length',
 			'indent'            => 'length',
@@ -245,6 +267,12 @@ final class Design {
 				}
 				return preg_match( '/^\d+(\.\d+)?(px|rem|em|%)$/', $value ) ? $value : '';
 
+			case 'scale':
+				// One of the five slider positions, and never the middle one:
+				// standard is stored as unset, so `is_configured()` keeps
+				// telling the truth about a slider nobody moved.
+				return ( isset( self::SCALES[ $value ] ) && '' !== self::SCALES[ $value ] ) ? $value : '';
+
 			case 'columns':
 				// Two to six is the useful range and the honest one: seven
 				// columns of links is not a table of contents anyone reads, and
@@ -383,7 +411,7 @@ final class Design {
 		$rules[] = self::rule(
 			$s,
 			array(
-				'font-size'   => $style['font_size'],
+				'font-size'   => self::base_font_size( $style ),
 				'line-height' => $style['line_height'],
 			)
 		);
@@ -466,6 +494,31 @@ final class Design {
 				'-webkit-column-break-inside' => 'avoid',
 			)
 		);
+	}
+
+	/**
+	 * The base font size, from whichever of the two controls set it.
+	 *
+	 * The Basic tab offers a five-position slider and Advanced offers a box
+	 * that takes a length; both end up as `font-size` on the wrapper. Advanced
+	 * wins, and it wins here rather than by being emitted second, so only one
+	 * declaration is ever produced — two would leave the outcome to source
+	 * order, which is not a rule anybody should have to know.
+	 *
+	 * The level tokens (`parent_font_size`, `child_font_size`) sit on narrower
+	 * selectors and so already outrank both.
+	 *
+	 * @param array<string,string> $style Merged tokens.
+	 * @return string
+	 */
+	private static function base_font_size( array $style ): string {
+		if ( '' !== $style['font_size'] ) {
+			return $style['font_size'];
+		}
+
+		$scale = $style['text_scale'];
+
+		return isset( self::SCALES[ $scale ] ) ? self::SCALES[ $scale ] : '';
 	}
 
 	/**
