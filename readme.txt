@@ -78,7 +78,7 @@ Developer filters cover what the settings cannot reach, including `rapls_sitemap
 
 WPML and Polylang work with no configuration. Both narrow the post and term queries to the current language, and this plugin does not switch those filters off. The render cache keys on the locale, so one language is never served another's.
 
-Learn more: [Plugin details and developer reference](https://raplsworks.com/plugins/rapls-sitemap/)
+Learn more: [Plugin details and developer reference](https://raplsworks.com/plugins/rapls-sitemap/) | [Source code (GitHub)](https://github.com/rapls/rapls-sitemap)
 
 == Installation ==
 
