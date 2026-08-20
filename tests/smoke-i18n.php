@@ -182,6 +182,19 @@ $rules = array(
 	'symbols and punctuation are half-width (no ！ ？ （ ）)'        => '/[！？（）]/u',
 	'commas and periods are 、and 。(no ，．)'                       => '/[，．]/u',
 	'a half-width space separates Latin letters from Japanese'       => '/([A-Za-z][' . $jp . ']|[' . $jp . '][A-Za-z])/u',
+	// Same rule, and the half the Latin-letter pattern cannot see: a
+	// half-width ? or ! after a full-width character needs the space too.
+	// The ja team reviews for this, and it is invisible until they say so.
+	'a half-width space precedes ? and !'                            => '/[' . $jp . '][?!]/u',
+	// Rule 1-9, which is the *opposite* of the rule above it: a half-width
+	// digit takes no space at all. 1-4 excludes digits from the spacing
+	// requirement and 1-9 forbids the space outright — "1件のコメント", never
+	// "1 件のコメント". Guessed wrong once; the guide is explicit.
+	// Quantities only. `h6` and `--depth-0` end in a digit by accident, and
+	// applying this mechanically there produces "h6見出し", which nobody can
+	// read. A digit preceded by a letter, digit, hyphen or underscore is part
+	// of an identifier, not a count.
+	'a half-width digit takes no surrounding space (rule 1-9)'       => '/((?<![A-Za-z0-9_-])[0-9]+ [' . $jp . ']|[' . $jp . '] [0-9]+(?![A-Za-z0-9_-]))/u',
 );
 
 foreach ( $rules as $label => $pattern ) {

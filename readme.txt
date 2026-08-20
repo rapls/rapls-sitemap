@@ -4,7 +4,7 @@ Contributors: rapls
 Donate link: https://buymeacoffee.com/rapls
 Tags: html sitemap, sitemap, table of contents, navigation, menu
 Requires at least: 6.3
-Tested up to: 7.0
+Tested up to: 7.1
 Stable tag: 0.1.2
 Requires PHP: 7.4
 License: GPL-2.0-or-later
@@ -130,10 +130,11 @@ The sitemap is a labelled `nav` landmark, and section and category labels can be
 
 == Screenshots ==
 
-1. The Basic tab: what to list, how deep, what to leave out, and which design to use.
+1. The Basic tab: what to list, how deep, what to leave out, which design to use, and how big the text is.
 2. The Advanced tab. Everything optional, in panels that open themselves when they hold anything but a default.
-3. The output: pages in their hierarchy, posts under their categories.
-4. The block sidebar. Every placement can list something different.
+3. The output: pages in their hierarchy.
+4. Further down the same page: posts under their categories.
+5. The block sidebar. Every placement can list something different.
 
 == Changelog ==
 
@@ -142,7 +143,6 @@ The sitemap is a labelled `nav` landmark, and section and category labels can be
 
 = 0.1.1 =
 * Initial release.
-* Japanese translation included.
 
 == Upgrade Notice ==
 

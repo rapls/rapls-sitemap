@@ -86,7 +86,7 @@ msgstr "固定ページの ID、このブロックを置いたページを指す
 
 #: src/Admin/SettingsPage.php:666
 msgid "A page ID. Only the pages filed under it are listed, and the page itself is not. 0 lists the whole site. Post types with no hierarchy are left out entirely, since a page branch is not a scope they have."
-msgstr "固定ページの ID です。その下にぶら下がるページだけが並び、指定したページ自身は並びません。0 ならサイト全体を一覧にします。階層を持たない投稿タイプは一覧に出ません。「この固定ページの下」という範囲を持たないためです。"
+msgstr "固定ページの ID です。その下にぶら下がるページだけが並び、指定したページ自身は並びません。0ならサイト全体を一覧にします。階層を持たない投稿タイプは一覧に出ません。「この固定ページの下」という範囲を持たないためです。"
 
 #: src/Admin/SettingsPage.php:1408
 msgid "A post"
@@ -270,7 +270,7 @@ msgstr "カテゴリーのみ"
 
 #: src/Admin/SettingsPage.php:757
 msgid "Categories, tags and authors are read too. A category is only dropped where the category itself is what is listed — where entries are grouped under category headings, dropping a heading would take indexable entries with it, so switch off \"Link section and category headings\" instead. Those two questions have filters of their own: rapls_sitemap/is_term_noindex and rapls_sitemap/is_user_noindex."
-msgstr "カテゴリー・タグ・投稿者も読み取ります。カテゴリーを除外するのは、カテゴリー自体を一覧にしている場合だけです。項目をカテゴリー見出しの下に並べている場合、見出しを落とすとインデックス可能な項目まで消えるため、「セクションとカテゴリーの見出しをリンクにする」をオフにしてください。この 2 つには専用のフィルターがあります。rapls_sitemap/is_term_noindex と rapls_sitemap/is_user_noindex です。"
+msgstr "カテゴリー・タグ・投稿者も読み取ります。カテゴリーを除外するのは、カテゴリー自体を一覧にしている場合だけです。項目をカテゴリー見出しの下に並べている場合、見出しを落とすとインデックス可能な項目まで消えるため、「セクションとカテゴリーの見出しをリンクにする」をオフにしてください。この2つには専用のフィルターがあります。rapls_sitemap/is_term_noindex と rapls_sitemap/is_user_noindex です。"
 
 #: src/Admin/SettingsPage.php:1305
 msgid "Categories, years, and the front-page link."
@@ -592,7 +592,7 @@ msgstr "PS Auto Sitemap から読み込む"
 #. translators: 1: an example shortcode. 2: another example shortcode.
 #: src/Admin/SettingsPage.php:672
 msgid "In a shortcode this also takes %1$s, for a section landing page listing its own children without naming an ID that differs between staging and live, and %2$s, which lists the page's siblings instead — the same template on every page of a section then shows the reader where they are inside it."
-msgstr "ショートコードでは %1$s も指定できます。セクションのトップページに貼れば、ステージング環境と本番環境でずれる ID を書かずに、そのページの子ページを一覧にできます。%2$s は 1 つ上に解決され、同じセクションの兄弟ページを一覧にします。下層ページ共通のテンプレートに貼れば、読者は自分がセクションのどこにいるかを見られます。"
+msgstr "ショートコードでは %1$s も指定できます。セクションのトップページに貼れば、ステージング環境と本番環境でずれる ID を書かずに、そのページの子ページを一覧にできます。%2$s は1つ上に解決され、同じセクションの兄弟ページを一覧にします。下層ページ共通のテンプレートに貼れば、読者は自分がセクションのどこにいるかを見られます。"
 
 #: src/Admin/SettingsPage.php:1176
 msgid "In the block editor, open the options menu (three dots, top right) → Preferences → Panels, and switch on \"Custom fields\". The page reloads with a Custom Fields box below the content."
@@ -845,7 +845,7 @@ msgstr "先頭の%s件のみ表示しています。"
 
 #: src/Admin/SettingsPage.php:1265
 msgid "Only the top level is split; a category keeps its own entries with it. Empty leaves the design alone, and one column is a real answer on a design that would otherwise flow into several."
-msgstr "分割されるのは最上位だけです。カテゴリーとその下の記事は切り離されません。空欄ならデザインの指定のままです。段数を自動で増やすデザインに対しては、1 も有効な指定です。"
+msgstr "分割されるのは最上位だけです。カテゴリーとその下の記事は切り離されません。空欄ならデザインの指定のままです。段数を自動で増やすデザインに対しては、1も有効な指定です。"
 
 #: src/Admin/SettingsPage.php:1175
 msgid "Open a post or page for editing."
@@ -993,7 +993,7 @@ msgstr "すべての設定を初期化"
 
 #: src/Admin/SettingsPage.php:1563
 msgid "Reset every setting to its default?"
-msgstr "すべての設定を初期値に戻しますか?"
+msgstr "すべての設定を初期値に戻しますか ?"
 
 #: src/Admin/SupportPanel.php:100
 msgid "Reviews help other people find the plugin. Thank you."
@@ -1142,7 +1142,7 @@ msgstr "PS Auto Sitemap の設定を読み込みました。保存する前に�
 
 #: src/Admin/SettingsPage.php:473
 msgid "The author and archive listings are built from who published and when, so the other settings reach them only where they make sense: both take the entry cap, the exclusions and the design, and the archive listing takes the publication window as well. Ordering and grouping belong to the entries, which those two do not list. Both are derived from posts, whatever this sitemap lists — a date archive shows posts, so a year taken from pages would link somewhere empty."
-msgstr "投稿者一覧と年月アーカイブ一覧は、誰がいつ公開したかから組み立てます。そのため他の設定は、意味のあるものだけが効きます。件数上限・除外設定・デザインは両方に効き、公開期間はアーカイブ一覧にも効きます。並び順とグルーピングは項目に対する設定なので、項目を並べないこの 2 つには効きません。また、このサイトマップが何を並べていても、この 2 つは投稿から作ります。日付アーカイブが表示するのは投稿なので、固定ページから作った年は中身のないページへのリンクになるためです。"
+msgstr "投稿者一覧と年月アーカイブ一覧は、誰がいつ公開したかから組み立てます。そのため他の設定は、意味のあるものだけが効きます。件数上限・除外設定・デザインは両方に効き、公開期間はアーカイブ一覧にも効きます。並び順とグルーピングは項目に対する設定なので、項目を並べないこの2つには効きません。また、このサイトマップが何を並べていても、この2つは投稿から作ります。日付アーカイブが表示するのは投稿なので、固定ページから作った年は中身のないページへのリンクになるためです。"
 
 #: assets/js/block.js:266
 msgid "The author listing only."
@@ -1154,7 +1154,7 @@ msgstr "投稿者一覧にのみ効きます。WordPress をインストール�
 
 #: src/Admin/SettingsPage.php:1140
 msgid "The cap applies to all three queries — entries, categories and authors. \"Skip the first\" applies to the entries only: an offset into a list of categories or of people answers no question anyone has asked."
-msgstr "上限は投稿・カテゴリー等のターム・投稿者の 3 つのクエリすべてに効きます。「先頭から除外」が効くのは投稿の一覧だけです。カテゴリーや人物の一覧を途中から始めても、答えになる問いがないためです。"
+msgstr "上限は投稿・カテゴリー等のターム・投稿者の3つのクエリすべてに効きます。「先頭から除外」が効くのは投稿の一覧だけです。カテゴリーや人物の一覧を途中から始めても、答えになる問いがないためです。"
 
 #: src/Admin/SettingsPage.php:1198
 msgid "The field name is yours to choose. \"yomi\" is only a suggestion; use whatever an existing plugin already fills in if you have one."
@@ -1316,7 +1316,7 @@ msgstr "各項目の表示"
 
 #: src/Admin/SettingsPage.php:1159
 msgid "What is a custom field, and how do I fill one in?"
-msgstr "カスタムフィールドとは? 設定方法は?"
+msgstr "カスタムフィールドとは ? 設定方法は ?"
 
 #: src/Admin/SettingsPage.php:754
 msgid "What is read is the setting on the entry itself. A default that applies to a whole post type, taxonomy or archive is not: those listings appear only because you chose them on this screen, and an SEO plugin's default — Yoast noindexes date archives out of the box — would otherwise empty a list you asked for."
@@ -1362,7 +1362,7 @@ msgstr "YYYY-MM-DD、YYYY-MM、YYYY のいずれかです。空欄なら指定�
 
 #: src/Admin/SettingsPage.php:751
 msgid "Yoast SEO, Rank Math, SEO SIMPLE PACK, SEOPress, The SEO Framework, All in One SEO and the Cocoon theme are read directly. WordPress records nothing about noindex itself, so anything else needs the rapls_sitemap/is_noindex filter. Reading the setting costs one extra query per render, and a second one where All in One SEO is active — it keeps this in a table of its own rather than in post meta."
-msgstr "Yoast SEO、Rank Math、SEO SIMPLE PACK、SEOPress、The SEO Framework、All in One SEO、Cocoon テーマは直接読み取ります。WordPress 本体は noindex の情報を持たないため、それ以外は rapls_sitemap/is_noindex フィルターが必要です。この設定を有効にすると描画のたびにクエリが 1 つ増え、All in One SEO が有効なサイトではさらに 1 つ増えます。専用のテーブルに保存しているためです。"
+msgstr "Yoast SEO、Rank Math、SEO SIMPLE PACK、SEOPress、The SEO Framework、All in One SEO、Cocoon テーマは直接読み取ります。WordPress 本体は noindex の情報を持たないため、それ以外は rapls_sitemap/is_noindex フィルターが必要です。この設定を有効にすると描画のたびにクエリが1つ増え、All in One SEO が有効なサイトではさらに1つ増えます。専用のテーブルに保存しているためです。"
 
 #: src/Admin/SettingsPage.php:260 src/Admin/SettingsPage.php:287
 msgid "You do not have permission to change these settings."
